@@ -189,8 +189,10 @@ internal fun ContextWindowPopover(
 internal fun codeContextLimit(state: ChatUiState): Int {
     val provider = state.activeProvider ?: return state.maxContextTokens
     val model = state.effectiveModel ?: return state.maxContextTokens
+    // A self-hosted server's own window caps the run (RunManager probes it), so the ring shows it too.
+    val serverLimit = com.androidharness.app.llm.ServerContext.keyFor(provider)?.let { state.serverContextTokens[it] }
     return com.androidharness.app.agent.ChatContextPolicy.codeLimit(
-        state.maxContextTokens, null,
+        state.maxContextTokens, serverLimit,
         state.catalogs[provider.id]?.firstOrNull { it.id == model }?.contextTokens,
         state.learnedContextLimits[com.androidharness.app.agent.TextFileWrites.modelKey(provider.id, model)],
     )

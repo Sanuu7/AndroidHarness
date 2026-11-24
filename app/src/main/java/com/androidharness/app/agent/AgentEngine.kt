@@ -531,10 +531,14 @@ class AgentEngine(
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)
             emit(AgentEvent.EstimatedContext(estimate))
+            val autoCompactSetting = if (conversation.isChat) 0 else autoCompactTokens()
             val compactThreshold = budget.recovery.scaled(if (conversation.isChat) ChatContextPolicy.compactAt(budget.limit, requestOptions.maxOutputTokens)
-                else AutoCompaction.threshold(autoCompactTokens(), budget.limit, requestOptions.maxOutputTokens))
+                else AutoCompaction.threshold(autoCompactSetting, budget.limit, requestOptions.maxOutputTokens))
             val needsCompaction = budget.recovery.forceCompaction || estimate.total >= compactThreshold
             if ((!localChat || agentContextEnabled) && needsCompaction && (conversation.isChat || working.size > 1)) {
+                // A setting the window cannot honor would otherwise look like compaction firing at random.
+                if (!budget.recovery.forceCompaction) AutoCompaction.loweredNotice(autoCompactSetting, compactThreshold, budget.limit)
+                    ?.let { emit(AgentEvent.Notice(it)) }
                 if (hooksActive) {
                     hook(com.androidharness.app.config.HookEvents.COMPACT, kotlinx.serialization.json.buildJsonObject { put("trigger", "auto") })
                         .instructions.takeIf(String::isNotBlank)?.let { runContext.pendingInstructions.add(it) }

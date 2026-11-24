@@ -34,6 +34,22 @@ class HistoryCompactorTest {
         assertTrue(result.contains("/workspace/keep-me"))
     }
 
+    @Test fun `summary budget leaves room for models that reason anyway`() = runBlocking {
+        val budgets = mutableListOf<Int>()
+        val p = object : LlmProvider {
+            override fun streamChat(config: ProviderConfig, apiKey: String, systemPrompt: String,
+                messages: List<ChatMessage>, tools: List<ToolSchema>, options: RequestOptions): Flow<StreamEvent> {
+                budgets += options.maxOutputTokens
+                return flowOf(StreamEvent.TextDelta("Keep goal"), StreamEvent.Done("stop"))
+            }
+        }
+        HistoryCompactor.summarize(p, config, "key", history.take(1).map { it.copy(text = "goal") }, 262_144, "sid")
+        assertEquals(listOf(HistoryCompactor.MAX_SUMMARY_TOKENS), budgets)
+        budgets.clear()
+        HistoryCompactor.summarize(p, config, "key", history.take(1).map { it.copy(text = "goal") }, 16_384, "sid")
+        assertEquals(listOf(2_048), budgets)
+    }
+
     @Test fun `chunking never drops oversized text or arguments`() {
         val transcript = HistoryCompactor.transcriptChunks(history, 99).toList()
         assertTrue(transcript.all { it.length <= 99 })

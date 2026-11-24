@@ -2,6 +2,10 @@ package com.androidharness.app.llm
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -31,14 +35,30 @@ object ServerContext {
     private class Probe(val at: Long, val tokens: Long?)
     private val cache = ConcurrentHashMap<String, Probe>()
 
-    /** Tokens per request slot, or null when the server is not llama.cpp or did not answer. */
-    suspend fun tokens(config: ProviderConfig, apiKey: String): Long? {
+    private val _known = MutableStateFlow<Map<String, Long>>(emptyMap())
+
+    /**
+     * The last window each server reported, keyed by [keyFor]. Runs probe
+     * before every request, so the context ring can show the same window
+     * the run budgets against instead of the configured setting.
+     */
+    val known: StateFlow<Map<String, Long>> = _known.asStateFlow()
+
+    /** Forgets fresh probes so the next [tokens] call asks the server again. */
+    internal fun expireProbes() = cache.clear()
+
+    /** The [known] key for [config], or null when its server is never probed. */
+    fun keyFor(config: ProviderConfig): String? =
         if (com.androidharness.app.local.LocalModelCatalog.isLocal(config.id) ||
             config.type != ProviderType.OPENAI_COMPAT ||
-            !OpenAiCompatProvider.isLocalHost(config.baseUrl)) return null
-        val url = propsUrl(config.baseUrl)
+            !OpenAiCompatProvider.isLocalHost(config.baseUrl)) null
+        else propsUrl(config.baseUrl)
+
+    /** Tokens per request slot, or null when the server is not llama.cpp or did not answer. */
+    suspend fun tokens(config: ProviderConfig, apiKey: String): Long? {
+        val url = keyFor(config) ?: return null
         cache[url]?.takeIf { System.currentTimeMillis() - it.at < TTL_MS }?.let { return it.tokens }
-        val tokens = withContext(Dispatchers.IO) {
+        val probed = withContext(Dispatchers.IO) {
             try {
                 val builder = Request.Builder().url(url)
                 if (apiKey.isNotBlank() && apiKey != OpenAiCompatProvider.LOCAL_KEY) builder.header("Authorization", "Bearer $apiKey")
@@ -51,7 +71,11 @@ object ServerContext {
                 null
             }
         }
+        // A busy server can miss the short probe timeout without its window changing. Falling
+        // back to the configured setting then would make compaction depend on server load.
+        val tokens = probed ?: _known.value[url]
         cache[url] = Probe(System.currentTimeMillis(), tokens)
+        if (probed != null) _known.update { it + (url to probed) }
         return tokens
     }
 

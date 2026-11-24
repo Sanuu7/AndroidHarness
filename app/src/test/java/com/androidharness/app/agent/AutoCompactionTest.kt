@@ -29,4 +29,14 @@ class AutoCompactionTest {
         assertEquals(950_000, AutoCompaction.threshold(1_000_000, 1_000_000, 32_768))
         assertEquals(32_000, AutoCompaction.threshold(350_000, 64_000, 32_768))
     }
+
+    @Test fun `a smaller server window explains why compaction starts early`() {
+        // 262K setting, but a server with two parallel slots gives each request 131,072 tokens.
+        val threshold = AutoCompaction.threshold(210_000, 131_072, 32_768)
+        assertEquals(98_304, threshold)
+        val notice = AutoCompaction.loweredNotice(210_000, threshold, 131_072)!!
+        assertTrue(notice.contains("210,000") && notice.contains("131,072") && notice.contains("98,304"))
+        assertNull(AutoCompaction.loweredNotice(0, threshold, 131_072))
+        assertNull(AutoCompaction.loweredNotice(210_000, 210_000, 262_144))
+    }
 }

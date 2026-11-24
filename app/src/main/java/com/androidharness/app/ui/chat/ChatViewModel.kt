@@ -133,6 +133,8 @@ data class ChatUiState(
     val maxContextTokens: Int = 1_000_000,
     /** "providerId|model" to the window its server named when it rejected a request as too long. */
     val learnedContextLimits: Map<String, Int> = emptyMap(),
+    /** Self-hosted servers' reported per-request windows, keyed by [com.androidharness.app.llm.ServerContext.keyFor]. */
+    val serverContextTokens: Map<String, Long> = emptyMap(),
     val autoCompactTokens: Int = 0,
     /** App-wide resume prompt; blank means the built-in text. A chat's own prompt lives on its task record. */
     val resumePrompt: String = "",
@@ -427,6 +429,12 @@ class ChatViewModel(
                     ?.let { it.copy(model = state.effectiveModel ?: it.model) }
             }.distinctUntilChanged().collect { selected ->
                 if (selected != null) launch { c.providers.refreshCatalog(selected.id, automatic = true) }
+                if (selected != null) launch { probeServerContext(selected) }
+            }
+        }
+        viewModelScope.launch {
+            com.androidharness.app.llm.ServerContext.known.collect { known ->
+                _state.update { it.copy(serverContextTokens = known) }
             }
         }
         viewModelScope.launch {
@@ -881,7 +889,7 @@ class ChatViewModel(
                     val override = sessionId?.let { c.runManager.controls.flow(it).value.autoCompactTokens }
                     val configured = override ?: _state.value.autoCompactTokens
                     val threshold = com.androidharness.app.agent.AutoCompaction.threshold(configured,
-                        _state.value.maxContextTokens, _state.value.maxOutputTokens)
+                        com.androidharness.app.ui.chat.components.codeContextLimit(_state.value), _state.value.maxOutputTokens)
                     _state.update { it.copy(error = null, modeToast = c.appContext.getString(R.string.auto_compact_status,
                         java.text.NumberFormat.getIntegerInstance().format(threshold))) }
                     return true
@@ -900,7 +908,7 @@ class ChatViewModel(
                         }
                         val configured = tokens ?: c.settings.settings.first().autoCompactTokens
                         val threshold = com.androidharness.app.agent.AutoCompaction.threshold(configured,
-                            _state.value.maxContextTokens, _state.value.maxOutputTokens)
+                            com.androidharness.app.ui.chat.components.codeContextLimit(_state.value), _state.value.maxOutputTokens)
                         _state.update { it.copy(error = null, modeToast = c.appContext.getString(
                             if (inherit) R.string.auto_compact_reset else R.string.auto_compact_saved,
                             java.text.NumberFormat.getIntegerInstance().format(threshold))) }
@@ -1308,6 +1316,18 @@ class ChatViewModel(
         sideJob?.cancel()
         sideGeneration++
         _sideThread.update { it?.let { thread -> SideThreadUi(thread.sessionId, visible = thread.visible) } }
+    }
+
+    /** Reads a self-hosted server's window so the context ring matches what a run budgets against. */
+    private suspend fun probeServerContext(provider: ProviderConfig) {
+        if (com.androidharness.app.llm.ServerContext.keyFor(provider) == null) return
+        try {
+            val key = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                provider.effectiveApiKey(c.providers.apiKey(provider.id))
+            }
+            com.androidharness.app.llm.ServerContext.tokens(provider, key)
+        } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+        catch (_: Exception) { }
     }
 
     private suspend fun coldAsideContext(sid: String): com.androidharness.app.agent.SideContext {
