@@ -43,4 +43,13 @@
     </plurals>
     <string name="as_activity_plugins">"Eklentiler yönetiliyor"</string>
     <string name="as_activity_plugins_done">"Eklentiler yönetildi"</string>
+    <string name="as_sections_added">"%1$s eklendi"</string>
+    <string name="as_sections_removed">"%1$s kaldırıldı"</string>
+    <string name="as_sections_renamed">"%1$s yeniden adlandırıldı"</string>
+    <string name="as_sections_rearranged">"%1$s yeniden düzenlendi"</string>
+    <string name="as_sections_rearranged_all">"Bölümler yeniden düzenlendi"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%2$s: %1$d öğe değişti"</item>
+        <item quantity="other">"%2$s: %1$d öğe değişti"</item>
+    </plurals>
 </resources>

@@ -47,4 +47,15 @@
     </plurals>
     <string name="as_activity_plugins">"Управление плагинами"</string>
     <string name="as_activity_plugins_done">"Плагины изменены"</string>
+    <string name="as_sections_added">"Добавлено: %1$s"</string>
+    <string name="as_sections_removed">"Удалено: %1$s"</string>
+    <string name="as_sections_renamed">"Переименовано: %1$s"</string>
+    <string name="as_sections_rearranged">"Переставлено: %1$s"</string>
+    <string name="as_sections_rearranged_all">"Разделы переставлены"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"изменён %1$d элемент"</item>
+        <item quantity="few">"изменено %1$d элемента"</item>
+        <item quantity="many">"изменено %1$d элементов"</item>
+        <item quantity="other">"изменено %1$d элемента"</item>
+    </plurals>
 </resources>

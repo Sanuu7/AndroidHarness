@@ -41,4 +41,12 @@
     </plurals>
     <string name="as_activity_plugins">"Mengurus pemalam"</string>
     <string name="as_activity_plugins_done">"Pemalam diurus"</string>
+    <string name="as_sections_added">"%1$s ditambah"</string>
+    <string name="as_sections_removed">"%1$s dibuang"</string>
+    <string name="as_sections_renamed">"%1$s dinamakan semula"</string>
+    <string name="as_sections_rearranged">"%1$s disusun semula"</string>
+    <string name="as_sections_rearranged_all">"Bahagian disusun semula"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="other">"%2$s: %1$d item diubah"</item>
+    </plurals>
 </resources>

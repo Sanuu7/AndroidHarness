@@ -41,4 +41,12 @@
     </plurals>
     <string name="as_activity_plugins">"플러그인 관리 중"</string>
     <string name="as_activity_plugins_done">"플러그인 관리함"</string>
+    <string name="as_sections_added">"%1$s 추가됨"</string>
+    <string name="as_sections_removed">"%1$s 삭제됨"</string>
+    <string name="as_sections_renamed">"%1$s 이름 변경됨"</string>
+    <string name="as_sections_rearranged">"%1$s 순서 변경됨"</string>
+    <string name="as_sections_rearranged_all">"섹션 순서 변경됨"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="other">"%2$s: %1$d개 항목 변경됨"</item>
+    </plurals>
 </resources>

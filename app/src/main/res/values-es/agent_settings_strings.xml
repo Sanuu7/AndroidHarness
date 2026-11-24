@@ -43,4 +43,13 @@
     </plurals>
     <string name="as_activity_plugins">"Gestionando complementos"</string>
     <string name="as_activity_plugins_done">"Complementos gestionados"</string>
+    <string name="as_sections_added">"Añadido: %1$s"</string>
+    <string name="as_sections_removed">"Eliminado: %1$s"</string>
+    <string name="as_sections_renamed">"Renombrado: %1$s"</string>
+    <string name="as_sections_rearranged">"Reordenado: %1$s"</string>
+    <string name="as_sections_rearranged_all">"Secciones reordenadas"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%2$s: %1$d elemento cambiado"</item>
+        <item quantity="other">"%2$s: %1$d elementos cambiados"</item>
+    </plurals>
 </resources>

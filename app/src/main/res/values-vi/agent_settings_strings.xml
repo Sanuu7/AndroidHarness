@@ -41,4 +41,12 @@
     </plurals>
     <string name="as_activity_plugins">"Đang quản lý plugin"</string>
     <string name="as_activity_plugins_done">"Đã quản lý plugin"</string>
+    <string name="as_sections_added">"Đã thêm %1$s"</string>
+    <string name="as_sections_removed">"Đã xóa %1$s"</string>
+    <string name="as_sections_renamed">"Đã đổi tên %1$s"</string>
+    <string name="as_sections_rearranged">"Đã sắp xếp lại %1$s"</string>
+    <string name="as_sections_rearranged_all">"Đã sắp xếp lại các mục"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="other">"%2$s: đã thay đổi %1$d mục"</item>
+    </plurals>
 </resources>

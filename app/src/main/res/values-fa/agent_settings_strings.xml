@@ -43,4 +43,13 @@
     </plurals>
     <string name="as_activity_plugins">"مدیریت افزونه‌ها"</string>
     <string name="as_activity_plugins_done">"افزونه‌ها مدیریت شد"</string>
+    <string name="as_sections_added">"%1$s افزوده شد"</string>
+    <string name="as_sections_removed">"%1$s حذف شد"</string>
+    <string name="as_sections_renamed">"%1$s تغییر نام داد"</string>
+    <string name="as_sections_rearranged">"ترتیب %1$s تغییر کرد"</string>
+    <string name="as_sections_rearranged_all">"بخش‌ها مرتب شدند"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%1$d مورد تغییر کرد"</item>
+        <item quantity="other">"%1$d مورد تغییر کرد"</item>
+    </plurals>
 </resources>

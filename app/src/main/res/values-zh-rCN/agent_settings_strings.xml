@@ -41,4 +41,12 @@
     </plurals>
     <string name="as_activity_plugins">正在管理插件</string>
     <string name="as_activity_plugins_done">已管理插件</string>
+    <string name="as_sections_added">"已添加 %1$s"</string>
+    <string name="as_sections_removed">"已移除 %1$s"</string>
+    <string name="as_sections_renamed">"已重命名 %1$s"</string>
+    <string name="as_sections_rearranged">"已重新排序 %1$s"</string>
+    <string name="as_sections_rearranged_all">"已重新排序各个部分"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="other">"%2$s：变更了 %1$d 项"</item>
+    </plurals>
 </resources>

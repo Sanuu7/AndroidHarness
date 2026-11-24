@@ -43,4 +43,13 @@
     </plurals>
     <string name="as_activity_plugins">"ප්ලගීන කළමනාකරණය කරමින්"</string>
     <string name="as_activity_plugins_done">"ප්ලගීන කළමනාකරණය කළා"</string>
+    <string name="as_sections_added">"%1$s එකතු කරන ලදී"</string>
+    <string name="as_sections_removed">"%1$s ඉවත් කරන ලදී"</string>
+    <string name="as_sections_renamed">"%1$s නම වෙනස් කරන ලදී"</string>
+    <string name="as_sections_rearranged">"%1$s ප්‍රතිසංවිධානය කරන ලදී"</string>
+    <string name="as_sections_rearranged_all">"කොටස් ප්‍රතිසංවිධානය කරන ලදී"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%2$s: අයිතම %1$dක් වෙනස් විය"</item>
+        <item quantity="other">"%2$s: අයිතම %1$dක් වෙනස් විය"</item>
+    </plurals>
 </resources>

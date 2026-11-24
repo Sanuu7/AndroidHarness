@@ -43,4 +43,13 @@
     </plurals>
     <string name="as_activity_plugins">"Namamahala ng mga plugin"</string>
     <string name="as_activity_plugins_done">"Namahala ng mga plugin"</string>
+    <string name="as_sections_added">"Idinagdag ang %1$s"</string>
+    <string name="as_sections_removed">"Inalis ang %1$s"</string>
+    <string name="as_sections_renamed">"Pinalitan ng pangalan ang %1$s"</string>
+    <string name="as_sections_rearranged">"Muling inayos ang %1$s"</string>
+    <string name="as_sections_rearranged_all">"Muling inayos ang mga seksyon"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%2$s: %1$d item ang nabago"</item>
+        <item quantity="other">"%2$s: %1$d item ang nabago"</item>
+    </plurals>
 </resources>

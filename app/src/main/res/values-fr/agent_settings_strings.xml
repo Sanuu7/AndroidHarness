@@ -45,4 +45,14 @@
     </plurals>
     <string name="as_activity_plugins">"Gestion des plugins"</string>
     <string name="as_activity_plugins_done">"Plugins gérés"</string>
+    <string name="as_sections_added">"Ajouté : %1$s"</string>
+    <string name="as_sections_removed">"Supprimé : %1$s"</string>
+    <string name="as_sections_renamed">"Renommé : %1$s"</string>
+    <string name="as_sections_rearranged">"Réorganisé : %1$s"</string>
+    <string name="as_sections_rearranged_all">"Sections réorganisées"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%2$s : %1$d élément modifié"</item>
+        <item quantity="many">"%2$s : %1$d d\'éléments modifiés"</item>
+        <item quantity="other">"%2$s : %1$d éléments modifiés"</item>
+    </plurals>
 </resources>

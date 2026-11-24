@@ -7,6 +7,7 @@ import com.androidharness.app.caveman.CavemanIntensity
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ChatStartMode
 import com.androidharness.app.data.CodeStartMode
+import com.androidharness.app.data.CustomSettingsSections
 import com.androidharness.app.data.CustomThemePalette
 import com.androidharness.app.data.ImageFrequency
 import com.androidharness.app.data.LiveModeSettings
@@ -489,7 +490,20 @@ internal object AgentSettingsCatalog {
         SettingKind.Toggle, "Whether the agent may use the skill \"$name\".", keywords = "skill skills playbook $name", name = name,
         read = { (name !in it.disabledSkills).toString() }, write = { r, v -> r.setSkillEnabled(name, bool(v)) })
 
+    /**
+     * The whole "Your sections" tree as one value, so a call that edits sections gets one
+     * card row with Undo. It is left out of [all]: the agent edits it with sections steps,
+     * never by sending the value, and it is not a control a section could hold.
+     */
+    const val SECTIONS = "custom_sections"
+
+    val sections = AgentSetting(SECTIONS, R.string.custom_sections_group, SettingsPage.APPEARANCE, SettingKind.Text(Int.MAX_VALUE),
+        "The user's own settings sections. Change them with the sections steps of app_settings_change.",
+        read = { CustomSettingsSections.encode(it.customSections) },
+        write = { r, v -> r.setCustomSections(requireNotNull(CustomSettingsSections.parse(v)) { "Those sections could not be read." }) })
+
     operator fun get(key: String): AgentSetting? = byKey[key]
+        ?: sections.takeIf { key == SECTIONS }
         ?: key.takeIf { it.startsWith(SKILL_PREFIX) }?.removePrefix(SKILL_PREFIX)?.takeIf { it.isNotBlank() }?.let(::skill)
 
     /** Settings matching any word of [query], best first; everything when blank. */

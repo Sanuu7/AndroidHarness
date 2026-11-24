@@ -43,4 +43,13 @@
         <item quantity="one">%1$d needs you</item>
         <item quantity="other">%1$d need you</item>
     </plurals>
+    <string name="as_sections_added">Added %1$s</string>
+    <string name="as_sections_removed">Removed %1$s</string>
+    <string name="as_sections_renamed">Renamed %1$s</string>
+    <string name="as_sections_rearranged">Rearranged %1$s</string>
+    <string name="as_sections_rearranged_all">Rearranged sections</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">%2$s: %1$d item changed</item>
+        <item quantity="other">%2$s: %1$d items changed</item>
+    </plurals>
 </resources>

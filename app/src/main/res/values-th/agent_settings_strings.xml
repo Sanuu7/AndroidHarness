@@ -41,4 +41,12 @@
     </plurals>
     <string name="as_activity_plugins">"กำลังจัดการปลั๊กอิน"</string>
     <string name="as_activity_plugins_done">"จัดการปลั๊กอินแล้ว"</string>
+    <string name="as_sections_added">"เพิ่ม %1$s แล้ว"</string>
+    <string name="as_sections_removed">"ลบ %1$s แล้ว"</string>
+    <string name="as_sections_renamed">"เปลี่ยนชื่อ %1$s แล้ว"</string>
+    <string name="as_sections_rearranged">"จัดเรียง %1$s ใหม่แล้ว"</string>
+    <string name="as_sections_rearranged_all">"จัดเรียงส่วนใหม่แล้ว"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="other">"%2$s: เปลี่ยน %1$d รายการ"</item>
+    </plurals>
 </resources>

@@ -2074,6 +2074,7 @@ private fun ChatScreenContent(
                                         viewModel.container.pendingSettingsScroll.value = settingsTarget(page, anchor)
                                         onOpenSettings()
                                     },
+                                    onOpenSections = onOpenSettings,
                                 )
                             }
                         }

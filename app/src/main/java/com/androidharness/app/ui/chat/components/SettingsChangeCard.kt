@@ -60,6 +60,8 @@ import com.androidharness.app.core.SettingChange
 import com.androidharness.app.core.SettingTodo
 import com.androidharness.app.core.SettingsReceipt
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.CustomSettingsSection
+import com.androidharness.app.data.CustomSettingsSections
 import com.androidharness.app.data.SettingsRepository
 import com.androidharness.app.data.ThemePalette
 import com.androidharness.app.ui.settings.AgentSetting
@@ -94,6 +96,8 @@ internal fun SettingsChangeCard(
     settings: AppSettings,
     repository: SettingsRepository,
     onOpen: (SettingsPage, Int?) -> Unit,
+    /** Opens Settings at its home, where Your sections lives. */
+    onOpenSections: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
@@ -128,7 +132,10 @@ internal fun SettingsChangeCard(
             Column(Modifier.animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec()).padding(vertical = 12.dp)) {
                 Header(receipt, states)
                 if (rows.isNotEmpty()) Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                    rows.zip(states).forEach { (row, state) -> ChangeRow(row.first, row.second, state, settings, onOpen) }
+                    rows.zip(states).forEach { (row, state) ->
+                        if (row.first.key == AgentSettingsCatalog.SECTIONS) SectionsRow(row.first, state, onOpenSections)
+                        else ChangeRow(row.first, row.second, state, settings, onOpen)
+                    }
                 }
                 receipt.needsUser.forEach { TodoRow(it, settings, onOpen) }
                 receipt.skipped.forEach { SkippedRow(it) }
@@ -151,8 +158,10 @@ internal fun SettingsChangeCard(
                         }
                     }
                     Box(Modifier.weight(1f))
-                    rows.firstOrNull()?.second?.let { first ->
-                        TextButton(onClick = { onOpen(first.page, first.anchor) }) { Text(stringResource(R.string.as_open_settings)) }
+                    rows.firstOrNull()?.let { (change, first) ->
+                        val open = if (change.key == AgentSettingsCatalog.SECTIONS) onOpenSections
+                            else first?.let { { onOpen(it.page, it.anchor) } }
+                        open?.let { TextButton(onClick = it) { Text(stringResource(R.string.as_open_settings)) } }
                     }
                 }
             }
@@ -211,6 +220,84 @@ private fun ChangeRow(change: SettingChange, setting: AgentSetting?, state: Chan
         Icon(Icons.AutoMirrored.Filled.ArrowForward, null, Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
         ValueChip(setting, change.after, change.label, settings, emphasized = !faded, struck = faded)
         if (clickable) Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, stringResource(R.string.as_open_setting), Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
+    }
+}
+
+/** One part of what a call did to Your sections, worked out from the tree before and after so the card can say it in the user's language. */
+internal sealed interface SectionsDiff {
+    data class Added(val name: String) : SectionsDiff
+    data class Removed(val name: String) : SectionsDiff
+    data class Renamed(val name: String) : SectionsDiff
+    data class Rearranged(val name: String) : SectionsDiff
+    data class Items(val name: String, val count: Int) : SectionsDiff
+    data object RearrangedAll : SectionsDiff
+}
+
+internal fun sectionsDiff(before: String, after: String): List<SectionsDiff> {
+    class Node(val section: CustomSettingsSection, val parent: String?)
+    fun flatten(sections: List<CustomSettingsSection>): Map<String, Node> = buildMap {
+        fun walk(section: CustomSettingsSection, parent: String?) {
+            put(section.id, Node(section, parent))
+            section.items.mapNotNull { it.section }.forEach { walk(it, section.id) }
+        }
+        sections.forEach { walk(it, null) }
+    }
+    val old = CustomSettingsSections.decode(before)
+    val new = CustomSettingsSections.decode(after)
+    val was = flatten(old)
+    val now = flatten(new)
+    return buildList {
+        // A new section's own sub-sections are part of adding it, so only the outermost one is named.
+        now.values.filter { it.section.id !in was && it.parent?.let { p -> p in was } != false }.forEach { add(SectionsDiff.Added(it.section.name)) }
+        was.values.filter { it.section.id !in now && it.parent?.let { p -> p in now } != false }.forEach { add(SectionsDiff.Removed(it.section.name)) }
+        now.values.filter { it.section.id in was }.forEach { node ->
+            val prior = was.getValue(node.section.id).section
+            val section = node.section
+            if (prior.name != section.name || prior.icon != section.icon) add(SectionsDiff.Renamed(section.name))
+            val keys = section.items.filter { it.section == null }.map { it.key }
+            val priorKeys = prior.items.filter { it.section == null }.map { it.key }
+            val changed = (keys - priorKeys.toSet()).size + (priorKeys - keys.toSet()).size
+            val order = section.items.map { it.key }
+            val priorOrder = prior.items.map { it.key }
+            if (changed > 0) add(SectionsDiff.Items(section.name, changed))
+            else if (order.filter { it in priorOrder } != priorOrder.filter { it in order }) add(SectionsDiff.Rearranged(section.name))
+        }
+        val common = new.map { it.id }.filter { id -> old.any { it.id == id } }
+        if (common != old.map { it.id }.filter { it in common }) add(SectionsDiff.RearrangedAll)
+    }
+}
+
+@Composable
+private fun SectionsRow(change: SettingChange, state: ChangeState, onOpen: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val parts = sectionsDiff(change.before, change.after).map { part ->
+        when (part) {
+            is SectionsDiff.Added -> stringResource(R.string.as_sections_added, part.name)
+            is SectionsDiff.Removed -> stringResource(R.string.as_sections_removed, part.name)
+            is SectionsDiff.Renamed -> stringResource(R.string.as_sections_renamed, part.name)
+            is SectionsDiff.Rearranged -> stringResource(R.string.as_sections_rearranged, part.name)
+            is SectionsDiff.Items -> pluralStringResource(R.plurals.as_sections_items_changed, part.count, part.count, part.name)
+            SectionsDiff.RearrangedAll -> stringResource(R.string.as_sections_rearranged_all)
+        }
+    }
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(role = Role.Button, onClick = onOpen)
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.custom_sections_group), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (parts.isNotEmpty()) Text(parts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant,
+                maxLines = 3, overflow = TextOverflow.Ellipsis,
+                textDecoration = if (state == ChangeState.UNDONE) TextDecoration.LineThrough else null)
+            when (state) {
+                ChangeState.UNDONE -> StateLabel(stringResource(R.string.as_state_undone), scheme.onSurfaceVariant)
+                ChangeState.MOVED_ON -> StateLabel(stringResource(R.string.as_state_moved_on), scheme.tertiary)
+                ChangeState.APPLIED -> Unit
+            }
+        }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, stringResource(R.string.as_open_settings), Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
     }
 }
 

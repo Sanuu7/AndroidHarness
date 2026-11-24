@@ -49,12 +49,19 @@ object CustomSettingsSections {
     const val MAX_DEPTH = 3
     const val MAX_NAME = 40
 
+    /** Icon names a section can use; the settings UI maps each to its picture. */
+    val ICONS = listOf("TUNE", "STAR", "FAVORITE", "BOLT", "ROCKET", "CODE", "CHAT", "PALETTE", "MIC", "SHIELD", "BUILD", "FOLDER")
+
     private val json = Json { ignoreUnknownKeys = true }
 
     fun decode(raw: String?): List<CustomSettingsSection> =
         runCatching { json.decodeFromString<List<CustomSettingsSection>>(raw ?: "[]") }.getOrDefault(emptyList()).takeIf(::valid).orEmpty()
 
     fun encode(sections: List<CustomSettingsSection>): String = json.encodeToString(sections)
+
+    /** Like [decode], but null instead of an empty list when [raw] is broken, so a bad value never wipes the sections. */
+    fun parse(raw: String): List<CustomSettingsSection>? =
+        runCatching { json.decodeFromString<List<CustomSettingsSection>>(raw) }.getOrNull()?.takeIf(::valid)
 
     fun valid(sections: List<CustomSettingsSection>): Boolean {
         if (sections.size > MAX_SECTIONS) return false

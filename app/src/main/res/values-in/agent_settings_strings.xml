@@ -41,4 +41,12 @@
     </plurals>
     <string name="as_activity_plugins">"Mengelola plugin"</string>
     <string name="as_activity_plugins_done">"Plugin dikelola"</string>
+    <string name="as_sections_added">"%1$s ditambahkan"</string>
+    <string name="as_sections_removed">"%1$s dihapus"</string>
+    <string name="as_sections_renamed">"%1$s diganti namanya"</string>
+    <string name="as_sections_rearranged">"%1$s disusun ulang"</string>
+    <string name="as_sections_rearranged_all">"Bagian disusun ulang"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="other">"%1$d item diubah"</item>
+    </plurals>
 </resources>

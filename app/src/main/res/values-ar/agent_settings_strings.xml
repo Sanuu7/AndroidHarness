@@ -51,4 +51,17 @@
     </plurals>
     <string name="as_activity_plugins">"إدارة الإضافات"</string>
     <string name="as_activity_plugins_done">"تمت إدارة الإضافات"</string>
+    <string name="as_sections_added">"تمت إضافة %1$s"</string>
+    <string name="as_sections_removed">"تمت إزالة %1$s"</string>
+    <string name="as_sections_renamed">"تمت إعادة تسمية %1$s"</string>
+    <string name="as_sections_rearranged">"أعيد ترتيب %1$s"</string>
+    <string name="as_sections_rearranged_all">"أعيد ترتيب الأقسام"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="zero">"%1$d عنصر تغيّر"</item>
+        <item quantity="one">"%1$d عنصر تغيّر"</item>
+        <item quantity="two">"%1$d عنصر تغيّر"</item>
+        <item quantity="few">"%1$d عناصر تغيّرت"</item>
+        <item quantity="many">"%1$d عنصراً تغيّر"</item>
+        <item quantity="other">"%1$d عنصر تغيّر"</item>
+    </plurals>
 </resources>

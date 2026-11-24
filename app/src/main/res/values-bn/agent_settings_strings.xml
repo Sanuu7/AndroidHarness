@@ -43,4 +43,13 @@
     </plurals>
     <string name="as_activity_plugins">"প্লাগইন পরিচালনা করা হচ্ছে"</string>
     <string name="as_activity_plugins_done">"প্লাগইন পরিচালনা করা হয়েছে"</string>
+    <string name="as_sections_added">"%1$s যোগ করা হয়েছে"</string>
+    <string name="as_sections_removed">"%1$s সরানো হয়েছে"</string>
+    <string name="as_sections_renamed">"%1$s এর নাম বদলানো হয়েছে"</string>
+    <string name="as_sections_rearranged">"%1$s পুনর্বিন্যাস করা হয়েছে"</string>
+    <string name="as_sections_rearranged_all">"বিভাগগুলো পুনর্বিন্যাস করা হয়েছে"</string>
+    <plurals name="as_sections_items_changed">
+        <item quantity="one">"%2$s: %1$d আইটেম বদলেছে"</item>
+        <item quantity="other">"%2$s: %1$d আইটেম বদলেছে"</item>
+    </plurals>
 </resources>

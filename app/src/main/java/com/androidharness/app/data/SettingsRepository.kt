@@ -911,6 +911,12 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    /** Replaces all custom sections at once, as the agent's changes and their Undo do. Throws when [sections] break the limits. */
+    suspend fun setCustomSections(sections: List<CustomSettingsSection>) {
+        require(CustomSettingsSections.valid(sections)) { "Those sections break the limits." }
+        context.settingsStore.edit { prefs -> prefs[Keys.CUSTOM_SECTIONS] = CustomSettingsSections.encode(sections) }
+    }
+
     suspend fun saveCustomPalette(palette: CustomThemePalette) {
         require(palette.valid())
         context.settingsStore.edit { prefs ->
