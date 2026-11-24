@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Tanyakan apa pun di layar dengan asisten",
+      "summary": "Jadikan AndroidHarness asisten ponsel Anda dan tanyakan tentang aplikasi yang sedang Anda pakai.",
+      "location": "Pengaturan → Asisten di atas aplikasi lain; lalu tekan lama tombol daya atau beranda, atau geser ke atas dari sudut bawah.",
+      "before": [
+        "Pilih model Chat dan tambahkan kuncinya dulu. Asisten memakai model dan pengaturan yang sama dengan Chat.",
+        "Android harus mengizinkan AndroidHarness menjadi aplikasi asisten digital. Di sebagian ponsel ini ada di Aplikasi default."
+      ],
+      "steps": [
+        {
+          "title": "Jadikan asisten Anda",
+          "body": "Buka Pengaturan → Asisten di atas aplikasi lain dan ketuk Pilih aplikasi asisten. Di daftar Android, pilih AndroidHarness sebagai aplikasi asisten digital, lalu kembali. Halaman menunjukkan kapan aktif."
+        },
+        {
+          "title": "Panggil dari aplikasi mana pun",
+          "body": "Tekan lama tombol daya atau beranda, atau geser ke atas dari sudut bawah, tergantung ponsel Anda. Seutas cahaya naik di kedua tepi layar, cahaya lembut naik dari bawah, dan pil kecil terbuka di atasnya."
+        },
+        {
+          "title": "Tanyakan tentang layar",
+          "body": "Ketik pertanyaan atau ketuk saran seperti Ringkas. Ia hanya melihat layar saat pertanyaan Anda tentang layar itu, dan tidak ada isi layar yang ditampilkan di panel. Cara kerjanya seperti Chat, jadi bisa mencari di web, membaca halaman, dan menampilkan sumber."
+        },
+        {
+          "title": "Bicara alih-alih mengetik",
+          "body": "Ketuk mikrofon untuk berbicara. Aktifkan Mulai dengan suara di halaman Asisten jika ingin ia mendengar begitu dibuka. Ketik saja mengembalikan papan ketik. Jawaban atas pertanyaan bersuara dibacakan kecuali Anda mematikan Bacakan jawaban."
+        },
+        {
+          "title": "Pilih seberapa kuat berpikir",
+          "body": "Ketuk chip Penalaran di atas panel, atau buka Pengaturan → Asisten di atas aplikasi lain, lalu pilih tingkat. Mulai dari Rendah. Model tanpa tingkat memutuskan sendiri. Pengaturan juga punya baris Model jika ingin asisten memakai model berbeda dari Chat."
+        },
+        {
+          "title": "Lanjutkan di aplikasi",
+          "body": "Panel tumbuh bersama jawaban dan bisa diseret ke ketinggian apa pun. Lanjutkan di aplikasi membuka percakapan yang sama di Chat, tempat ia tetap bersama obrolan lain."
+        }
+      ],
+      "outcome": "Anda bisa bertanya tentang aplikasi di layar tanpa meninggalkannya, dan setiap percakapan disimpan sebagai Chat biasa.",
+      "limits": [
+        "Aplikasi yang memblokir tangkapan layar, seperti aplikasi bank, dan layar yang dilindungi Android tidak mengirim gambar atau teks. Anda tetap bisa bertanya.",
+        "Gambar layar hanya dikirim jika model Chat dapat membaca gambar. Jika tidak, hanya teks layar yang dikirim, dan sebagian aplikasi hanya membagikan sedikit teks."
+      ],
+      "fixes": [
+        {
+          "problem": "AndroidHarness tidak ada di daftar asisten",
+          "solution": "Ketuk Pilih aplikasi asisten lagi. Jika Android membuka halaman lain, cari di Pengaturan → Aplikasi → Aplikasi default → Aplikasi asisten digital. Sebagian ponsel menyebutnya Asisten dan masukan suara."
+        },
+        {
+          "problem": "Jawaban bilang tidak bisa melihat layar",
+          "solution": "Di pengaturan asisten Android, aktifkan Gunakan teks dari layar dan Gunakan tangkapan layar."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Siapkan asisten"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant asisten digital aplikasi daya beranda sudut geser layar tangkapan overlay di atas aplikasi lain"
     }
   ]
 }

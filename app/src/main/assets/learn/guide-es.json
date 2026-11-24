@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Pregunta sobre cualquier pantalla con el asistente",
+      "summary": "Haz que AndroidHarness sea el asistente de tu teléfono y pregunta sobre la app en la que estés.",
+      "location": "Ajustes → Asistente sobre otras apps; luego mantén el botón de encendido o inicio, o desliza hacia arriba desde una esquina inferior.",
+      "before": [
+        "Elige primero un modelo de Chat y añade su clave. El asistente usa el mismo modelo y ajustes que Chat.",
+        "Android debe permitir que AndroidHarness sea la app de asistente digital. En algunos teléfonos está en Apps predeterminadas."
+      ],
+      "steps": [
+        {
+          "title": "Conviértelo en tu asistente",
+          "body": "Abre Ajustes → Asistente sobre otras apps y toca Elegir app de asistente. En la lista de Android elige AndroidHarness como app de asistente digital y vuelve. La página muestra cuándo está activo."
+        },
+        {
+          "title": "Llámalo desde cualquier app",
+          "body": "Mantén pulsado el botón de encendido o inicio, o desliza hacia arriba desde una esquina inferior, según tu teléfono. Un hilo de luz sube por ambos bordes de la pantalla, un brillo suave asciende desde abajo y una pequeña píldora se abre sobre él."
+        },
+        {
+          "title": "Pregunta sobre la pantalla",
+          "body": "Escribe una pregunta o toca una sugerencia como Resumir. Solo mira la pantalla cuando tu pregunta trata sobre ella, y nada de la pantalla aparece en el panel. Funciona como Chat, así que puede buscar en la web, leer páginas y mostrar sus fuentes."
+        },
+        {
+          "title": "Habla en vez de escribir",
+          "body": "Toca el micrófono para hablar. Activa Empezar con voz en la página del Asistente si quieres que escuche al abrirse. Escribir en su lugar devuelve el teclado. Las respuestas a preguntas habladas se leen en voz alta salvo que desactives Leer las respuestas en voz alta."
+        },
+        {
+          "title": "Elige cuánto piensa",
+          "body": "Toca el chip de Razonamiento en la parte superior del panel, o abre Ajustes → Asistente sobre otras apps, y elige un nivel. Empieza en Bajo. Los modelos sin niveles deciden solos. Los ajustes también tienen una fila Modelo si quieres que el asistente use otro modelo distinto de Chat."
+        },
+        {
+          "title": "Continúa en la app",
+          "body": "El panel crece con la respuesta y puedes arrastrarlo a cualquier altura. Continuar en la app abre la misma conversación en Chat, donde queda junto a tus otros chats."
+        }
+      ],
+      "outcome": "Puedes preguntar sobre la app en pantalla sin salir de ella, y cada conversación se guarda como un Chat normal.",
+      "limits": [
+        "Las apps que bloquean capturas, como las de banca, y las pantallas protegidas por Android no envían imagen ni texto. Aun así puedes preguntar.",
+        "La imagen de la pantalla solo se envía si el modelo de Chat puede leer imágenes. Si no, solo se envía el texto de la pantalla, y algunas apps comparten muy poco texto."
+      ],
+      "fixes": [
+        {
+          "problem": "AndroidHarness no aparece en la lista de asistentes",
+          "solution": "Toca Elegir app de asistente otra vez. Si Android abre otra página, busca en Ajustes → Apps → Apps predeterminadas → App de asistente digital. Algunos teléfonos lo llaman Asistencia y entrada de voz."
+        },
+        {
+          "problem": "La respuesta dice que no puede ver la pantalla",
+          "solution": "En los ajustes de asistente de Android, activa Usar texto de la pantalla y Usar captura de pantalla."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Configurar el asistente"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant asistente digital app encendido inicio esquina deslizar pantalla captura overlay sobre otras apps"
     }
   ]
 }

@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "用助手询问任何屏幕",
+      "summary": "将 AndroidHarness 设为手机的助手，随时询问你正在使用的应用。",
+      "location": "设置 → 跨应用助手；然后长按电源键或主页键，或从屏幕底部角落上滑。",
+      "before": [
+        "先选择聊天模型并添加其密钥。助手使用与聊天相同的模型和设置。",
+        "Android 必须允许 AndroidHarness 成为数字助手应用。部分手机将其放在默认应用中。"
+      ],
+      "steps": [
+        {
+          "title": "将其设为你的助手",
+          "body": "打开 设置 → 跨应用助手，点按选择助手应用。在 Android 列表中选择 AndroidHarness 作为数字助手应用，然后返回。页面会显示是否已开启。"
+        },
+        {
+          "title": "从任何应用唤出",
+          "body": "视手机而定，长按电源键或主页键，或从屏幕底部角落上滑。一道光线沿屏幕两侧向上延伸，底部升起柔和光晕，一个小药丸在其上方展开。"
+        },
+        {
+          "title": "询问屏幕内容",
+          "body": "输入问题或点按总结之类的建议。只有问题涉及屏幕时它才会查看屏幕，面板中不会显示屏幕内容。它的工作方式与聊天相同，可以网页搜索、阅读页面并显示来源。"
+        },
+        {
+          "title": "用说的代替打字",
+          "body": "点按麦克风说话。若希望它一打开就聆听，请在助手页面开启以语音开始。改用键盘可返回键盘。除非关闭朗读回答，语音提问的回答会被朗读出来。"
+        },
+        {
+          "title": "选择思考强度",
+          "body": "点按面板顶部的思考标签，或打开 设置 → 跨应用助手 并选择级别。默认是低。没有级别的模型会自行决定。若希望助手使用与聊天不同的模型，设置中还有模型一行。"
+        },
+        {
+          "title": "在应用中继续",
+          "body": "面板会随回答增长，可拖到任意高度。在应用中继续会在聊天中打开同一对话，和其他聊天放在一起。"
+        }
+      ],
+      "outcome": "无需离开屏幕上的应用即可询问它，每个对话都会保存为普通聊天。",
+      "limits": [
+        "阻止截图的应用（如银行应用）和 Android 保护的屏幕不会发送图像或文字。你仍然可以提问。",
+        "只有当聊天模型能读取图像时才会发送屏幕图像。否则只发送屏幕文字，而有些应用共享的文字很少。"
+      ],
+      "fixes": [
+        {
+          "problem": "助手列表中没有 AndroidHarness",
+          "solution": "再次点按选择助手应用。如果 Android 打开了其他页面，请在 设置 → 应用 → 默认应用 → 数字助手应用 中查找。有些手机称之为辅助和语音输入。"
+        },
+        {
+          "problem": "回答表示看不到屏幕",
+          "solution": "在 Android 的助手设置中，开启使用屏幕文字和使用屏幕截图。"
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "设置助手"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant 助手 数字助手 应用 电源 主页 角落 滑动 屏幕 截图 overlay 跨应用"
     }
   ]
 }

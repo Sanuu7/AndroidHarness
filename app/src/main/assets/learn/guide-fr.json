@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Interrogez n'importe quel écran avec l'assistant",
+      "summary": "Faites d'AndroidHarness l'assistant de votre téléphone et posez des questions sur l'app où vous êtes.",
+      "location": "Réglages → Assistant par-dessus les autres apps ; puis maintenez le bouton d'alimentation ou d'accueil, ou glissez vers le haut depuis un coin inférieur.",
+      "before": [
+        "Choisissez d'abord un modèle Chat et ajoutez sa clé. L'assistant utilise le même modèle et les mêmes réglages que Chat.",
+        "Android doit laisser AndroidHarness être l'app d'assistant numérique. Sur certains téléphones, c'est dans Apps par défaut."
+      ],
+      "steps": [
+        {
+          "title": "Faites-en votre assistant",
+          "body": "Ouvrez Réglages → Assistant par-dessus les autres apps et touchez Choisir l'app d'assistant. Dans la liste d'Android, choisissez AndroidHarness comme app d'assistant numérique, puis revenez. La page indique quand il est actif."
+        },
+        {
+          "title": "Appelez-le depuis n'importe quelle app",
+          "body": "Maintenez le bouton d'alimentation ou d'accueil, ou glissez vers le haut depuis un coin inférieur selon votre téléphone. Un fil de lumière monte le long des deux bords de l'écran, une lueur douce s'élève du bas et une petite pilule s'ouvre par-dessus."
+        },
+        {
+          "title": "Posez une question sur l'écran",
+          "body": "Écrivez une question ou touchez une suggestion comme Résumer. Il ne regarde l'écran que si votre question le concerne, et rien de l'écran n'apparaît dans le panneau. Il fonctionne comme Chat et peut chercher sur le web, lire des pages et montrer ses sources."
+        },
+        {
+          "title": "Parlez au lieu d'écrire",
+          "body": "Touchez le micro pour parler. Activez Commencer par la voix sur la page Assistant s'il doit écouter dès l'ouverture. Écrire plutôt ramène le clavier. Les réponses aux questions parlées sont lues à voix haute sauf si vous désactivez Lire les réponses à voix haute."
+        },
+        {
+          "title": "Choisissez l'intensité de réflexion",
+          "body": "Touchez la puce Réflexion en haut du panneau, ou ouvrez Réglages → Assistant par-dessus les autres apps, et choisissez un niveau. Il démarre sur Bas. Les modèles sans niveaux décident seuls. Les réglages ont aussi une ligne Modèle si l'assistant doit utiliser un autre modèle que Chat."
+        },
+        {
+          "title": "Continuez dans l'app",
+          "body": "Le panneau grandit avec la réponse et se fait glisser à toute hauteur. Continuer dans l'app ouvre la même conversation dans Chat, où elle reste avec vos autres chats."
+        }
+      ],
+      "outcome": "Vous pouvez poser des questions sur l'app à l'écran sans la quitter, et chaque conversation est enregistrée comme un Chat normal.",
+      "limits": [
+        "Les apps qui bloquent les captures, comme les apps bancaires, et les écrans protégés par Android n'envoient ni image ni texte. Vous pouvez quand même poser une question.",
+        "L'image de l'écran n'est envoyée que si le modèle Chat voit les images. Sinon, seul le texte de l'écran est envoyé, et certaines apps partagent très peu de texte."
+      ],
+      "fixes": [
+        {
+          "problem": "AndroidHarness n'apparaît pas dans la liste des assistants",
+          "solution": "Touchez à nouveau Choisir l'app d'assistant. Si Android ouvre une autre page, cherchez Réglages → Apps → Apps par défaut → App d'assistant numérique. Certains téléphones l'appellent Assistance et entrée vocale."
+        },
+        {
+          "problem": "La réponse dit qu'il ne voit pas l'écran",
+          "solution": "Dans les réglages d'assistant d'Android, activez Utiliser le texte de l'écran et Utiliser la capture d'écran."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Configurer l'assistant"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant numérique app alimentation accueil coin glisser écran capture overlay sur autres apps"
     }
   ]
 }

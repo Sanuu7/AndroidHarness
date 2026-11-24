@@ -185,7 +185,7 @@ internal fun ResponseTable(table: RichResponse.Node.Table, onFollowUp: ((RichRes
 @Composable
 internal fun ExpandedResponseTable(table: RichResponse.Node.Table, onDismiss: () -> Unit, onFollowUp: ((RichResponse.FollowUp) -> Unit)? = null) {
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+        properties = com.androidharness.app.ui.common.hostedDialog(androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false))) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
             Column(Modifier.fillMaxSize().systemBarsPadding()) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {

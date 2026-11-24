@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Tanya tentang mana-mana skrin dengan pembantu",
+      "summary": "Jadikan AndroidHarness pembantu telefon anda dan tanya tentang aplikasi yang anda gunakan.",
+      "location": "Tetapan → Pembantu di atas aplikasi lain; kemudian tekan dan tahan butang kuasa atau butang utama, atau leret ke atas dari sudut bawah.",
+      "before": [
+        "Pilih model Sembang dan tambah kuncinya dahulu. Pembantu menggunakan model dan tetapan yang sama seperti Sembang.",
+        "Android perlu membenarkan AndroidHarness menjadi aplikasi pembantu digital. Pada sesetengah telefon ini ada dalam Aplikasi lalai."
+      ],
+      "steps": [
+        {
+          "title": "Jadikannya pembantu anda",
+          "body": "Buka Tetapan → Pembantu di atas aplikasi lain dan ketik Pilih aplikasi pembantu. Dalam senarai Android, pilih AndroidHarness sebagai aplikasi pembantu digital, kemudian kembali. Halaman menunjukkan apabila ia dihidupkan."
+        },
+        {
+          "title": "Panggil dari mana-mana aplikasi",
+          "body": "Tekan dan tahan butang kuasa atau butang utama, atau leret ke atas dari sudut bawah, bergantung pada telefon anda. Satu helai cahaya naik di kedua-dua tepi skrin, cahaya lembut naik dari bawah, dan pil kecil terbuka di atasnya."
+        },
+        {
+          "title": "Tanya tentang skrin",
+          "body": "Taip soalan atau ketik cadangan seperti Ringkaskan. Ia hanya melihat skrin apabila soalan anda tentangnya, dan tiada apa-apa daripada skrin dipaparkan dalam panel. Ia berfungsi seperti Sembang, jadi ia boleh mencari di web, membaca halaman dan menunjukkan sumbernya."
+        },
+        {
+          "title": "Bercakap daripada menaip",
+          "body": "Ketik mikrofon untuk bercakap. Hidupkan Mula dengan suara di halaman Pembantu jika mahu ia mendengar sebaik sahaja dibuka. Taip sebaliknya mengembalikan papan kekunci. Jawapan kepada soalan bersuara dibaca dengan kuat melainkan anda mematikan Baca jawapan dengan kuat."
+        },
+        {
+          "title": "Pilih sebanyak mana ia berfikir",
+          "body": "Ketik cip Pemikiran di atas panel, atau buka Tetapan → Pembantu di atas aplikasi lain, dan pilih tahap. Ia bermula pada Rendah. Model tanpa tahap membuat keputusan sendiri. Tetapan juga mempunyai baris Model jika anda mahu pembantu menggunakan model berbeza daripada Sembang."
+        },
+        {
+          "title": "Teruskan dalam aplikasi",
+          "body": "Panel membesar bersama jawapan dan boleh diseret ke mana-mana ketinggian. Teruskan dalam aplikasi membuka perbualan yang sama dalam Sembang, tempat ia kekal bersama sembang lain anda."
+        }
+      ],
+      "outcome": "Anda boleh bertanya tentang aplikasi pada skrin tanpa meninggalkannya, dan setiap perbualan disimpan sebagai Sembang biasa.",
+      "limits": [
+        "Aplikasi yang menyekat tangkapan skrin, seperti aplikasi bank, dan skrin yang dilindungi Android tidak menghantar gambar atau teks. Anda masih boleh bertanya.",
+        "Gambar skrin hanya dihantar apabila model Sembang boleh membaca gambar. Jika tidak, hanya teks skrin dihantar, dan sesetengah aplikasi berkongsi sangat sedikit teks."
+      ],
+      "fixes": [
+        {
+          "problem": "AndroidHarness tiada dalam senarai pembantu",
+          "solution": "Ketik Pilih aplikasi pembantu sekali lagi. Jika Android membuka halaman lain, cari dalam Tetapan → Aplikasi → Aplikasi lalai → Aplikasi pembantu digital. Sesetengah telefon memanggilnya Bantuan dan input suara."
+        },
+        {
+          "problem": "Jawapan berkata ia tidak dapat melihat skrin",
+          "solution": "Dalam tetapan pembantu Android, hidupkan Guna teks daripada skrin dan Guna tangkapan skrin."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Sediakan pembantu"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant pembantu digital aplikasi kuasa utama sudut leret skrin tangkapan overlay di atas aplikasi lain"
     }
   ]
 }

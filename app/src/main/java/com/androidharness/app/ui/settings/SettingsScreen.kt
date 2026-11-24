@@ -54,6 +54,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Screenshot
+import androidx.compose.material.icons.rounded.DocumentScanner
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.AccountTree
@@ -461,6 +462,27 @@ private fun SettingsScreenContent(
                             onOpenSettings = { openPage(it) }, onOpenDestination = onOpenLearnDestination,
                         ) }
                         SettingsPage.LANGUAGE -> LanguageSection()
+                        SettingsPage.ASSISTANT -> AssistantSetupSection(
+                            voiceFirst = settings.assistantVoiceFirst,
+                            onVoiceFirst = { value -> scope.launch { container.settings.setAssistantVoiceFirst(value) } },
+                            thinking = settings.assistantThinking,
+                            onThinking = { value -> scope.launch { container.settings.setAssistantThinking(value) } },
+                            speakReplies = settings.assistantSpeakReplies,
+                            onSpeakReplies = { value -> scope.launch { container.settings.setAssistantSpeakReplies(value) } },
+                            modelPicker = {
+                                ModelOverrideSection(
+                                    container = container,
+                                    settings = settings,
+                                    title = R.string.assistant_settings_model,
+                                    followLabel = R.string.assistant_settings_model_follow,
+                                    description = stringResource(R.string.assistant_settings_model_desc),
+                                    chooseLabel = R.string.assistant_settings_model_choose,
+                                    providerId = settings.assistantProviderId,
+                                    model = settings.assistantModel,
+                                    onSet = container.settings::setAssistantModel,
+                                )
+                            },
+                        )
                         SettingsPage.CHAT_OPTIONS -> ChatOptionsSection(
                             settings,
                             onStartScreen = { value -> scope.launch { container.settings.setStartScreen(value) } },
@@ -502,7 +524,17 @@ private fun SettingsScreenContent(
                                         title = stringResource(R.string.settings_anchor_manage_providers),
                                         subtitle = stringResource(R.string.settings_models_manage_subtitle),
                                         onClick = onOpenProviders,
+                                        divider = true,
                                         trailing = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null) },
+                                    )
+                                }
+                                SettingsAnchor(R.string.settings_read_image_text) {
+                                    SettingRow(
+                                        icon = Icons.Rounded.DocumentScanner,
+                                        title = stringResource(R.string.settings_read_image_text),
+                                        subtitle = stringResource(R.string.settings_read_image_text_desc),
+                                        onClick = { scope.launch { container.settings.setReadImageText(!settings.readImageText) } },
+                                        trailing = { Switch(checked = settings.readImageText, onCheckedChange = null) },
                                     )
                                 }
                             }

@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonPrimitive
 /** Conversation-only capabilities and presentation decisions. Code never uses this prompt. */
 object ChatExperience {
     val tools = setOf(
-        "web_search", "web_fetch", "browser_read", "view_chat_image", "zoom_chat_image", "read_tool_output", "read_chat_text", "offer_code_handoff",
+        "web_search", "web_fetch", "browser_read", "view_chat_image", "zoom_chat_image", "read_tool_output", "read_chat_text", "read_screen", "offer_code_handoff",
         "search_chats", "recent_chats", "read_chat_snippet",
         "github_api", "github_search", "github_file",
         "remember", "recall",

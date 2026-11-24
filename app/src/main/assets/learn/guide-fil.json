@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Magtanong tungkol sa anumang screen gamit ang assistant",
+      "summary": "Gawing assistant ng telepono mo ang AndroidHarness at magtanong tungkol sa app na ginagamit mo.",
+      "location": "Mga setting → Assistant sa ibabaw ng ibang apps; pagkatapos pindutin nang matagal ang power o home button, o mag-swipe pataas mula sa ibabang sulok.",
+      "before": [
+        "Pumili muna ng Chat model at idagdag ang key nito. Ginagamit ng assistant ang parehong model at settings ng Chat.",
+        "Kailangang payagan ng Android ang AndroidHarness bilang digital assistant app. Sa ilang telepono, nasa Default apps ito."
+      ],
+      "steps": [
+        {
+          "title": "Gawin itong assistant mo",
+          "body": "Buksan ang Mga setting → Assistant sa ibabaw ng ibang apps at i-tap ang Pumili ng assistant app. Sa listahan ng Android, piliin ang AndroidHarness bilang digital assistant app, pagkatapos bumalik. Ipinapakita ng page kapag naka-on na."
+        },
+        {
+          "title": "Tawagin mula sa anumang app",
+          "body": "Pindutin nang matagal ang power o home button, o mag-swipe pataas mula sa ibabang sulok, depende sa telepono. May hibla ng liwanag na pumapaitaas sa dalawang gilid ng screen, may malambot na glow na umaangat mula sa ibaba, at may maliit na pill na bumubukas sa ibabaw nito."
+        },
+        {
+          "title": "Magtanong tungkol sa screen",
+          "body": "Mag-type ng tanong o i-tap ang alok gaya ng I-summarize. Tinitingnan lang nito ang screen kapag tungkol dito ang tanong mo, at walang mula sa screen ang ipinapakita sa panel. Gumagana ito gaya ng Chat, kaya makakapaghanap sa web, makakabasa ng page at makakapagpakita ng source."
+        },
+        {
+          "title": "Magsalita sa halip na mag-type",
+          "body": "I-tap ang mikropono para magsalita. I-on ang Magsimula sa boses sa page ng Assistant kung gusto mong makinig agad ito pagbukas. Ibinalik ng Mag-type na lang ang keyboard. Binabasa nang malakas ang sagot sa mga tinanong sa boses maliban kung i-off ang Basahin nang malakas ang mga sagot."
+        },
+        {
+          "title": "Piliin kung gaano kalalim mag-isip",
+          "body": "I-tap ang Pag-iisip chip sa itaas ng panel, o buksan ang Mga setting → Assistant sa ibabaw ng ibang apps, at pumili ng antas. Nagsisimula ito sa Mababa. Nagpapasya ang mga model na walang antas. May Model row din sa settings kung gusto mong ibang model kaysa Chat ang gamitin ng assistant."
+        },
+        {
+          "title": "Magpatuloy sa app",
+          "body": "Lumalaki ang panel kasama ng sagot at maaari mong hilahin sa kahit anong taas. Binubuksan ng Magpatuloy sa app ang parehong usapan sa Chat, kung saan nananatili ito kasama ng iba mong chat."
+        }
+      ],
+      "outcome": "Makapagtanong ka tungkol sa app sa screen nang hindi lumalabas dito, at nase-save ang bawat usapan bilang normal na Chat.",
+      "limits": [
+        "Ang mga app na humaharang sa screenshot, gaya ng banking apps, at mga screen na pinoprotektahan ng Android ay walang ipinapadalang larawan o text. Pwede ka pa ring magtanong.",
+        "Ipinapadala lang ang larawan ng screen kapag nababasa ng Chat model ang mga larawan. Kung hindi, text lang ng screen ang ipinapadala, at kakaunting text lang ang ibinabahagi ng ilang app."
+      ],
+      "fixes": [
+        {
+          "problem": "Wala ang AndroidHarness sa listahan ng assistant",
+          "solution": "I-tap muli ang Pumili ng assistant app. Kung ibang page ang binuksan ng Android, hanapin sa Mga setting → Apps → Default apps → Digital assistant app. Tinatawag ito ng ilang telepono na Assist at voice input."
+        },
+        {
+          "problem": "Sinasabi ng sagot na hindi nito nakikita ang screen",
+          "solution": "Sa settings ng assistant ng Android, i-on ang Gumamit ng text mula sa screen at Gumamit ng screenshot."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "I-set up ang assistant"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant digital assistant app power home sulok swipe screen screenshot overlay ibabaw ng ibang apps"
     }
   ]
 }

@@ -91,6 +91,8 @@ internal fun ComposerAttachmentTray(
     imports: List<AttachmentImport>,
     imageDir: File,
     imageSupport: Boolean?,
+    /** A model that cannot see images gets the text read from them instead of being blocked. */
+    imagesAsText: Boolean = false,
     onRemoveImage: (Int) -> Unit,
     onRemoveFile: (Int) -> Unit,
     onRemoveImport: (String) -> Unit,
@@ -110,9 +112,10 @@ internal fun ComposerAttachmentTray(
     LaunchedEffect(items.size) { if (items.isNotEmpty()) listState.animateScrollToItem(items.lastIndex) }
 
     val scheme = MaterialTheme.colorScheme
-    val photoBlocked = images.isNotEmpty() && imageSupport == false
+    val photoBlocked = images.isNotEmpty() && imageSupport == false && !imagesAsText
     val hint = when {
         photoBlocked -> stringResource(R.string.chat_attachment_model_unsupported)
+        images.isNotEmpty() && imageSupport == false -> stringResource(R.string.chat_attachment_read_as_text)
         images.isNotEmpty() && imageSupport == null -> stringResource(R.string.chat_attachment_image_unconfirmed_hint)
         else -> null
     }

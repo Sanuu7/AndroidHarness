@@ -208,6 +208,8 @@ class AppContainer(val appContext: Context) {
         .fallbackToDestructiveMigration(true)
         .build()
     val images = ImageStore(appContext)
+    /** On-device text reading for models that cannot see images. */
+    val imageText = com.androidharness.app.data.ImageText(images)
     val sessions = SessionRepository(db, images)
     val memory = com.androidharness.app.data.MemoryRepository(db, settings)
     val chatModels = com.androidharness.app.data.ChatModelRepository(settings, providers, sessions)
@@ -431,6 +433,7 @@ class AppContainer(val appContext: Context) {
         deviceAccess = deviceAccess,
         universalMemory = memory,
         chatOnlyTools = listOf(com.androidharness.app.tools.ReadChatTextTool(sessions::messages),
+            com.androidharness.app.tools.ReadScreenTool(),
             com.androidharness.app.tools.ViewChatImageTool(images),
             com.androidharness.app.tools.BrowserReadTool(browser),
             com.androidharness.app.tools.SearchChatsTool { query, fuzzy, limit, offset ->
@@ -445,6 +448,8 @@ class AppContainer(val appContext: Context) {
             // Resolved on each call: the manager is declared below.
             com.androidharness.app.tools.ReminderTools.all({ reminders }, { clockAlarms }),
         remindersEnabled = { settings.settings.first().chatRemindersEnabled },
+        imageText = imageText,
+        imageTextEnabled = { settings.settings.first().readImageText },
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -500,7 +505,7 @@ class AppContainer(val appContext: Context) {
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             combine(settings.settings, providers.providers) { saved, available -> saved to available.map { it.id }.toSet() }
                 .collect { (saved, availableIds) ->
-                    val selected = listOf(saved.activeProviderId, saved.planningProviderId, saved.executionProviderId, saved.subagentProviderId)
+                    val selected = listOf(saved.activeProviderId, saved.planningProviderId, saved.executionProviderId, saved.subagentProviderId, saved.assistantProviderId)
                     if (selected.any { it != null && (com.androidharness.app.local.LocalModelCatalog.isLocal(it) || com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it)) && it !in availableIds }) {
                         settings.clearMissingLocalProviderSelections(availableIds)
                     }

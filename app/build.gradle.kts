@@ -209,6 +209,7 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
 
     implementation(libs.core.ktx)
+    implementation(libs.mlkit.text.recognition)
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)

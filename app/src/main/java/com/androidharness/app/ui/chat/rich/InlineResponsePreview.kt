@@ -91,7 +91,7 @@ internal fun InlineResponsePreview(node: RichResponse.Node.Preview, onFollowUp: 
         }
     }
     // A large sheet keeps the conversation/composer visible behind it. Follow-up returns to the same composer.
-    if (expanded) Dialog(onDismissRequest = { expanded = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    if (expanded) Dialog(onDismissRequest = { expanded = false }, properties = com.androidharness.app.ui.common.hostedDialog(DialogProperties(usePlatformDefaultWidth = false))) {
         Surface(Modifier.fillMaxWidth().fillMaxHeight(.92f).safeDrawingPadding(), shape = RoundedCornerShape(18.dp)) {
             Column {
                 controls(true)

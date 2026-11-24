@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="assistant_service_label">AndroidHarness</string>
+    <string name="assistant_input_hint">Ask about this screen</string>
+    <string name="assistant_input_hint_follow_up">Ask a follow-up</string>
+    <string name="assistant_send">Send</string>
+    <string name="assistant_stop">Stop</string>
+    <string name="assistant_close">Close</string>
+    <string name="assistant_continue_in_app">Continue in app</string>
+    <string name="assistant_new_chat">New question</string>
+    <string name="assistant_drag_handle">Drag to resize</string>
+    <string name="assistant_screen_this_screen">This screen</string>
+    <string name="assistant_suggest_summarize">Summarize</string>
+    <string name="assistant_suggest_explain">Explain this</string>
+    <string name="assistant_suggest_reply">Help me reply</string>
+    <string name="assistant_mic">Talk</string>
+    <string name="assistant_keyboard">Type instead</string>
+    <string name="assistant_listening">Listening</string>
+    <string name="assistant_tap_to_talk">Tap the mic to talk</string>
+    <string name="assistant_mic_permission">AndroidHarness needs the microphone. Open the app, tap the mic in a chat once and allow it.</string>
+    <string name="assistant_working">Working on it</string>
+    <string name="assistant_no_model">Pick a chat model in AndroidHarness first.</string>
+    <string name="assistant_no_key">Connect %1$s in AndroidHarness first.</string>
+    <string name="assistant_failed">Could not send your question. Try again.</string>
+    <string name="assistant_open_failed">Could not open AndroidHarness.</string>
+    <string name="assistant_thinking_level">Thinking: %1$s</string>
+    <string name="assistant_thinking_auto">Thinks on its own</string>
+    <string name="assistant_thinking_pick">Choose how hard it thinks</string>
+    <string name="assistant_reading_screen">Looking at your screen</string>
+    <string name="assistant_read_screen">Looked at your screen</string>
+    <string name="assistant_sources_hide">Hide sources</string>
+    <string name="assistant_ask_again">Ask again</string>
+    <string name="assistant_screen_context_note">This is what was on the user\'s screen when they opened the assistant. The screenshot, if attached, shows the same screen.</string>
+
+    <!-- Settings -->
+    <string name="assistant_settings_group">Assistant</string>
+    <string name="assistant_settings_title">Assistant over other apps</string>
+    <string name="assistant_settings_page_desc">Ask about any screen without leaving the app you are in</string>
+    <string name="assistant_settings_desc">Long press the power or home button, or swipe up from a bottom corner, to ask about whatever is on screen.</string>
+    <string name="assistant_settings_on">AndroidHarness is your digital assistant</string>
+    <string name="assistant_settings_off">Set AndroidHarness as your digital assistant app to turn this on</string>
+    <string name="assistant_settings_open">Choose assistant app</string>
+    <string name="assistant_settings_steps">In Android settings, open Digital assistant app and pick AndroidHarness. Turn on Use text from screen and Use screenshot so it can see what you see.</string>
+    <string name="assistant_settings_privacy">The screen is captured only when you call the assistant, and it is sent to the model only when your question is about it. Apps that block screenshots stay hidden.</string>
+    <string name="assistant_settings_voice_first">Start with voice</string>
+    <string name="assistant_settings_voice_first_desc">Listen as soon as the assistant opens. You can still switch to the keyboard.</string>
+    <string name="assistant_settings_model">Model</string>
+    <string name="assistant_settings_model_follow">Same as Chat</string>
+    <string name="assistant_settings_model_choose">Choose the assistant\'s model</string>
+    <string name="assistant_settings_model_desc">Pick a model just for the assistant, like a fast one for quick questions. Chat keeps its own model.</string>
+    <string name="assistant_settings_thinking">Thinking</string>
+    <string name="assistant_settings_thinking_desc">How hard the assistant thinks before it answers. Each model uses its closest level, and models without levels decide for themselves.</string>
+    <string name="assistant_settings_speak">Read answers aloud</string>
+    <string name="assistant_settings_speak_desc">When you ask out loud, the answer is read back with your text to speech voice.</string>
+    <string name="assistant_settings_open_failed">Could not open Android settings. Look for Default apps, then Digital assistant app.</string>
+    <string name="settings_read_image_text">Read text in images</string>
+    <string name="settings_read_image_text_desc">For models that cannot see images, the text in your pictures and screenshots is read on this phone and sent instead. Works offline.</string>
+    <string name="chat_attachment_read_as_text">This model cannot see images, so only the text in them is sent.</string>
+</resources>

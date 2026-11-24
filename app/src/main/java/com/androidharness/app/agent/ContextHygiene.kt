@@ -82,12 +82,17 @@ object ContextHygiene {
     fun stripImages(
         messages: List<ChatMessage>,
         note: String = "[Attached image omitted: active model does not support image input]",
+        /** Text read from an image on the device, sent in its place when there is some. */
+        textFor: (com.androidharness.app.core.ImageRef) -> String? = { null },
     ): List<ChatMessage> = messages.map { m ->
         if (m.imageData.isEmpty()) {
             m
         } else {
             val names = m.images.joinToString(", ") { it.name }.ifEmpty { "image" }
-            val placeholder = "$note ($names)"
+            val read = m.images.mapNotNull { ref -> textFor(ref)?.let { ref to it } }
+            val placeholder = if (read.isEmpty()) "$note ($names)" else read.joinToString("\n\n") { (ref, text) ->
+                com.androidharness.app.data.ImageText.block(ref.caption ?: ref.name, text)
+            }
             val newText = if (m.text.isNotBlank()) "${m.text}\n\n$placeholder" else placeholder
             imageContextState(m, emptyList(), "images_disabled", note).let { stripped ->
                 if (stripped.text == m.text) stripped.copy(text = newText) else stripped

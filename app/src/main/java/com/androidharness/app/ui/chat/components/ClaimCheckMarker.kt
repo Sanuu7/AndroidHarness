@@ -46,6 +46,7 @@ internal fun ClaimCheckMarker(reason: String, sources: List<String>, onOpen: (St
     }
     if (open) AlertDialog(
         onDismissRequest = { open = false },
+        properties = com.androidharness.app.ui.common.hostedDialog(),
         icon = {
             val cookie = androidx.compose.material3.MaterialShapes.Cookie9Sided.toShape()
             Box(Modifier.size(48.dp).clip(cookie).background(MaterialTheme.colorScheme.tertiaryContainer), contentAlignment = Alignment.Center) {

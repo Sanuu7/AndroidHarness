@@ -75,7 +75,7 @@ internal fun ActivityReader(title: String, onDismiss: () -> Unit, actions: @Comp
     val owner = LocalChatDetailScroll.current
     val key = remember { Any() }
     DisposableEffect(owner) { owner?.begin(key); onDispose { owner?.end(key) } }
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+    Dialog(onDismissRequest = onDismiss, properties = com.androidharness.app.ui.common.hostedDialog(DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false))) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceContainerLow) {
             Column(Modifier.fillMaxSize().safeDrawingPadding()) {
                 TopAppBar(title = { Text(title, maxLines = 2, style = MaterialTheme.typography.titleMedium) },

@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Pergunte sobre qualquer tela com o assistente",
+      "summary": "Torne o AndroidHarness o assistente do seu celular e pergunte sobre o app em que você está.",
+      "location": "Configurações → Assistente sobre outros apps; depois segure o botão de energia ou início, ou deslize para cima a partir de um canto inferior.",
+      "before": [
+        "Escolha primeiro um modelo de Chat e adicione a chave. O assistente usa o mesmo modelo e as mesmas configurações do Chat.",
+        "O Android precisa permitir que o AndroidHarness seja o app de assistente digital. Em alguns celulares isso fica em Apps padrão."
+      ],
+      "steps": [
+        {
+          "title": "Torne-o seu assistente",
+          "body": "Abra Configurações → Assistente sobre outros apps e toque em Escolher app de assistente. Na lista do Android, escolha o AndroidHarness como app de assistente digital e volte. A página mostra quando está ativo."
+        },
+        {
+          "title": "Chame-o de qualquer app",
+          "body": "Segure o botão de energia ou início, ou deslize para cima a partir de um canto inferior, conforme o celular. Um fio de luz sobe pelas duas bordas da tela, um brilho suave sobe de baixo e uma pequena pílula se abre sobre ele."
+        },
+        {
+          "title": "Pergunte sobre a tela",
+          "body": "Digite uma pergunta ou toque em uma sugestão como Resumir. Ele só olha a tela quando sua pergunta é sobre ela, e nada da tela aparece no painel. Funciona como o Chat, então pode pesquisar na web, ler páginas e mostrar as fontes."
+        },
+        {
+          "title": "Fale em vez de digitar",
+          "body": "Toque no microfone para falar. Ative Começar com voz na página do Assistente se quiser que ele escute assim que abrir. Digitar em vez disso traz o teclado de volta. Respostas a perguntas faladas são lidas em voz alta, a menos que você desligue Ler respostas em voz alta."
+        },
+        {
+          "title": "Escolha o quanto ele pensa",
+          "body": "Toque no chip de Raciocínio no topo do painel, ou abra Configurações → Assistente sobre outros apps, e escolha um nível. Ele começa em Baixo. Modelos sem níveis decidem sozinhos. As configurações também têm uma linha Modelo se quiser que o assistente use outro modelo além do Chat."
+        },
+        {
+          "title": "Continue no app",
+          "body": "O painel cresce com a resposta e pode ser arrastado para qualquer altura. Continuar no app abre a mesma conversa no Chat, onde ela fica com suas outras conversas."
+        }
+      ],
+      "outcome": "Você pode perguntar sobre o app na tela sem sair dele, e cada conversa é salva como um Chat normal.",
+      "limits": [
+        "Apps que bloqueiam capturas, como apps de banco, e telas protegidas pelo Android não enviam imagem nem texto. Você ainda pode perguntar.",
+        "A imagem da tela só é enviada quando o modelo de Chat consegue ler imagens. Caso contrário, só o texto da tela é enviado, e alguns apps compartilham muito pouco texto."
+      ],
+      "fixes": [
+        {
+          "problem": "O AndroidHarness não aparece na lista de assistentes",
+          "solution": "Toque em Escolher app de assistente novamente. Se o Android abrir outra página, procure Configurações → Apps → Apps padrão → App de assistente digital. Alguns celulares chamam de Assistência e entrada por voz."
+        },
+        {
+          "problem": "A resposta diz que não consegue ver a tela",
+          "solution": "Nas configurações de assistente do Android, ative Usar texto da tela e Usar captura de tela."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Configurar o assistente"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant assistente digital app energia início canto deslizar tela captura overlay sobre outros apps"
     }
   ]
 }

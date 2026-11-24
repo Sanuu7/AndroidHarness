@@ -109,7 +109,7 @@ class SettingsSearchTest {
             .filter { it.extension == "kt" }.joinToString("\n") { it.readText() }
         val names = R.string::class.java.fields.associate { it.getInt(null) to it.name }
         val callers = "SettingsAnchor|settingsAnchor|ToggleRow|SubagentSettingSwitch|BackgroundSwitch|MemoryPreferenceRow|" +
-            "CanvasSwitch|CavemanPanel|TransferToggle|SettingsDisclosure|SettingRow|BehaviorValueRow|SettingsGroupHeading"
+            "CanvasSwitch|CavemanPanel|TransferToggle|SettingsDisclosure|SettingRow|BehaviorValueRow|SettingsGroupHeading|ModelOverrideSection"
         val missing = allSettingsEntries.mapNotNull { it.anchor }.distinct().filter { id ->
             val name = names.getValue(id)
             !Regex("""\b($callers)\([\s\S]{0,200}?R\.string\.$name\b""").containsMatchIn(source)

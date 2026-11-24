@@ -656,6 +656,7 @@ private fun activityLabel(name: String, running: Boolean): String = stringResour
     "read_artifact" -> if (running) R.string.chat_reading_artifact else R.string.chat_read_artifact
     "search_agent_knowledge" -> if (running) R.string.chat_agents_knowledge_activity else R.string.chat_agents_knowledge_done
     "read_chat_text" -> if (running) R.string.chat_reading_text else R.string.chat_read_text
+    "read_screen" -> if (running) R.string.assistant_reading_screen else R.string.assistant_read_screen
     "view_chat_image" -> if (running) R.string.chat_viewing_image else R.string.chat_viewed_image
     "zoom_chat_image" -> if (running) R.string.chat_zooming_image else R.string.chat_zoomed_image
     "remember" -> if (running) R.string.chat_saving_memory else R.string.chat_memory_saved

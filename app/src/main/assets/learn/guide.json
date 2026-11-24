@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Ask about any screen with the assistant",
+      "summary": "Make AndroidHarness your phone's assistant and ask about whatever app you are in.",
+      "location": "Settings → Assistant over other apps; then hold the power or home button, or swipe up from a bottom corner.",
+      "before": [
+        "Pick a Chat model and add its key first. The assistant uses the same model and settings as Chat.",
+        "Android has to let AndroidHarness be the digital assistant app. Some phones keep this under Default apps."
+      ],
+      "steps": [
+        {
+          "title": "Make it your assistant",
+          "body": "Open Settings → Assistant over other apps and tap Choose assistant app. In Android's list, pick AndroidHarness as the digital assistant app, then come back. The page shows when it is on."
+        },
+        {
+          "title": "Call it from any app",
+          "body": "Hold the power or home button, or swipe up from a bottom corner, depending on your phone. A thread of light runs up both edges of the screen, a soft glow rises from the bottom, and a small pill opens over it."
+        },
+        {
+          "title": "Ask about the screen",
+          "body": "Type a question or tap a suggestion like Summarize. It only looks at the screen when your question is about it, and nothing from the screen is shown in the panel. It works like Chat, so it can search the web, read pages and show its sources."
+        },
+        {
+          "title": "Talk instead of typing",
+          "body": "Tap the microphone to speak. Turn on Start with voice on the Assistant page if you want it to listen as soon as it opens. Type instead brings the keyboard back. Answers to spoken questions are read aloud unless you turn off Read answers aloud."
+        },
+        {
+          "title": "Choose how hard it thinks",
+          "body": "Tap the Thinking chip at the top of the panel, or open Settings → Assistant over other apps, and pick a level. It starts on Low. Models without levels decide for themselves. Settings also has a Model row if you want the assistant to use a different model than Chat."
+        },
+        {
+          "title": "Keep going in the app",
+          "body": "The panel grows with the answer, and you can drag it to any height. Continue in app opens the same conversation in Chat, where it stays with your other chats."
+        }
+      ],
+      "outcome": "You can ask about the app on screen without leaving it, and each conversation is saved as a normal Chat.",
+      "limits": [
+        "Apps that block screenshots, such as banking apps, and screens Android protects send no picture or text. You can still ask a question.",
+        "The screen picture is only sent when the Chat model can read images. Otherwise only the screen text is sent, and some apps share very little text."
+      ],
+      "fixes": [
+        {
+          "problem": "AndroidHarness is not in the assistant list",
+          "solution": "Tap Choose assistant app again. If Android opens a different page, look under Settings → Apps → Default apps → Digital assistant app. Some phones call it Assist and voice input."
+        },
+        {
+          "problem": "The answer says it cannot see the screen",
+          "solution": "In Android's assistant settings, turn on Use text from screen and Use screenshot."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Set up the assistant"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant digital assistant app power button home button corner swipe screen screenshot overlay over other apps floating"
     }
   ]
 }

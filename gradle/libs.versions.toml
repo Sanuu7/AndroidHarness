@@ -27,6 +27,8 @@ shizuku = "13.1.5"
 soraEditor = "0.23.6"
 
 [libraries]
+# On-device text recognition with the Latin model built into the app; no Play Services download.
+mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version = "16.0.1" }
 backdrop = { module = "io.github.kyant0:backdrop", version = "2.0.1" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }

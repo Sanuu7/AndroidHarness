@@ -209,6 +209,31 @@
             </intent-filter>
         </receiver>
         <service android:name="androidx.work.impl.foreground.SystemForegroundService" android:foregroundServiceType="dataSync" tools:node="merge" />
+
+        <!-- Digital assistant app: a floating chat over the current app with the screen as context. -->
+        <service
+            android:name=".assistant.HarnessAssistantService"
+            android:label="@string/assistant_service_label"
+            android:permission="android.permission.BIND_VOICE_INTERACTION"
+            android:exported="true">
+            <meta-data android:name="android.voice_interaction" android:resource="@xml/harness_assistant" />
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".assistant.HarnessAssistantSessionService"
+            android:permission="android.permission.BIND_VOICE_INTERACTION"
+            android:exported="true" />
+        <!-- Android requires an assistant to name a recognizer; this one declines politely. -->
+        <service
+            android:name=".assistant.HarnessRecognitionService"
+            android:label="@string/assistant_service_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

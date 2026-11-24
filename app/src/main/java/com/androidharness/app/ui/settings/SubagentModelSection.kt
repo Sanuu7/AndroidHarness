@@ -24,15 +24,45 @@ import com.androidharness.app.ui.common.TextButton
 @Composable
 internal fun SubagentModelSection(container: AppContainer, settings: AppSettings) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
+    ModelOverrideSection(
+        container = container,
+        settings = settings,
+        title = R.string.settings_anchor_subagent_model,
+        followLabel = R.string.settings_subagent_use_main,
+        description = uiContext.getString(R.string.ui_choose_a_provider_and_model_for_all),
+        chooseLabel = R.string.settings_subagent_choose_model,
+        providerId = settings.subagentProviderId,
+        model = settings.subagentModel,
+        onSet = container.settings::setSubagentModel,
+    )
+}
+
+/**
+ * A model picked for one part of the app, or nothing to follow the main model. [onSet] with a
+ * null provider goes back to following.
+ */
+@Composable
+internal fun ModelOverrideSection(
+    container: AppContainer,
+    settings: AppSettings,
+    title: Int,
+    followLabel: Int,
+    description: String,
+    chooseLabel: Int,
+    providerId: String?,
+    model: String?,
+    onSet: suspend (providerId: String?, model: String?) -> Unit,
+) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val catalogs by container.providers.catalogs.collectAsStateWithLifecycle(initialValue = emptyMap())
     val scope = rememberCoroutineScope()
     var picking by rememberSaveable { mutableStateOf(false) }
     var managing by rememberSaveable { mutableStateOf(false) }
-    val selected = providers.firstOrNull { it.id == settings.subagentProviderId }
-    val pickerProviderId = settings.subagentProviderId ?: settings.activeProviderId ?: providers.firstOrNull()?.id
+    val selected = providers.firstOrNull { it.id == providerId }
+    val pickerProviderId = providerId ?: settings.activeProviderId ?: providers.firstOrNull()?.id
 
-    SettingsAnchor(R.string.settings_anchor_subagent_model) {
+    SettingsAnchor(title) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
@@ -41,27 +71,27 @@ internal fun SubagentModelSection(container: AppContainer, settings: AppSettings
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(stringResource(R.string.settings_anchor_subagent_model), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(title), style = MaterialTheme.typography.titleSmall)
                         Text(
                             when {
-                                settings.subagentProviderId == null -> uiContext.getString(R.string.settings_subagent_use_main)
+                                providerId == null -> uiContext.getString(followLabel)
                                 selected == null -> uiContext.getString(R.string.ui_selected_provider_unavailable)
-                                else -> "${selected.name} · ${settings.subagentModel ?: selected.model}"
+                                else -> "${selected.name} · ${model ?: selected.model}"
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = stringResource(R.string.settings_subagent_choose_model))
+                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = stringResource(chooseLabel))
                 }
                 Text(
-                    uiContext.getString(R.string.ui_choose_a_provider_and_model_for_all),
+                    description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (settings.subagentProviderId != null) {
-                    TextButton(onClick = { scope.launch { container.settings.setSubagentModel(null, null) } }) {
-                        Text(stringResource(R.string.settings_subagent_use_main))
+                if (providerId != null) {
+                    TextButton(onClick = { scope.launch { onSet(null, null) } }) {
+                        Text(stringResource(followLabel))
                     }
                 }
             }
@@ -71,11 +101,11 @@ internal fun SubagentModelSection(container: AppContainer, settings: AppSettings
     if (picking) ModelPickerSheet(
         providers = providers,
         activeProviderId = pickerProviderId,
-        activeModel = if (settings.subagentProviderId == null) settings.activeModel else settings.subagentModel,
+        activeModel = if (providerId == null) settings.activeModel else model,
         catalogs = catalogs,
         onDismiss = { picking = false },
         onSelect = { providerId, model ->
-            scope.launch { container.settings.setSubagentModel(providerId, model) }
+            scope.launch { onSet(providerId, model) }
             picking = false
         },
         onRefreshCatalog = { providerId ->
@@ -113,7 +143,7 @@ internal fun SubagentModelSection(container: AppContainer, settings: AppSettings
         onDismiss = { managing = false },
         onSetActive = { providerId ->
             scope.launch {
-                container.settings.setSubagentModel(providerId, null)
+                onSet(providerId, null)
                 managing = false
                 picking = true
             }
@@ -127,7 +157,7 @@ internal fun SubagentModelSection(container: AppContainer, settings: AppSettings
                 else existing.copy(name = name, type = type, baseUrl = baseUrl, model = model, headers = headers).also {
                     container.providers.update(it, apiKey)
                 }
-                container.settings.setSubagentModel(provider.id, null)
+                onSet(provider.id, null)
                 managing = false
                 picking = true
             }

@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Frag die Assistenz zu jedem Bildschirm",
+      "summary": "Mach AndroidHarness zur Assistenz deines Telefons und frag zu jeder App, in der du gerade bist.",
+      "location": "Einstellungen → Assistenz über anderen Apps; dann Power- oder Home-Taste halten oder von einer unteren Ecke nach oben wischen.",
+      "before": [
+        "Wähle zuerst ein Chat-Modell und füge seinen Schlüssel hinzu. Die Assistenz nutzt dasselbe Modell und dieselben Einstellungen wie Chat.",
+        "Android muss AndroidHarness als digitale Assistenz-App zulassen. Auf manchen Telefonen steht das unter Standard-Apps."
+      ],
+      "steps": [
+        {
+          "title": "Mach sie zu deiner Assistenz",
+          "body": "Öffne Einstellungen → Assistenz über anderen Apps und tippe auf Assistenz-App wählen. Wähle in Androids Liste AndroidHarness als digitale Assistenz-App und komm zurück. Die Seite zeigt, wenn sie aktiv ist."
+        },
+        {
+          "title": "Ruf sie aus jeder App",
+          "body": "Halte je nach Telefon die Power- oder Home-Taste oder wische von einer unteren Ecke nach oben. Ein Lichtfaden läuft an beiden Bildschirmrändern empor, ein weicher Schein steigt von unten auf, und eine kleine Pille öffnet sich darüber."
+        },
+        {
+          "title": "Frag zum Bildschirm",
+          "body": "Tippe eine Frage oder einen Vorschlag wie Zusammenfassen. Sie sieht den Bildschirm nur, wenn deine Frage ihn betrifft, und nichts vom Bildschirm erscheint im Panel. Sie arbeitet wie Chat und kann im Web suchen, Seiten lesen und Quellen zeigen."
+        },
+        {
+          "title": "Sprich statt zu tippen",
+          "body": "Tippe auf das Mikrofon zum Sprechen. Aktiviere Mit Stimme starten auf der Assistenz-Seite, wenn sie beim Öffnen sofort zuhören soll. Stattdessen tippen holt die Tastatur zurück. Antworten auf gesprochene Fragen werden vorgelesen, solange Antworten vorlesen an ist."
+        },
+        {
+          "title": "Wähle, wie stark sie denkt",
+          "body": "Tippe oben im Panel auf den Denken-Chip oder öffne Einstellungen → Assistenz über anderen Apps und wähle eine Stufe. Sie startet auf Niedrig. Modelle ohne Stufen entscheiden selbst. In den Einstellungen gibt es auch eine Modell-Zeile, wenn die Assistenz ein anderes Modell als Chat nutzen soll."
+        },
+        {
+          "title": "Mach in der App weiter",
+          "body": "Das Panel wächst mit der Antwort und lässt sich auf jede Höhe ziehen. In der App fortsetzen öffnet dieselbe Unterhaltung in Chat, wo sie bei deinen anderen Chats bleibt."
+        }
+      ],
+      "outcome": "Du kannst zur App auf dem Bildschirm fragen, ohne sie zu verlassen, und jede Unterhaltung wird als normaler Chat gespeichert.",
+      "limits": [
+        "Apps, die Screenshots blockieren, etwa Banking-Apps, und von Android geschützte Bildschirme senden weder Bild noch Text. Du kannst trotzdem fragen.",
+        "Das Bildschirmbild wird nur gesendet, wenn das Chat-Modell Bilder lesen kann. Sonst wird nur der Bildschirmtext gesendet, und manche Apps teilen sehr wenig Text."
+      ],
+      "fixes": [
+        {
+          "problem": "AndroidHarness fehlt in der Assistenzliste",
+          "solution": "Tippe erneut auf Assistenz-App wählen. Öffnet Android eine andere Seite, suche unter Einstellungen → Apps → Standard-Apps → Digitale Assistenz-App. Manche Telefone nennen es Assist und Spracheingabe."
+        },
+        {
+          "problem": "Die Antwort sagt, sie sehe den Bildschirm nicht",
+          "solution": "Aktiviere in Androids Assistenz-Einstellungen Text vom Bildschirm verwenden und Screenshot verwenden."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Assistenz einrichten"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant assistenz digitaler assistent app power home ecke wischen bildschirm screenshot overlay über anderen apps"
     }
   ]
 }

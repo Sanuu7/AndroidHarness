@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Hỏi về bất kỳ màn hình nào với trợ lý",
+      "summary": "Đặt AndroidHarness làm trợ lý điện thoại và hỏi về ứng dụng bạn đang dùng.",
+      "location": "Cài đặt → Trợ lý trên các ứng dụng khác; sau đó giữ nút nguồn hoặc trang chủ, hoặc vuốt lên từ góc dưới.",
+      "before": [
+        "Chọn mô hình Chat và thêm khóa trước. Trợ lý dùng cùng mô hình và cài đặt như Chat.",
+        "Android phải cho phép AndroidHarness làm ứng dụng trợ lý số. Trên một số điện thoại, mục này nằm trong Ứng dụng mặc định."
+      ],
+      "steps": [
+        {
+          "title": "Đặt nó làm trợ lý",
+          "body": "Mở Cài đặt → Trợ lý trên các ứng dụng khác và nhấn Chọn ứng dụng trợ lý. Trong danh sách Android, chọn AndroidHarness làm ứng dụng trợ lý số rồi quay lại. Trang sẽ cho biết khi đã bật."
+        },
+        {
+          "title": "Gọi từ bất kỳ ứng dụng nào",
+          "body": "Giữ nút nguồn hoặc trang chủ, hoặc vuốt lên từ góc dưới, tùy điện thoại. Một sợi sáng chạy lên hai bên mép màn hình, ánh sáng dịu dâng từ dưới lên và một viên nhỏ mở ra trên đó."
+        },
+        {
+          "title": "Hỏi về màn hình",
+          "body": "Nhập câu hỏi hoặc nhấn gợi ý như Tóm tắt. Nó chỉ xem màn hình khi câu hỏi của bạn liên quan đến màn hình, và không có gì từ màn hình hiện trong bảng. Nó hoạt động như Chat, nên có thể tìm web, đọc trang và hiển thị nguồn."
+        },
+        {
+          "title": "Nói thay vì gõ",
+          "body": "Nhấn micrô để nói. Bật Bắt đầu bằng giọng nói trên trang Trợ lý nếu muốn nó nghe ngay khi mở. Gõ thay vào đó đưa bàn phím trở lại. Câu trả lời cho câu hỏi bằng giọng nói sẽ được đọc to trừ khi bạn tắt Đọc to câu trả lời."
+        },
+        {
+          "title": "Chọn mức suy luận",
+          "body": "Nhấn chip Suy luận ở đầu bảng, hoặc mở Cài đặt → Trợ lý trên các ứng dụng khác và chọn mức. Nó bắt đầu ở Thấp. Mô hình không có mức sẽ tự quyết định. Cài đặt cũng có hàng Mô hình nếu bạn muốn trợ lý dùng mô hình khác Chat."
+        },
+        {
+          "title": "Tiếp tục trong ứng dụng",
+          "body": "Bảng lớn dần theo câu trả lời và có thể kéo đến bất kỳ độ cao nào. Tiếp tục trong ứng dụng mở cùng cuộc trò chuyện trong Chat, nơi nó ở cùng các cuộc trò chuyện khác."
+        }
+      ],
+      "outcome": "Bạn có thể hỏi về ứng dụng trên màn hình mà không rời khỏi nó, và mỗi cuộc trò chuyện được lưu như một Chat bình thường.",
+      "limits": [
+        "Ứng dụng chặn ảnh chụp màn hình, như ứng dụng ngân hàng, và màn hình được Android bảo vệ không gửi ảnh hay văn bản. Bạn vẫn có thể hỏi.",
+        "Ảnh màn hình chỉ được gửi khi mô hình Chat đọc được ảnh. Nếu không, chỉ văn bản trên màn hình được gửi, và một số ứng dụng chia sẻ rất ít văn bản."
+      ],
+      "fixes": [
+        {
+          "problem": "Không có AndroidHarness trong danh sách trợ lý",
+          "solution": "Nhấn Chọn ứng dụng trợ lý lần nữa. Nếu Android mở trang khác, hãy tìm trong Cài đặt → Ứng dụng → Ứng dụng mặc định → Ứng dụng trợ lý số. Một số điện thoại gọi là Trợ giúp và nhập giọng nói."
+        },
+        {
+          "problem": "Câu trả lời nói không thấy màn hình",
+          "solution": "Trong cài đặt trợ lý của Android, bật Dùng văn bản trên màn hình và Dùng ảnh chụp màn hình."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Thiết lập trợ lý"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant trợ lý trợ lý số ứng dụng nguồn trang chủ góc vuốt màn hình ảnh chụp overlay trên ứng dụng khác"
     }
   ]
 }

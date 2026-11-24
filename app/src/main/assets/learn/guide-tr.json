@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "Asistanla herhangi bir ekran hakkında sor",
+      "summary": "AndroidHarness'ı telefonunun asistanı yap ve kullandığın uygulama hakkında sor.",
+      "location": "Ayarlar → Diğer uygulamaların üzerinde asistan; sonra güç veya ana ekran düğmesini basılı tut ya da alt köşeden yukarı kaydır.",
+      "before": [
+        "Önce bir Sohbet modeli seç ve anahtarını ekle. Asistan, Sohbet ile aynı modeli ve ayarları kullanır.",
+        "Android, AndroidHarness'ın dijital asistan uygulaması olmasına izin vermeli. Bazı telefonlarda bu, Varsayılan uygulamalar altındadır."
+      ],
+      "steps": [
+        {
+          "title": "Onu asistanın yap",
+          "body": "Ayarlar → Diğer uygulamaların üzerinde asistan bölümünü aç ve Asistan uygulamasını seç düğmesine dokun. Android listesinde AndroidHarness'ı dijital asistan uygulaması olarak seç ve geri dön. Sayfa, açık olduğunda bunu gösterir."
+        },
+        {
+          "title": "Her uygulamadan çağır",
+          "body": "Telefonuna göre güç veya ana ekran düğmesini basılı tut ya da alt köşeden yukarı kaydır. Ekranın iki kenarında bir ışık ipliği yükselir, alttan yumuşak bir parıltı yükselir ve üzerinde küçük bir kapsül açılır."
+        },
+        {
+          "title": "Ekran hakkında sor",
+          "body": "Bir soru yaz veya Özetle gibi bir öneriye dokun. Ekrana yalnızca sorun onunla ilgiliyse bakar ve ekrandan hiçbir şey panelde gösterilmez. Sohbet gibi çalışır; web'de arayabilir, sayfaları okuyabilir ve kaynakları gösterebilir."
+        },
+        {
+          "title": "Yazmak yerine konuş",
+          "body": "Konuşmak için mikrofona dokun. Açılır açılmaz dinlemesini istiyorsan asistan sayfasında Sesle başla seçeneğini aç. Bunun yerine yaz, klavyeyi geri getirir. Yanıtları sesli oku kapatılmadıkça sesli soruların yanıtları yüksek sesle okunur."
+        },
+        {
+          "title": "Ne kadar düşüneceğini seç",
+          "body": "Panelin üstündeki Düşünme çipine dokun veya Ayarlar → Diğer uygulamaların üzerinde asistan bölümünü açıp bir seviye seç. Düşük ile başlar. Seviyesi olmayan modeller kendileri karar verir. Asistanın Sohbet'ten farklı bir model kullanmasını istersen ayarlarda bir Model satırı da vardır."
+        },
+        {
+          "title": "Uygulamada devam et",
+          "body": "Panel yanıtla birlikte büyür ve istediğin yüksekliğe sürüklenebilir. Uygulamada devam et, aynı konuşmayı Sohbet'te açar; orada diğer sohbetlerinle kalır."
+        }
+      ],
+      "outcome": "Ekrandaki uygulamadan çıkmadan onun hakkında sorabilirsin ve her konuşma normal bir Sohbet olarak kaydedilir.",
+      "limits": [
+        "Ekran görüntüsünü engelleyen uygulamalar (banka uygulamaları gibi) ve Android'in koruduğu ekranlar görüntü veya metin göndermez. Yine de soru sorabilirsin.",
+        "Ekran görüntüsü yalnızca Sohbet modeli görselleri okuyabiliyorsa gönderilir. Aksi halde yalnızca ekran metni gönderilir ve bazı uygulamalar çok az metin paylaşır."
+      ],
+      "fixes": [
+        {
+          "problem": "Asistan listesinde AndroidHarness yok",
+          "solution": "Asistan uygulamasını seç düğmesine yeniden dokun. Android başka bir sayfa açarsa Ayarlar → Uygulamalar → Varsayılan uygulamalar → Dijital asistan uygulaması bölümüne bak. Bazı telefonlar buna Asist ve sesli giriş der."
+        },
+        {
+          "problem": "Yanıt ekranı göremediğini söylüyor",
+          "solution": "Android'in asistan ayarlarında Ekrandaki metni kullan ve Ekran görüntüsünü kullan seçeneklerini aç."
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "Asistanı ayarla"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant asistan dijital asistan uygulama güç ana ekran köşe kaydır ekran ekran görüntüsü overlay diğer uygulamaların üzerinde"
     }
   ]
 }

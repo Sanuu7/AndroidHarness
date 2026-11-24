@@ -161,7 +161,8 @@ class ChatExperienceDeviceTest {
                 "http://localhost", "fixture"), "", c.sessions.messages(chat), { PermissionMode.FULL_ACCESS }, mutableSetOf("read_file", "shell"),
                 FileFs(root), RequestOptions(), 100_000, AgentMode.ACT, pinnedInstructions = "CODE_ONLY_PINNED",
                 conversation = ConversationConfig(ConversationKind.CHAT)).toList()
-            assertEquals(ChatExperience.tools, advertised.toSet())
+            // read_screen only shows up in chats started from the assistant panel.
+            assertEquals(ChatExperience.tools - "read_screen", advertised.toSet())
             assertTrue(prompt.startsWith(ChatExperience.SYSTEM_PROMPT))
             assertTrue(prompt.contains("Current local date: ${java.time.LocalDate.now()}"))
             assertFalse(prompt.contains(root.path)); assertFalse(prompt.contains("CODE_ONLY_PINNED"))

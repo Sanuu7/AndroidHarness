@@ -276,6 +276,7 @@ internal fun SettingsPanel(modifier: Modifier = Modifier, content: @Composable C
 
 internal fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
     SettingsPage.LEARN -> Icons.Rounded.AutoStories
+    SettingsPage.ASSISTANT -> Icons.Rounded.TouchApp
     SettingsPage.LANGUAGE -> Icons.Rounded.Translate
     SettingsPage.CHAT_OPTIONS -> Icons.Rounded.ChatBubbleOutline
     SettingsPage.MEMORY -> Icons.Rounded.Memory

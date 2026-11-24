@@ -282,7 +282,7 @@ internal fun ImagePreviewDialog(refs: List<ImageRef>, startIndex: Int, dir: File
     }
     val dismissPx = with(density) { 140.dp.toPx() }
     val dragFade = (kotlin.math.abs(dragY) / (dismissPx * 3f)).coerceIn(0f, 1f)
-    Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+    Dialog(onDismissRequest = close, properties = com.androidharness.app.ui.common.hostedDialog(DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false))) {
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = appear.value * (1f - dragFade * 0.8f)))) {
             HorizontalPager(
                 state = pager,

@@ -266,6 +266,10 @@ class AgentEngine(
     private val chatOnlyTools: List<com.androidharness.app.tools.Tool> = emptyList(),
     /** The Chat reminders switch in Settings; off hides the reminder tools. */
     private val remindersEnabled: suspend () -> Boolean = { true },
+    /** Reads text in images on the device for models that cannot see them. */
+    private val imageText: com.androidharness.app.data.ImageText? = null,
+    /** The "Read text from images" switch in Settings. */
+    private val imageTextEnabled: suspend () -> Boolean = { false },
     private val resolveConfiguration: suspend (WorkspaceFs) -> com.androidharness.app.config.HarnessConfig = { com.androidharness.app.config.HarnessConfigLoader().load(it) },
     private val pluginHooks: com.androidharness.app.config.PluginHooks? = null,
     /** Remembers a provider|model whose server delivered a whole file write in one chunk. */
@@ -423,7 +427,7 @@ class AgentEngine(
             ChatImageContext.attach(resolvedHistory, resolve = imageStore::resolve, load = imageStore::remoteImage) else resolvedHistory).toMutableList()
         // If active model is known to be text-only, strip image data upfront
         if (!localChat && !imageCapable) {
-            val sanitized = ContextHygiene.stripImages(working)
+            val sanitized = ContextHygiene.stripImages(working, textFor = imageTextFor(working))
             working.clear()
             working.addAll(sanitized)
         }
@@ -749,7 +753,7 @@ class AgentEngine(
             // Dynamic vision degradation fallback: if provider rejected image input,
             // strip images from working history and retry without failing the turn.
             if (!localChat && !responseStarted && failure != null && isVisionError(failure) && working.any { it.imageData.isNotEmpty() }) {
-                val stripped = ContextHygiene.stripImages(working)
+                val stripped = ContextHygiene.stripImages(working, textFor = imageTextFor(working))
                 working.clear()
                 working.addAll(stripped)
                 if (conversation.isChat) {
@@ -853,7 +857,7 @@ class AgentEngine(
             // Commit tool messages in the model's original call order.
             for (call in calls) {
                 val result = results.getValue(call.id)
-                working += toolMessage(call, result).withImagesResolved()
+                working += toolMessage(call, result).withImagesResolved().let { if (visionAvailable) it else it.withImageText() }
                 emit(AgentEvent.ToolFinished(call.id, result))
             }
             // Tell the model what the answer still needs before it writes one.
@@ -1329,7 +1333,11 @@ class AgentEngine(
                         isError = !result.ok, images = listOfNotNull(result.image),
                         generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
                     )
-                    working += if (imageInput) message.withImagesResolved() else message
+                    working += when {
+                        imageInput -> message.withImagesResolved()
+                        message.images.isNotEmpty() && imageText != null && imageTextEnabled() -> message.withImagesResolved().withImageText()
+                        else -> message
+                    }
                     send(SideEvent.ToolFinished(message))
                 }
             }
@@ -1429,6 +1437,20 @@ class AgentEngine(
 
 
     // ------------------------------------------------------------------
+
+    /** Text read from each image about to be left out for a model that cannot see it, when the setting is on. */
+    private suspend fun imageTextFor(messages: List<ChatMessage>): (com.androidharness.app.core.ImageRef) -> String? {
+        val reader = imageText ?: return { null }
+        val dropped = messages.filter { it.imageData.isNotEmpty() && it.images.isNotEmpty() }
+        if (dropped.isEmpty() || !imageTextEnabled()) return { null }
+        return try { reader.forMessages(dropped) } catch (e: CancellationException) { throw e } catch (e: Exception) { { null } }
+    }
+
+    /** For a model that cannot see: the image's text in place of the image, when the setting is on. */
+    private suspend fun ChatMessage.withImageText(): ChatMessage {
+        if (imageData.isEmpty() || images.isEmpty() || imageText == null || !imageTextEnabled()) return this
+        return ContextHygiene.stripImages(listOf(this), textFor = imageTextFor(listOf(this))).single()
+    }
 
     private fun ChatMessage.withImagesResolved(): ChatMessage =
         if (images.isEmpty()) this

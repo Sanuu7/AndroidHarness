@@ -6017,6 +6017,77 @@
         "ui/AppNav.kt",
         "data/PendingShare.kt"
       ]
+    },
+    {
+      "id": "screen-assistant",
+      "category": "chat",
+      "title": "用助理詢問任何畫面",
+      "summary": "將 AndroidHarness 設為手機的助理，隨時詢問你正在使用的應用程式。",
+      "location": "設定 → 跨應用程式助理；然後長按電源鍵或主畫面鍵，或從畫面底部角落向上滑動。",
+      "before": [
+        "先選擇聊天模型並加入其金鑰。助理使用與聊天相同的模型和設定。",
+        "Android 必須允許 AndroidHarness 成為數位助理應用程式。部分手機將其放在預設應用程式中。"
+      ],
+      "steps": [
+        {
+          "title": "將其設為你的助理",
+          "body": "開啟 設定 → 跨應用程式助理，輕觸選擇助理應用程式。在 Android 清單中選擇 AndroidHarness 作為數位助理應用程式，然後返回。頁面會顯示是否已啟用。"
+        },
+        {
+          "title": "從任何應用程式喚出",
+          "body": "視手機而定，長按電源鍵或主畫面鍵，或從畫面底部角落向上滑動。一道光線沿畫面兩側向上延伸，底部升起柔和光暈，一個小藥丸在其上方展開。"
+        },
+        {
+          "title": "詢問畫面內容",
+          "body": "輸入問題或輕觸摘要之類的建議。只有問題涉及畫面時它才會查看畫面，面板中不會顯示畫面內容。它的運作方式與聊天相同，可以網頁搜尋、閱讀頁面並顯示來源。"
+        },
+        {
+          "title": "用說的代替打字",
+          "body": "輕觸麥克風說話。若希望它一開啟就聆聽，請在助理頁面開啟以語音開始。改用鍵盤可返回鍵盤。除非關閉朗讀回答，語音提問的回答會被朗讀出來。"
+        },
+        {
+          "title": "選擇思考強度",
+          "body": "輕觸面板頂部的思考標籤，或開啟 設定 → 跨應用程式助理 並選擇等級。預設是低。沒有等級的模型會自行決定。若希望助理使用與聊天不同的模型，設定中還有模型一列。"
+        },
+        {
+          "title": "在應用程式中繼續",
+          "body": "面板會隨回答增長，可拖到任意高度。在應用程式中繼續會在聊天中開啟同一對話，和其他聊天放在一起。"
+        }
+      ],
+      "outcome": "無需離開畫面上的應用程式即可詢問它，每個對話都會儲存為一般聊天。",
+      "limits": [
+        "阻止截圖的應用程式（如銀行應用程式）和 Android 保護的畫面不會傳送圖像或文字。你仍然可以提問。",
+        "只有當聊天模型能讀取圖像時才會傳送畫面圖像。否則只傳送畫面文字，而有些應用程式分享的文字很少。"
+      ],
+      "fixes": [
+        {
+          "problem": "助理清單中沒有 AndroidHarness",
+          "solution": "再次輕觸選擇助理應用程式。如果 Android 開啟了其他頁面，請在 設定 → 應用程式 → 預設應用程式 → 數位助理應用程式 中尋找。有些手機稱之為輔助和語音輸入。"
+        },
+        {
+          "problem": "回答表示看不到畫面",
+          "solution": "在 Android 的助理設定中，開啟使用畫面文字和使用螢幕截圖。"
+        }
+      ],
+      "related": [
+        "voice",
+        "chat-attachments",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ASSISTANT",
+          "label": "設定助理"
+        }
+      ],
+      "sources": [
+        "assistant/HarnessAssistantSession.kt",
+        "assistant/AssistantPanel.kt",
+        "assistant/AssistantController.kt",
+        "ui/settings/AssistantSetupSection.kt"
+      ],
+      "keywords": "assistant 助理 數位助理 應用程式 電源 主畫面 角落 滑動 畫面 截圖 overlay 跨應用程式"
     }
   ]
 }

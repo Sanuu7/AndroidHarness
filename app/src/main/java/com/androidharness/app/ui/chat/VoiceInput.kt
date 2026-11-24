@@ -87,6 +87,8 @@ class VoiceInputController(
 
     private var recognizer: SpeechRecognizer? = null
     private var mediaRecorder: MediaRecorder? = null
+    /** A recorder still being started in the background; cleared to discard it. */
+    private var startingRecorder: MediaRecorder? = null
     private var currentAudioFile: File? = null
     private var amplitudeJob: Job? = null
     private var transcriptionJob: Job? = null
@@ -137,7 +139,7 @@ class VoiceInputController(
         }
 
         try {
-            val sr = SpeechRecognizer.createSpeechRecognizer(context)
+            val sr = com.androidharness.app.assistant.SpeechRecognizers.create(context)
             recognizer = sr
             sr.setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
@@ -253,23 +255,47 @@ class VoiceInputController(
             @Suppress("DEPRECATION")
             MediaRecorder()
         }
-
-        try {
-            mediaRecorder = mr
-            mr.apply {
-                setAudioSource(MediaRecorder.AudioSource.MIC)
-                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setAudioChannels(1)
-                setAudioSamplingRate(44_100)
-                setAudioEncodingBitRate(128_000)
-                setOutputFile(audioFile.absolutePath)
-                prepare()
-                start()
+        // Preparing and starting the recorder waits on the media server for 100 ms or more, which
+        // froze whatever was animating. It starts on a background thread; the UI shows recording
+        // at once, and a stop or cancel that comes first simply discards it.
+        startingRecorder = mr
+        groqRecordState = if (locked) GroqRecordState.LOCKED else GroqRecordState.HOLDING
+        recordStartTime = SystemClock.elapsedRealtime()
+        recordingDurationMs = 0L
+        scope.launch {
+            val started = withContext(Dispatchers.IO) {
+                runCatching {
+                    mr.apply {
+                        setAudioSource(MediaRecorder.AudioSource.MIC)
+                        setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                        setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                        setAudioChannels(1)
+                        setAudioSamplingRate(44_100)
+                        setAudioEncodingBitRate(128_000)
+                        setOutputFile(audioFile.absolutePath)
+                        prepare()
+                        start()
+                    }
+                }
             }
-            groqRecordState = if (locked) GroqRecordState.LOCKED else GroqRecordState.HOLDING
+            if (startingRecorder !== mr) {
+                withContext(Dispatchers.IO) {
+                    if (started.isSuccess) runCatching { mr.stop() }
+                    runCatching { mr.release() }
+                }
+                return@launch
+            }
+            startingRecorder = null
+            started.exceptionOrNull()?.let { e ->
+                runCatching { mr.release() }
+                currentAudioFile?.delete()
+                currentAudioFile = null
+                groqRecordState = GroqRecordState.IDLE
+                errorMessage = "Failed to start recording: ${e.message}"
+                return@launch
+            }
+            mediaRecorder = mr
             recordStartTime = SystemClock.elapsedRealtime()
-            recordingDurationMs = 0L
 
             amplitudeJob = scope.launch {
                 while (isActive && (groqRecordState == GroqRecordState.HOLDING || groqRecordState == GroqRecordState.LOCKED)) {
@@ -299,12 +325,8 @@ class VoiceInputController(
                     delay(60)
                 }
             }
-            return true
-        } catch (e: Exception) {
-            cleanupGroqRecorder()
-            errorMessage = "Failed to start recording: ${e.message}"
-            return false
         }
+        return true
     }
 
     fun lockGroqRecording() {
@@ -415,6 +437,7 @@ class VoiceInputController(
     private fun cleanupGroqRecorder(keepFile: Boolean = false) {
         amplitudeJob?.cancel()
         amplitudeJob = null
+        startingRecorder = null
         try {
             mediaRecorder?.reset()
             mediaRecorder?.release()

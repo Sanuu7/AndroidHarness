@@ -37,9 +37,7 @@ internal class AppRuntimePolicy(private val context: Context, private val settin
             }
             override fun onActivityStopped(activity: Activity) {
                 started -= activity
-                if (started.isNotEmpty()) return
-                // Activity replacement and rotation must not interrupt an active agent.
-                leaving = scope.launch { delay(700); if (started.isEmpty()) visible.value = false }
+                leaveIfHidden()
             }
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
             override fun onActivityResumed(activity: Activity) = Unit
@@ -49,7 +47,22 @@ internal class AppRuntimePolicy(private val context: Context, private val settin
         })
     }
 
-    suspend fun canRun(): Boolean = settings.settings.first().runInBackground || visible.value
+    /** The assistant panel over other apps counts as the app being on screen. Main thread only. */
+    private var overlayShown = false
+
+    fun setOverlayShown(shown: Boolean) {
+        overlayShown = shown
+        if (shown) { leaving?.cancel(); visible.value = true } else leaveIfHidden()
+    }
+
+    private fun leaveIfHidden() {
+        if (started.isNotEmpty() || overlayShown) return
+        // Activity replacement and rotation must not interrupt an active agent.
+        leaving?.cancel()
+        leaving = scope.launch { delay(700); if (started.isEmpty() && !overlayShown) visible.value = false }
+    }
+
+    suspend fun canRun(): Boolean =settings.settings.first().runInBackground || visible.value
 
     suspend fun <T> whileAllowed(block: suspend () -> T): T = coroutineScope {
         if (!canRun()) throw BackgroundExecutionDisabled()

@@ -52,6 +52,7 @@ object SettingsBackupPolicy {
         val planning = settings.planningProviderId?.let(keep) == true
         val execution = settings.executionProviderId?.let(keep) == true
         val subagent = settings.subagentProviderId?.let(keep) == true
+        val assistant = settings.assistantProviderId?.let(keep) == true
         return settings.copy(
             chatAgents = settings.chatAgents.map { it.copy(model = it.model?.takeIf { choice -> keep(choice.providerId) }) },
             activeProviderId = settings.activeProviderId.takeIf { active },
@@ -62,6 +63,8 @@ object SettingsBackupPolicy {
             executionModel = settings.executionModel.takeIf { execution },
             subagentProviderId = settings.subagentProviderId.takeIf { subagent },
             subagentModel = settings.subagentModel.takeIf { subagent },
+            assistantProviderId = settings.assistantProviderId.takeIf { assistant },
+            assistantModel = settings.assistantModel.takeIf { assistant },
             providerOrder = settings.providerOrder.filter(keep),
             disabledProviderIds = settings.disabledProviderIds.filter(keep).toSet(),
             fallbackPolicy = settings.fallbackPolicy.copy(targets = settings.fallbackPolicy.targets.filter { keep(it.providerId) }),
@@ -165,7 +168,7 @@ object SettingsBackupValidation {
         check(s.voiceEngine == "inbuilt" || s.voiceEngine.length in 1..200, SettingsBackupProblem.VOICE)
         check(s.ttsEngine == "system" || s.ttsEngine.length in 1..200, SettingsBackupProblem.VOICE)
         val ids = file.providers.map { it.config.id }.toSet() + HarnessProvider.ID
-        check(listOfNotNull(s.activeProviderId, s.planningProviderId, s.executionProviderId, s.subagentProviderId).all { it in ids }, SettingsBackupProblem.PROVIDER_REFERENCE)
+        check(listOfNotNull(s.activeProviderId, s.planningProviderId, s.executionProviderId, s.subagentProviderId, s.assistantProviderId).all { it in ids }, SettingsBackupProblem.PROVIDER_REFERENCE)
         check(file.providerProxy.error() == null, SettingsBackupProblem.PROVIDER_CONTROLS)
         file.providers.forEach {
             check(it.keyPool?.error() == null && it.proxy.error() == null, SettingsBackupProblem.PROVIDER_CONTROLS)
@@ -307,6 +310,7 @@ class SettingsBackup(private val c: AppContainer) {
             activeProviderId = ids[s.activeProviderId],
             planningProviderId = ids[s.planningProviderId], executionProviderId = ids[s.executionProviderId],
             subagentProviderId = ids[s.subagentProviderId],
+            assistantProviderId = ids[s.assistantProviderId],
             providerOrder = s.providerOrder.mapNotNull(ids::get),
             disabledProviderIds = s.disabledProviderIds.mapNotNull(ids::get).toSet(),
             fallbackPolicy = s.fallbackPolicy.copy(targets = s.fallbackPolicy.targets.mapNotNull { target ->

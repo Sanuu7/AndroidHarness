@@ -106,6 +106,8 @@ data class ChatUiState(
     val runningCalls: List<ToolCallData> = emptyList(),
     val codeDrafts: Map<String, com.androidharness.app.agent.LiveCodeDraft> = emptyMap(),
     val streamStallTimeoutSeconds: Int = com.androidharness.app.agent.StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS,
+    /** Models that cannot see images get their text instead, so pictures are not blocked. */
+    val readImageText: Boolean = true,
     val packageProgress: Map<String, com.androidharness.app.data.env.PackageInstallStatus> = emptyMap(),
     val showLiveCode: Boolean = true,
     val showTodoList: Boolean = true,
@@ -474,7 +476,7 @@ class ChatViewModel(
         viewModelScope.launch {
             c.settings.settings.collect {
                 _state.update { st -> st.copy(showLiveCode = it.showLiveCode, showTodoList = it.showTodoList,
-                    streamStallTimeoutSeconds = it.streamStallTimeoutSeconds) }
+                    streamStallTimeoutSeconds = it.streamStallTimeoutSeconds, readImageText = it.readImageText) }
             }
         }
         viewModelScope.launch {
@@ -1343,7 +1345,7 @@ class ChatViewModel(
     fun attachmentBlockReason(): String? {
         val state = _state.value
         if (state.attachmentImports.isNotEmpty()) return c.appContext.getString(R.string.chat_attachment_resolve)
-        if (state.conversation.isChat && state.attachments.isNotEmpty() && state.imageInputSupport() == false)
+        if (state.conversation.isChat && state.attachments.isNotEmpty() && state.imageInputSupport() == false && !state.readImageText)
             return c.appContext.getString(R.string.chat_attachment_model_unsupported)
         return null
     }

@@ -2931,6 +2931,7 @@ private fun ChatScreenContent(
                             imageDir = viewModel.container.images.imagesDir,
                             // Code models fall back gracefully, so only Chat warns about image support.
                             imageSupport = if (state.conversation.isChat) state.imageInputSupport() else true,
+                            imagesAsText = state.readImageText,
                             onRemoveImage = viewModel::removeAttachment,
                             onRemoveFile = viewModel::removeFileAttachment,
                             onRemoveImport = viewModel::removeAttachmentImport,

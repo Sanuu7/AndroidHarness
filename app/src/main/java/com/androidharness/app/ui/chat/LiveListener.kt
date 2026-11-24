@@ -126,7 +126,7 @@ class LiveListener(
             return
         }
         val session = generation
-        val sr = recognizer ?: runCatching { SpeechRecognizer.createSpeechRecognizer(context) }.getOrNull()
+        val sr = recognizer ?: runCatching { com.androidharness.app.assistant.SpeechRecognizers.create(context) }.getOrNull()
             ?: run { error = context.getString(R.string.live_error_no_recognizer); return }
         recognizer = sr
         sr.setRecognitionListener(object : RecognitionListener {

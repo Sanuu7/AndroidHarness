@@ -83,7 +83,7 @@ internal fun ImageViewerDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        properties = com.androidharness.app.ui.common.hostedDialog(DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)),
     ) {
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             Box(

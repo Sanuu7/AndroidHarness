@@ -66,9 +66,11 @@ class SettingsNavigationTest {
     @Test
     fun `home groups run from setup to help in a fixed order`() {
         val displayGroups = settingsDisplayGroups(matchingSettingsEntries("", settingsTestStrings()))
-        assertEquals(listOf(R.string.learn_group, R.string.settings_group_ai_models, R.string.settings_group_your_assistant,
+        assertEquals(listOf(R.string.learn_group, R.string.assistant_settings_group, R.string.settings_group_ai_models, R.string.settings_group_your_assistant,
             R.string.settings_group_integrations, R.string.settings_group_look_feel, R.string.settings_group_device_privacy,
             R.string.settings_group_data_sync, R.string.settings_group_help_about), displayGroups.keys.toList())
+        assertEquals(listOf(SettingsPage.ASSISTANT), displayGroups.getValue(R.string.assistant_settings_group).map { it.page })
+        assertEquals(SettingsPage.ASSISTANT, settingsDeepLink("assistant"))
         assertEquals(listOf(SettingsPage.MODELS, SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.LOCAL_MODELS, SettingsPage.NINE_ROUTER),
             displayGroups.getValue(R.string.settings_group_ai_models).map { it.page })
         assertEquals(listOf(SettingsPage.CHAT_OPTIONS, SettingsPage.CODING, SettingsPage.MEMORY, SettingsPage.VOICE, SettingsPage.LIVE_MODE),

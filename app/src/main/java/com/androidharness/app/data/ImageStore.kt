@@ -151,7 +151,7 @@ class ImageStore(private val context: Context) {
     /** Removes an imported image (e.g. an attachment the user un-picked before sending). */
     fun delete(name: String) {
         if (name != File(name).name) return
-        runCatching { File(dir, name).delete(); originalFile(name).delete() }
+        runCatching { File(dir, name).delete(); originalFile(name).delete(); File(File(dir, "text"), "$name.txt").delete() }
     }
 
     /** Resolves a persisted image reference to bytes for provider requests. */
