@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"কিছু সার্ভার, যার মধ্যে কয়েকটি NVIDIA মডেল আছে, ফাইল লেখা শেষ হলেই পাঠায়। সেই মডেলগুলোর জন্য এজেন্ট ফাইলটি নিজের উত্তরের ভেতরে লেখে, যাতে আপনি এটি লেখা হতে দেখতে পারেন।"</string>
     <string name="stream_writes_detected">"এখন পর্যন্ত শনাক্ত করা মডেল: %1$d"</string>
     <string name="stall_timeout_never">"কখনও না"</string>
+    <string name="harness_free_wait_resume">"অপেক্ষা করুন ও চালিয়ে যান"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"%1$d সেকেন্ডে আবার শুরু হবে"</item>
+        <item quantity="other">"%1$d সেকেন্ডে আবার শুরু হবে"</item>
+    </plurals>
 </resources>

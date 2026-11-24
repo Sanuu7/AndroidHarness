@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"சில சேவையகங்கள், பல NVIDIA மாடல்கள் உட்பட, கோப்பு எழுதுதல் முடிந்த பிறகே அதை அனுப்புகின்றன. அந்த மாடல்களுக்கு முகவர் கோப்பைத் தன் பதிலுக்குள் எழுதும், அதனால் அது எழுதப்படுவதைப் பார்க்கலாம்."</string>
     <string name="stream_writes_detected">"இதுவரை கண்டறியப்பட்ட மாடல்கள்: %1$d"</string>
     <string name="stall_timeout_never">"ஒருபோதும் இல்லை"</string>
+    <string name="harness_free_wait_resume">"காத்திருந்து தொடரவும்"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"%1$d வினாடியில் தொடரும்"</item>
+        <item quantity="other">"%1$d வினாடிகளில் தொடரும்"</item>
+    </plurals>
 </resources>

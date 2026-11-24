@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"Manche Server, darunter mehrere NVIDIA-Modelle, senden einen Dateischreibvorgang erst, wenn er fertig ist. Bei diesen Modellen schreibt der Agent die Datei stattdessen in seine Antwort, damit du beim Schreiben zusehen kannst."</string>
     <string name="stream_writes_detected">"Bisher erkannte Modelle: %1$d"</string>
     <string name="stall_timeout_never">"Nie"</string>
+    <string name="harness_free_wait_resume">"Warten und fortsetzen"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"Fortsetzen in %1$d Sekunde"</item>
+        <item quantity="other">"Fortsetzen in %1$d Sekunden"</item>
+    </plurals>
 </resources>

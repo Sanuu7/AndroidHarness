@@ -1140,4 +1140,8 @@
     <string name="stream_writes_desc">"有些伺服器（包括多個 NVIDIA 模型）只會在整個檔案寫入完成後才傳送。對這些模型，代理會把檔案寫進回覆裡，讓你能看到它逐步寫出。"</string>
     <string name="stream_writes_detected">"目前已偵測到的模型：%1$d 個"</string>
     <string name="stall_timeout_never">"永不"</string>
+    <string name="harness_free_wait_resume">"等待並繼續"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"將在 %1$d 秒後繼續"</item>
+    </plurals>
 </resources>

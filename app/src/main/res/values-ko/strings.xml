@@ -1140,4 +1140,8 @@
     <string name="stream_writes_desc">"일부 서버(여러 NVIDIA 모델 포함)는 파일 쓰기가 끝난 뒤에야 전송합니다. 그런 모델에서는 에이전트가 파일을 응답 안에 작성하므로 작성되는 모습을 볼 수 있습니다."</string>
     <string name="stream_writes_detected">"지금까지 감지된 모델: %1$d개"</string>
     <string name="stall_timeout_never">"안 함"</string>
+    <string name="harness_free_wait_resume">"기다린 뒤 계속"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"%1$d초 후 계속합니다"</item>
+    </plurals>
 </resources>

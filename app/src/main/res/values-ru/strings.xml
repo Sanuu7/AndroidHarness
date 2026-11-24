@@ -1152,4 +1152,11 @@
     <string name="stream_writes_desc">"Некоторые серверы, включая ряд моделей NVIDIA, отправляют вызов записи файла только после его завершения. Для таких моделей агент пишет файл прямо в ответе, чтобы вы видели, как он создаётся."</string>
     <string name="stream_writes_detected">"Обнаружено моделей: %1$d"</string>
     <string name="stall_timeout_never">"Никогда"</string>
+    <string name="harness_free_wait_resume">"Подождать и продолжить"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"Продолжение через %1$d секунду"</item>
+        <item quantity="few">"Продолжение через %1$d секунды"</item>
+        <item quantity="many">"Продолжение через %1$d секунд"</item>
+        <item quantity="other">"Продолжение через %1$d секунды"</item>
+    </plurals>
 </resources>

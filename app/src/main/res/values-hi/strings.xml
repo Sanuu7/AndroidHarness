@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"कुछ सर्वर, जिनमें कई NVIDIA मॉडल शामिल हैं, फ़ाइल लेखन तभी भेजते हैं जब वह पूरा हो जाता है। उन मॉडलों के लिए एजेंट फ़ाइल को अपने उत्तर में लिखता है, जिससे आप उसे लिखते हुए देख सकते हैं।"</string>
     <string name="stream_writes_detected">"अब तक पहचाने गए मॉडल: %1$d"</string>
     <string name="stall_timeout_never">"कभी नहीं"</string>
+    <string name="harness_free_wait_resume">"प्रतीक्षा करें और जारी रखें"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"%1$d सेकंड में फिर शुरू होगा"</item>
+        <item quantity="other">"%1$d सेकंड में फिर शुरू होगा"</item>
+    </plurals>
 </resources>

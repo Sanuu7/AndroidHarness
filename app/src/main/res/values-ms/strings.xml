@@ -1140,4 +1140,8 @@
     <string name="stream_writes_desc">"Sesetengah pelayan, termasuk beberapa model NVIDIA, hanya menghantar tulisan fail selepas ia siap. Untuk model itu, ejen menulis fail ke dalam balasan supaya anda boleh melihatnya ditulis."</string>
     <string name="stream_writes_detected">"Model dikesan setakat ini: %1$d"</string>
     <string name="stall_timeout_never">"Tidak pernah"</string>
+    <string name="harness_free_wait_resume">"Tunggu dan teruskan"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"Menyambung dalam %1$d saat"</item>
+    </plurals>
 </resources>

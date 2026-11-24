@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"برخی سرورها، از جمله چند مدل NVIDIA، فراخوان نوشتن فایل را فقط پس از پایان آن می‌فرستند. برای این مدل‌ها عامل فایل را داخل پاسخ می‌نویسد تا نوشته شدنش را ببینید."</string>
     <string name="stream_writes_detected">"مدل‌های شناسایی‌شده تاکنون: %1$d"</string>
     <string name="stall_timeout_never">"هرگز"</string>
+    <string name="harness_free_wait_resume">"منتظر بمان و ادامه بده"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"ادامه در %1$d ثانیه"</item>
+        <item quantity="other">"ادامه در %1$d ثانیه"</item>
+    </plurals>
 </resources>

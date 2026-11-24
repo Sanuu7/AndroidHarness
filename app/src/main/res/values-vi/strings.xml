@@ -1140,4 +1140,8 @@
     <string name="stream_writes_desc">"Một số máy chủ, gồm vài mô hình NVIDIA, chỉ gửi thao tác ghi tệp khi đã hoàn tất. Với các mô hình đó, tác nhân viết tệp vào câu trả lời để bạn xem nó được viết ra."</string>
     <string name="stream_writes_detected">"Số mô hình đã phát hiện: %1$d"</string>
     <string name="stall_timeout_never">"Không bao giờ"</string>
+    <string name="harness_free_wait_resume">"Chờ và tiếp tục"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"%1$d giây nữa sẽ tiếp tục"</item>
+    </plurals>
 </resources>

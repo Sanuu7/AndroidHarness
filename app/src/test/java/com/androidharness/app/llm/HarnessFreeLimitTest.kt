@@ -103,7 +103,10 @@ class HarnessFreeLimitTest {
         assertFalse(HarnessFreeLimit.suppressRecovery("HTTP 503: Unavailable", HarnessProvider.config))
         assertFalse(HarnessFreeLimit.suppressRecovery("HTTP 401: Authentication required", HarnessProvider.config))
         assertFalse(HarnessFreeLimit.suppressRecovery("HTTP 429: Too many requests", HarnessProvider.config.copy(model = "openai-fast")))
-        for (kind in HarnessFreeLimit.Kind.entries) assertTrue(HarnessFreeLimit.suppressRecovery(HarnessFreeLimit.message(HarnessFreeLimit.Notice(kind))))
+        // Only the hourly quota hides Continue; a temporary limit clears within a minute or so.
+        assertTrue(HarnessFreeLimit.suppressRecovery(HarnessFreeLimit.message(HarnessFreeLimit.Notice(HarnessFreeLimit.Kind.QUOTA))))
+        assertFalse(HarnessFreeLimit.suppressRecovery(HarnessFreeLimit.message(HarnessFreeLimit.Notice(HarnessFreeLimit.Kind.TEMPORARY, 1))))
+        assertFalse(HarnessFreeLimit.suppressRecovery("HTTP 429: Too many requests", HarnessProvider.config))
     }
 
     @Test fun `retry after parsing rejects invalid values and accepts numeric and date hints`() {

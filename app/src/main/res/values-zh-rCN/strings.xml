@@ -1171,4 +1171,8 @@
     <string name="stream_writes_desc">有些服务器（包括多个 NVIDIA 模型）只在整个文件写入完成后才发送。对这些模型，智能体会把文件写进回复里，这样你可以看到它逐步写出。</string>
     <string name="stream_writes_detected">目前已检测到的模型：%1$d 个</string>
     <string name="stall_timeout_never">永不</string>
+    <string name="harness_free_wait_resume">"等待并继续"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"将在 %1$d 秒后继续"</item>
+    </plurals>
 </resources>

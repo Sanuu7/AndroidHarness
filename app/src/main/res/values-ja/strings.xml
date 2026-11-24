@@ -1140,4 +1140,8 @@
     <string name="stream_writes_desc">"一部のサーバー（複数の NVIDIA モデルを含む）は、ファイル書き込みが完了してからでないと送信しません。そのようなモデルでは、エージェントが応答内にファイルを書くので、書かれていく様子を見られます。"</string>
     <string name="stream_writes_detected">"これまでに検出されたモデル: %1$d"</string>
     <string name="stall_timeout_never">"なし"</string>
+    <string name="harness_free_wait_resume">"待って再開"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"%1$d 秒後に再開します"</item>
+    </plurals>
 </resources>

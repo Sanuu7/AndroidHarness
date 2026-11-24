@@ -1140,4 +1140,8 @@
     <string name="stream_writes_desc">"Beberapa server, termasuk beberapa model NVIDIA, hanya mengirim penulisan file setelah selesai. Untuk model tersebut, agen menulis file ke dalam balasannya agar Anda bisa melihatnya ditulis."</string>
     <string name="stream_writes_detected">"Model yang terdeteksi sejauh ini: %1$d"</string>
     <string name="stall_timeout_never">"Tidak pernah"</string>
+    <string name="harness_free_wait_resume">"Tunggu dan lanjutkan"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="other">"Melanjutkan dalam %1$d detik"</item>
+    </plurals>
 </resources>

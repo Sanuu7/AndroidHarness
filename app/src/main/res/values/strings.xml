@@ -1124,6 +1124,8 @@
     <string name="harness_switch_provider">Switch Provider</string>
     <string name="harness_free_wait">I’ll wait</string>
     <plurals name="harness_free_retry_seconds"><item quantity="one">The service suggests trying again in about %1$d second.</item><item quantity="other">The service suggests trying again in about %1$d seconds.</item></plurals>
+    <string name="harness_free_wait_resume">Wait and resume</string>
+    <plurals name="harness_free_resuming_in"><item quantity="one">Resuming in %1$d second</item><item quantity="other">Resuming in %1$d seconds</item></plurals>
     <plurals name="harness_free_retry_minutes"><item quantity="one">The service suggests trying again in about %1$d minute.</item><item quantity="other">The service suggests trying again in about %1$d minutes.</item></plurals>
     <string name="chat_search_code_chats">Let Chat search Code chats</string>
     <string name="chat_search_code_chats_desc">Find and read past Code conversations across your projects when you ask about them. Chat history stays searchable when this is off.</string>

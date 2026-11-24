@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"Bazı sunucular, birkaç NVIDIA modeli dahil, dosya yazımını ancak tamamlandığında gönderir. Bu modellerde ajan dosyayı yanıtının içine yazar, böylece yazılışını izleyebilirsin."</string>
     <string name="stream_writes_detected">"Şu ana dek algılanan modeller: %1$d"</string>
     <string name="stall_timeout_never">"Asla"</string>
+    <string name="harness_free_wait_resume">"Bekle ve devam et"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"%1$d saniye içinde devam edecek"</item>
+        <item quantity="other">"%1$d saniye içinde devam edecek"</item>
+    </plurals>
 </resources>

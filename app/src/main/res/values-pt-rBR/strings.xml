@@ -1144,4 +1144,9 @@
     <string name="stream_writes_desc">"Alguns servidores, incluindo vários modelos NVIDIA, só enviam uma gravação de arquivo quando ela termina. Nesses modelos o agente escreve o arquivo dentro da resposta para você ver enquanto é escrito."</string>
     <string name="stream_writes_detected">"Modelos detectados até agora: %1$d"</string>
     <string name="stall_timeout_never">"Nunca"</string>
+    <string name="harness_free_wait_resume">"Esperar e continuar"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="one">"Retomando em %1$d segundo"</item>
+        <item quantity="other">"Retomando em %1$d segundos"</item>
+    </plurals>
 </resources>

@@ -251,6 +251,8 @@ internal object StreamRetrier {
             onAttemptStart()
             var failure: String? = null
             var failureCode: Int? = null
+            var failureKind: String? = null
+            var retryAfterSeconds: Long? = null
             var retryAllowed = true
             var cause: Throwable? = null
             try {
@@ -259,6 +261,8 @@ internal object StreamRetrier {
                         is StreamEvent.Failure -> {
                             failure = event.message
                             failureCode = event.code
+                            failureKind = event.errorCode
+                            retryAfterSeconds = event.retryAfterSeconds
                             retryAllowed = event.retryable != false
                         }
                         else -> handleEvent(event)
@@ -277,8 +281,9 @@ internal object StreamRetrier {
                 failure = e.message ?: e.javaClass.simpleName
             }
 
+            val freeRate = failureKind == com.androidharness.app.llm.HarnessFreeLimit.RATE_CODE
             val retryable = allowRetries && retryAllowed && failure != null &&
-                attempt < RetryPolicy.MAX_RETRIES &&
+                attempt < (if (freeRate) RetryPolicy.FREE_RATE_RETRIES else RetryPolicy.MAX_RETRIES) &&
                 !hasOutput() &&
                 RetryPolicy.isRetryable(cause, failure, failureCode)
             if (!retryable) {
@@ -287,8 +292,9 @@ internal object StreamRetrier {
             }
 
             attempt++
-            val delayMs = RetryPolicy.delayMs(attempt)
-            emitEvent(AgentEvent.Retrying(attempt, delayMs, retryReason(failure)))
+            val delayMs = if (freeRate) RetryPolicy.freeRateDelayMs(attempt, retryAfterSeconds) else RetryPolicy.delayMs(attempt)
+            // The free-limit notice also says "Try again in N seconds"; the status line already counts down.
+            emitEvent(AgentEvent.Retrying(attempt, delayMs, retryReason(if (freeRate) failure.orEmpty().lineSequence().first() else failure)))
             sleep(delayMs)
         }
     }

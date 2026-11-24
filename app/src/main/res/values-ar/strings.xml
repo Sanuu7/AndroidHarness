@@ -1160,4 +1160,13 @@
     <string name="stream_writes_desc">"بعض الخوادم، ومنها عدة نماذج NVIDIA، لا ترسل استدعاء كتابة الملف إلا بعد اكتماله. مع تلك النماذج يكتب الوكيل الملف داخل رده لترى كيف يُكتب."</string>
     <string name="stream_writes_detected">"النماذج المكتشفة حتى الآن: %1$d"</string>
     <string name="stall_timeout_never">"أبدًا"</string>
+    <string name="harness_free_wait_resume">"انتظر ثم تابع"</string>
+    <plurals name="harness_free_resuming_in">
+        <item quantity="zero">"الاستئناف خلال %1$d ثانية"</item>
+        <item quantity="one">"الاستئناف خلال %1$d ثانية"</item>
+        <item quantity="two">"الاستئناف خلال %1$d ثانية"</item>
+        <item quantity="few">"الاستئناف خلال %1$d ثوانٍ"</item>
+        <item quantity="many">"الاستئناف خلال %1$d ثانية"</item>
+        <item quantity="other">"الاستئناف خلال %1$d ثانية"</item>
+    </plurals>
 </resources>

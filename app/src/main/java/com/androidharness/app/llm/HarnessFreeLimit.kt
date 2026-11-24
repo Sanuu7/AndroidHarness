@@ -31,9 +31,14 @@ internal object HarnessFreeLimit {
             else "\nPlease try again shortly, or switch providers to continue.")
     }
 
-    /** Also recognize a saved raw Kilo 429 from before friendly notices were introduced. */
+    /**
+     * True when resuming cannot help until the hourly allowance renews, so the
+     * paused card and Continue are hidden. A temporary rate limit clears within
+     * a minute or so, so it keeps them. Also recognizes a saved raw Kilo 429
+     * from before friendly notices were introduced.
+     */
     fun suppressRecovery(reason: String?, provider: ProviderConfig? = null): Boolean {
-        if (notice(reason) != null) return true
+        notice(reason)?.let { return it.kind == Kind.QUOTA }
         if (reason == null || provider?.id != HarnessProvider.ID) return false
         val promotion = reason.contains("PROMOTION_MODEL_LIMIT_REACHED", ignoreCase = true)
         if (!promotion && HarnessProvider.pool[provider.model]?.baseUrl != HarnessProvider.KILO_BASE_URL) return false
@@ -41,7 +46,7 @@ internal object HarnessFreeLimit {
             .find(reason)?.groupValues?.get(1)?.toIntOrNull()
         val failure = normalize(StreamEvent.Failure(reason, status,
             errorCode = if (promotion) "PROMOTION_MODEL_LIMIT_REACHED" else null))
-        return failure.errorCode == QUOTA_CODE || failure.errorCode == RATE_CODE
+        return failure.errorCode == QUOTA_CODE
     }
 
     /** Stable friendly prefixes survive the shared retry, recovery and notification paths. */

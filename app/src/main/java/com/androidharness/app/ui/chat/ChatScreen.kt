@@ -1276,6 +1276,7 @@ private fun ChatScreenContent(
             addProviderInitially = false
             activeProviderManagerTarget = state.modelSelectionTarget
         },
+        onWaitAndResume = viewModel::resumeAfterRateLimit,
     )
 
     val selectSection by androidx.compose.runtime.rememberUpdatedState(onSelectSection)

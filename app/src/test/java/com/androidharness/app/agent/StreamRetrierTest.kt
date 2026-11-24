@@ -33,6 +33,40 @@ class StreamRetrierTest {
         assertEquals(false, recoverable)
     }
 
+    @Test fun `free model rate limit retries for about a minute and honors the suggested wait`() = runBlocking {
+        val notice = com.androidharness.app.llm.HarnessFreeLimit.message(
+            com.androidharness.app.llm.HarnessFreeLimit.Notice(com.androidharness.app.llm.HarnessFreeLimit.Kind.TEMPORARY, 9))
+        var requests = 0
+        val waits = mutableListOf<Long>()
+        val reasons = mutableListOf<String>()
+        var recoverable: Boolean? = null
+        val result = StreamRetrier.run(
+            streamFor = { requests++; flowOf(StreamEvent.Failure(notice, 429,
+                com.androidharness.app.llm.HarnessFreeLimit.RATE_CODE, retryAfterSeconds = 9)) },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = { reasons += it.reason }, sleep = { waits += it }, onTerminalFailure = { recoverable = it },
+        )
+        assertEquals(notice, result)
+        assertEquals(RetryPolicy.FREE_RATE_RETRIES + 1, requests)
+        assertEquals(listOf(9_000L, 9_000L, 9_000L, 12_000L, 15_000L, 20_000L), waits)
+        assertTrue(waits.sum() >= 60_000)
+        // The status line counts down itself, so it shows only the notice's title.
+        assertTrue(reasons.all { it == "Harness free models are temporarily rate limited." })
+        assertEquals(true, recoverable)
+    }
+
+    @Test fun `free model wait is capped and other rate limits keep quick retries`() = runBlocking {
+        assertEquals(30_000L, RetryPolicy.freeRateDelayMs(1, 3_600))
+        assertEquals(2_000L, RetryPolicy.freeRateDelayMs(1, null))
+        var requests = 0
+        StreamRetrier.run(
+            streamFor = { requests++; flowOf(StreamEvent.Failure("Too many requests", 429)) },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = {}, sleep = {},
+        )
+        assertEquals(RetryPolicy.MAX_RETRIES + 1, requests)
+    }
+
     @Test fun `partial output server failure remains eligible for saved progress continue`() = runBlocking {
         var recoverable: Boolean? = null
         var hasOutput = false

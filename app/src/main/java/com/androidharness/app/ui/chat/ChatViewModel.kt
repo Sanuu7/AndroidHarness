@@ -1125,6 +1125,28 @@ class ChatViewModel(
         }
     }
 
+    private var rateLimitResume: kotlinx.coroutines.Job? = null
+
+    /**
+     * Resumes a task stopped by a temporary free-model limit once the gateway's
+     * suggested wait has passed. The paused card stays up meanwhile, so the
+     * user can still resume, dismiss or switch models sooner.
+     */
+    fun resumeAfterRateLimit(retryAfterSeconds: Long?) {
+        val sid = sessionId ?: return
+        rateLimitResume?.cancel()
+        val seconds = (retryAfterSeconds ?: DEFAULT_RATE_LIMIT_WAIT_SECONDS).coerceIn(1, MAX_RATE_LIMIT_WAIT_SECONDS)
+        _state.update { it.copy(modeToast = c.appContext.resources.getQuantityString(
+            R.plurals.harness_free_resuming_in, seconds.toInt(), seconds.toInt())) }
+        rateLimitResume = viewModelScope.launch {
+            kotlinx.coroutines.delay(seconds * 1_000)
+            val record = c.runManager.controls.flow(sid).value
+            // The user may have resumed, dismissed or moved on while we waited.
+            if (sessionId == sid && !c.runManager.isRunning(sid) && record.resumable &&
+                record.status in setOf("paused", "interrupted")) resumeInterruptedTask()
+        }
+    }
+
     /** Leaves a paused or interrupted task the user chose not to continue; the chat is usable again. */
     fun dismissPausedTask() {
         val sid = sessionId ?: return
@@ -2555,6 +2577,9 @@ class ChatViewModel(
         /** Largest file or shell output a slash command puts into its message. */
         private const val COMMAND_FILE_BYTES = 4 * 1024 * 1024
         private const val COMMAND_TIMEOUT_SECONDS = 120L
+        /** Wait after a temporary free-model limit when the gateway names none. */
+        private const val DEFAULT_RATE_LIMIT_WAIT_SECONDS = 15L
+        private const val MAX_RATE_LIMIT_WAIT_SECONDS = 120L
 
         fun factory(container: AppContainer, sessionId: String?, kind: com.androidharness.app.data.ConversationKind = com.androidharness.app.data.ConversationKind.CODE) = viewModelFactory {
             initializer { ChatViewModel(container, sessionId, kind) }

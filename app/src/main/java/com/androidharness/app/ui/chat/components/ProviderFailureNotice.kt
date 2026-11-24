@@ -24,6 +24,8 @@ internal fun ProviderFailureNotice(
     snackbar: SnackbarHostState,
     onDismiss: () -> Unit,
     onSwitchProvider: () -> Unit,
+    /** For a temporary limit: wait the suggested time, then resume the task. */
+    onWaitAndResume: (retryAfterSeconds: Long?) -> Unit = {},
 ) {
     val notice = remember(error) { HarnessFreeLimit.notice(error) }
     var acknowledged by rememberSaveable(sessionId) { mutableStateOf<String?>(null) }
@@ -36,6 +38,10 @@ internal fun ProviderFailureNotice(
     }
     if (notice != null && error != acknowledged) HarnessFreeLimitDialog(notice,
         onDismiss = { acknowledged = error; onDismiss() },
+        onWait = {
+            acknowledged = error; onDismiss()
+            if (notice.kind == HarnessFreeLimit.Kind.TEMPORARY) onWaitAndResume(notice.retryAfterSeconds)
+        },
         onSwitchProvider = { acknowledged = error; onDismiss(); onSwitchProvider() })
 }
 
@@ -44,6 +50,7 @@ internal fun HarnessFreeLimitDialog(
     notice: HarnessFreeLimit.Notice,
     onDismiss: () -> Unit,
     onSwitchProvider: () -> Unit,
+    onWait: () -> Unit = onDismiss,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -62,6 +69,7 @@ internal fun HarnessFreeLimitDialog(
             }
         },
         confirmButton = { TextButton(onClick = onSwitchProvider) { Text(stringResource(R.string.harness_switch_provider)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.harness_free_wait)) } },
+        dismissButton = { TextButton(onClick = onWait) { Text(stringResource(if (notice.kind == HarnessFreeLimit.Kind.QUOTA)
+            R.string.harness_free_wait else R.string.harness_free_wait_resume)) } },
     )
 }

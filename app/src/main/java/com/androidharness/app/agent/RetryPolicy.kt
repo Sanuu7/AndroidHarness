@@ -40,6 +40,23 @@ internal object RetryPolicy {
         return message != null && TRANSIENT_MESSAGE.containsMatchIn(message)
     }
 
+    /**
+     * Harness's free models share Kilo's anonymous gateway, which throttles in
+     * short windows. Three quick retries over about 7 seconds rarely outlast
+     * the window, so a "temporarily limited" reply gets more, slower attempts
+     * (about a minute in all) before the run stops and asks the user.
+     */
+    const val FREE_RATE_RETRIES = 6
+    private val FREE_RATE_DELAYS_MS = longArrayOf(2_000, 4_000, 8_000, 12_000, 15_000, 20_000)
+    private const val MAX_FREE_RATE_DELAY_MS = 30_000L
+
+    /** Waits at least as long as the gateway asked, capped so one reply cannot park the run. */
+    fun freeRateDelayMs(attempt: Int, retryAfterSeconds: Long?): Long {
+        val planned = FREE_RATE_DELAYS_MS[(attempt - 1).coerceIn(0, FREE_RATE_DELAYS_MS.lastIndex)]
+        val asked = retryAfterSeconds?.takeIf { it > 0 }?.let { minOf(it, MAX_FREE_RATE_DELAY_MS / 1_000) * 1_000 } ?: 0
+        return maxOf(planned, asked)
+    }
+
     /** Exponential backoff 1s / 2s / 4s with +/-30% jitter. [attempt] is 1-based. */
     fun delayMs(attempt: Int): Long {
         val exp = (attempt - 1).coerceIn(0, 4)
