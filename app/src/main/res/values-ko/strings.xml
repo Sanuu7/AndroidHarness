@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"아직 채팅 에이전트가 없습니다."</string>
     <string name="memory_folder_agents_pick">"에이전트를 하나 이상 선택하세요."</string>
     <string name="memory_folder_agents_row">"%1$s만 이 폴더를 볼 수 있습니다."</string>
+    <string name="goal_command_title">"목표"</string>
+    <string name="goal_command_hint">"완료될 때까지 계속 작업합니다. 예: /goal 모든 테스트 통과"</string>
+    <string name="goal_set">"목표가 설정되었습니다. 검사가 완료라고 확인할 때까지 최대 %1$d턴 계속합니다. 진행 상황은 /goal, 중지는 /goal clear입니다."</string>
+    <string name="goal_cleared">"목표가 해제되었습니다."</string>
+    <string name="goal_none">"이 채팅에는 목표가 없습니다. /goal 뒤에 완료의 모습을 적으세요. 예: /goal 모든 테스트 통과"</string>
+    <string name="goal_status_active">"목표: %1$s\n%3$d턴 중 %2$d턴 사용."</string>
+    <string name="goal_status_blocked">"목표가 당신을 기다립니다: %1$s"</string>
+    <string name="goal_status_met">"목표 달성: %1$s"</string>
+    <string name="goal_status_limit">"%2$d턴 후 목표 중지: %1$s"</string>
 </resources>

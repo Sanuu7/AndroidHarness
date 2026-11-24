@@ -1191,4 +1191,13 @@
     <string name="memory_folder_agents_none">"आपके पास अभी कोई चैट एजेंट नहीं है।"</string>
     <string name="memory_folder_agents_pick">"कम से कम एक एजेंट चुनें।"</string>
     <string name="memory_folder_agents_row">"इस फ़ोल्डर को केवल %1$s देख सकते हैं।"</string>
+    <string name="goal_command_title">"लक्ष्य"</string>
+    <string name="goal_command_hint">"पूरा होने तक काम करते रहें, जैसे /goal सभी टेस्ट पास हों"</string>
+    <string name="goal_set">"लक्ष्य सेट हो गया। एजेंट तब तक काम करता रहेगा जब तक जाँच न कहे कि यह पूरा हो गया, अधिकतम %1$d चरण तक। प्रगति के लिए /goal, रोकने के लिए /goal clear।"</string>
+    <string name="goal_cleared">"लक्ष्य हटा दिया गया।"</string>
+    <string name="goal_none">"इस चैट में कोई लक्ष्य नहीं है। /goal और पूरा होने का मतलब लिखें, जैसे /goal सभी टेस्ट पास हों।"</string>
+    <string name="goal_status_active">"लक्ष्य: %1$s\n%3$d में से %2$d चरण उपयोग हुए।"</string>
+    <string name="goal_status_blocked">"लक्ष्य आपका इंतज़ार कर रहा है: %1$s"</string>
+    <string name="goal_status_met">"लक्ष्य प्राप्त: %1$s"</string>
+    <string name="goal_status_limit">"%2$d चरणों के बाद लक्ष्य रुका: %1$s"</string>
 </resources>

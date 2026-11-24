@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"チャットエージェントがまだありません。"</string>
     <string name="memory_folder_agents_pick">"エージェントを1つ以上選んでください。"</string>
     <string name="memory_folder_agents_row">"%1$s だけがこのフォルダーを見られます。"</string>
+    <string name="goal_command_title">"ゴール"</string>
+    <string name="goal_command_hint">"完了するまで続ける。例: /goal すべてのテストに合格"</string>
+    <string name="goal_set">"ゴールを設定しました。チェックが完了と判断するまで最大 %1$d ターン続けます。進捗は /goal、停止は /goal clear です。"</string>
+    <string name="goal_cleared">"ゴールを解除しました。"</string>
+    <string name="goal_none">"このチャットにゴールはありません。/goal の後に完了の条件を書きます。例: /goal すべてのテストに合格"</string>
+    <string name="goal_status_active">"ゴール: %1$s\n%3$d ターン中 %2$d 使用。"</string>
+    <string name="goal_status_blocked">"あなた待ちのゴール: %1$s"</string>
+    <string name="goal_status_met">"ゴール達成: %1$s"</string>
+    <string name="goal_status_limit">"%2$d ターンでゴール停止: %1$s"</string>
 </resources>

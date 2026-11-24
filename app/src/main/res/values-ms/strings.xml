@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"Anda belum mempunyai ejen sembang."</string>
     <string name="memory_folder_agents_pick">"Pilih sekurang-kurangnya satu ejen."</string>
     <string name="memory_folder_agents_row">"Hanya %1$s boleh melihat folder ini."</string>
+    <string name="goal_command_title">"Matlamat"</string>
+    <string name="goal_command_hint">"Terus bekerja sehingga selesai, cth. /goal semua ujian lulus"</string>
+    <string name="goal_set">"Matlamat ditetapkan. Ejen terus bekerja sehingga semakan menyatakan selesai, sehingga %1$d pusingan. Guna /goal untuk kemajuan atau /goal clear untuk berhenti."</string>
+    <string name="goal_cleared">"Matlamat dikosongkan."</string>
+    <string name="goal_none">"Tiada matlamat dalam sembang ini. Taip /goal dan rupa selesainya, cth. /goal semua ujian lulus."</string>
+    <string name="goal_status_active">"Matlamat: %1$s\n%2$d daripada %3$d pusingan digunakan."</string>
+    <string name="goal_status_blocked">"Matlamat menunggu anda: %1$s"</string>
+    <string name="goal_status_met">"Matlamat tercapai: %1$s"</string>
+    <string name="goal_status_limit">"Matlamat berhenti selepas %2$d pusingan: %1$s"</string>
 </resources>

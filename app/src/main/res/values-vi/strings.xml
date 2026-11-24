@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"Bạn chưa có tác nhân trò chuyện nào."</string>
     <string name="memory_folder_agents_pick">"Chọn ít nhất một tác nhân."</string>
     <string name="memory_folder_agents_row">"Chỉ %1$s mới thấy thư mục này."</string>
+    <string name="goal_command_title">"Mục tiêu"</string>
+    <string name="goal_command_hint">"Tiếp tục làm cho đến khi xong, ví dụ /goal tất cả bài kiểm tra đều qua"</string>
+    <string name="goal_set">"Đã đặt mục tiêu. Tác nhân tiếp tục cho đến khi bước kiểm tra xác nhận xong, tối đa %1$d lượt. Xem tiến độ bằng /goal, dừng bằng /goal clear."</string>
+    <string name="goal_cleared">"Đã xóa mục tiêu."</string>
+    <string name="goal_none">"Không có mục tiêu trong cuộc trò chuyện này. Nhập /goal và thế nào là xong, ví dụ /goal tất cả bài kiểm tra đều qua."</string>
+    <string name="goal_status_active">"Mục tiêu: %1$s\nĐã dùng %2$d trên %3$d lượt."</string>
+    <string name="goal_status_blocked">"Mục tiêu đang chờ bạn: %1$s"</string>
+    <string name="goal_status_met">"Đã đạt mục tiêu: %1$s"</string>
+    <string name="goal_status_limit">"Mục tiêu dừng sau %2$d lượt: %1$s"</string>
 </resources>

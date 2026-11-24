@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"คุณยังไม่มีเอเจนต์แชท"</string>
     <string name="memory_folder_agents_pick">"เลือกอย่างน้อยหนึ่งเอเจนต์"</string>
     <string name="memory_folder_agents_row">"เฉพาะ %1$s เท่านั้นที่เห็นโฟลเดอร์นี้"</string>
+    <string name="goal_command_title">"เป้าหมาย"</string>
+    <string name="goal_command_hint">"ทำงานต่อจนเสร็จ เช่น /goal การทดสอบทั้งหมดผ่าน"</string>
+    <string name="goal_set">"ตั้งเป้าหมายแล้ว เอเจนต์จะทำงานต่อไปจนกว่าการตรวจจะระบุว่าเสร็จ มากสุด %1$d รอบ ดูความคืบหน้าด้วย /goal หรือหยุดด้วย /goal clear"</string>
+    <string name="goal_cleared">"ลบเป้าหมายแล้ว"</string>
+    <string name="goal_none">"ไม่มีเป้าหมายในแชทนี้ พิมพ์ /goal และสิ่งที่หมายถึงเสร็จ เช่น /goal การทดสอบทั้งหมดผ่าน"</string>
+    <string name="goal_status_active">"เป้าหมาย: %1$s\nใช้ไป %2$d จาก %3$d รอบ"</string>
+    <string name="goal_status_blocked">"เป้าหมายรอคุณอยู่: %1$s"</string>
+    <string name="goal_status_met">"ถึงเป้าหมายแล้ว: %1$s"</string>
+    <string name="goal_status_limit">"เป้าหมายหยุดหลัง %2$d รอบ: %1$s"</string>
 </resources>

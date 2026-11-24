@@ -230,4 +230,18 @@ class SlashCommandsTest {
     fun `picking review sends it right away`() {
         assertEquals(SlashCommands.Pick.Send("/review"), SlashCommands.pickAction("/review", "/rev", SlashCommands.Kind.REVIEW))
     }
+
+    @Test fun `goal stays local until the view model sends its kickoff`() {
+        val result = resolve("/goal  all tests pass ")
+        assertEquals(SlashCommands.Kind.GOAL, result.kind)
+        assertEquals("all tests pass", result.goalArgument)
+        assertFalse(result.startsAgent)
+        assertEquals("", resolve("/goal").goalArgument)
+        assertEquals(SlashCommands.Pick.Insert("/goal "), SlashCommands.pickAction("/goal", "/go", SlashCommands.Kind.GOAL))
+    }
+
+    @Test fun `a saved goal skill keeps the goal command`() {
+        val result = SlashCommands.resolve("/goal x", setOf("goal"), emptyMap(), skillContent = { "# goal\nMine." })
+        assertEquals(SlashCommands.Kind.SKILL, result.kind)
+    }
 }

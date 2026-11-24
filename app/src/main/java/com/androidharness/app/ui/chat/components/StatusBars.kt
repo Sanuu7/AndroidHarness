@@ -322,6 +322,9 @@ internal fun SlashSuggestions(
             add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
             add(SlashEntry("/context", uiContext.getString(R.string.context_command_title), uiContext.getString(R.string.context_command_hint), SlashCommands.Kind.CONTEXT))
             add(SlashEntry(SlashCommands.SIDE_COMMAND, "By the way", "Ask aside on the live context, kept out of the chat", SlashCommands.Kind.BTW))
+            if (state.skills.none { it.enabled && it.name == "goal" } && state.snippets.none { it.name.equals("goal", ignoreCase = true) }) {
+                add(SlashEntry(SlashCommands.GOAL_COMMAND, uiContext.getString(R.string.goal_command_title), uiContext.getString(R.string.goal_command_hint), SlashCommands.Kind.GOAL))
+            }
             add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))
             add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
             if (state.skills.none { it.enabled && it.name == "review" } && state.snippets.none { it.name.equals("review", ignoreCase = true) }) {

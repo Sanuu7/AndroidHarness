@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"Anda belum memiliki agen obrolan."</string>
     <string name="memory_folder_agents_pick">"Pilih setidaknya satu agen."</string>
     <string name="memory_folder_agents_row">"Hanya %1$s yang bisa melihat folder ini."</string>
+    <string name="goal_command_title">"Tujuan"</string>
+    <string name="goal_command_hint">"Terus bekerja sampai selesai, mis. /goal semua tes lulus"</string>
+    <string name="goal_set">"Tujuan ditetapkan. Agen terus bekerja sampai pemeriksaan menyatakan selesai, hingga %1$d giliran. Gunakan /goal untuk melihat kemajuan atau /goal clear untuk berhenti."</string>
+    <string name="goal_cleared">"Tujuan dihapus."</string>
+    <string name="goal_none">"Tidak ada tujuan di obrolan ini. Ketik /goal dan seperti apa selesainya, mis. /goal semua tes lulus."</string>
+    <string name="goal_status_active">"Tujuan: %1$s\n%2$d dari %3$d giliran terpakai."</string>
+    <string name="goal_status_blocked">"Tujuan menunggu Anda: %1$s"</string>
+    <string name="goal_status_met">"Tujuan tercapai: %1$s"</string>
+    <string name="goal_status_limit">"Tujuan berhenti setelah %2$d giliran: %1$s"</string>
 </resources>

@@ -1191,4 +1191,13 @@
     <string name="memory_folder_agents_none">"আপনার এখনো কোনো চ্যাট এজেন্ট নেই।"</string>
     <string name="memory_folder_agents_pick">"অন্তত একটি এজেন্ট বাছুন।"</string>
     <string name="memory_folder_agents_row">"শুধু %1$s এই ফোল্ডার দেখতে পারে।"</string>
+    <string name="goal_command_title">"লক্ষ্য"</string>
+    <string name="goal_command_hint">"শেষ না হওয়া পর্যন্ত কাজ চালিয়ে যান, যেমন /goal সব টেস্ট পাস"</string>
+    <string name="goal_set">"লক্ষ্য নির্ধারিত হলো। পরীক্ষা সম্পন্ন না বলা পর্যন্ত এজেন্ট কাজ চালিয়ে যাবে, সর্বোচ্চ %1$d ধাপ। অগ্রগতির জন্য /goal, থামাতে /goal clear।"</string>
+    <string name="goal_cleared">"লক্ষ্য মুছে ফেলা হয়েছে।"</string>
+    <string name="goal_none">"এই চ্যাটে কোনো লক্ষ্য নেই। /goal লিখে শেষ হওয়ার মানে জানান, যেমন /goal সব টেস্ট পাস।"</string>
+    <string name="goal_status_active">"লক্ষ্য: %1$s\n%3$d এর মধ্যে %2$d ধাপ ব্যবহৃত।"</string>
+    <string name="goal_status_blocked">"লক্ষ্য আপনার অপেক্ষায়: %1$s"</string>
+    <string name="goal_status_met">"লক্ষ্য অর্জিত: %1$s"</string>
+    <string name="goal_status_limit">"%2$d ধাপের পর লক্ষ্য থেমে গেছে: %1$s"</string>
 </resources>

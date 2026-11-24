@@ -9,11 +9,15 @@ internal class RunFollowUps(private val controls: TaskControlStore) {
         val runId: String,
         val finishedNotification: Boolean,
         val recoverableInterruption: Boolean,
+        /** The turn finished normally while this chat has a goal to check. */
+        val checkGoal: Boolean = false,
     )
 
     sealed interface Action {
         data class Send(val prompt: QueuedPrompt) : Action
         data object Continue : Action
+        /** Judge the chat's goal; the run stays current so a stop or a new message still cancels what follows. */
+        data object CheckGoal : Action
     }
 
     private data class Run(val id: String, var handled: Boolean = false)
@@ -35,6 +39,8 @@ internal class RunFollowUps(private val controls: TaskControlStore) {
         if (end.finishedNotification && saved.status == "idle") {
             saved.queue.firstOrNull()?.let { return Action.Send(it) }
         }
+        // Messages the user queued go first; the goal is checked again after them.
+        if (end.checkGoal && saved.status == "idle" && saved.queue.isEmpty() && saved.goal?.checking == true) return Action.CheckGoal
         if (!end.recoverableInterruption || saved.status !in listOf("paused", "interrupted") ||
             !saved.autoContinue || saved.autoContinueAttempts >= saved.autoContinueLimit.coerceIn(1, 5)) {
             runs.remove(end.sessionId)

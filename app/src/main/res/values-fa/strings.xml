@@ -1191,4 +1191,13 @@
     <string name="memory_folder_agents_none">"هنوز عامل چتی ندارید."</string>
     <string name="memory_folder_agents_pick">"حداقل یک عامل انتخاب کنید."</string>
     <string name="memory_folder_agents_row">"فقط %1$s می‌توانند این پوشه را ببینند."</string>
+    <string name="goal_command_title">"هدف"</string>
+    <string name="goal_command_hint">"تا تمام شدن ادامه بده، مثلاً /goal همه تست‌ها قبول شوند"</string>
+    <string name="goal_set">"هدف تعیین شد. عامل تا وقتی بررسی بگوید تمام شده ادامه می‌دهد، حداکثر %1$d نوبت. برای دیدن پیشرفت /goal و برای توقف /goal clear."</string>
+    <string name="goal_cleared">"هدف پاک شد."</string>
+    <string name="goal_none">"در این چت هدفی نیست. /goal و شکل تمام شدن را بنویسید، مثلاً /goal همه تست‌ها قبول شوند."</string>
+    <string name="goal_status_active">"هدف: %1$s\n%2$d از %3$d نوبت استفاده شد."</string>
+    <string name="goal_status_blocked">"هدف منتظر شماست: %1$s"</string>
+    <string name="goal_status_met">"هدف محقق شد: %1$s"</string>
+    <string name="goal_status_limit">"هدف پس از %2$d نوبت متوقف شد: %1$s"</string>
 </resources>

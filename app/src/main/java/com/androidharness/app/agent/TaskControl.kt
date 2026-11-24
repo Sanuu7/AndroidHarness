@@ -64,6 +64,8 @@ data class TaskRecord(
     val autoContinueAttempts: Int = 0,
     /** Null follows the app setting; a non-blank value is sent when this chat resumes, manually or automatically. */
     val resumePrompt: String? = null,
+    /** The /goal set on this chat; checked after every finished turn while it is active. */
+    val goal: GoalState? = null,
 ) {
     val resumable: Boolean get() = status == "running" || status == "paused" || status == "interrupted"
 }

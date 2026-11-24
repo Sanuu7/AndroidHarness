@@ -1191,4 +1191,13 @@
     <string name="memory_folder_agents_none">"Henüz sohbet ajanınız yok."</string>
     <string name="memory_folder_agents_pick">"En az bir ajan seçin."</string>
     <string name="memory_folder_agents_row">"Bu klasörü yalnızca %1$s görebilir."</string>
+    <string name="goal_command_title">"Hedef"</string>
+    <string name="goal_command_hint">"Bitene kadar çalışmaya devam et, örn. /goal tüm testler geçsin"</string>
+    <string name="goal_set">"Hedef belirlendi. Ajan, bir denetim tamamlandı diyene kadar en fazla %1$d tur devam eder. İlerleme için /goal, durdurmak için /goal clear."</string>
+    <string name="goal_cleared">"Hedef kaldırıldı."</string>
+    <string name="goal_none">"Bu sohbette hedef yok. /goal ve bittiğinin nasıl anlaşılacağını yazın, örn. /goal tüm testler geçsin."</string>
+    <string name="goal_status_active">"Hedef: %1$s\n%3$d turdan %2$d kullanıldı."</string>
+    <string name="goal_status_blocked">"Hedef sizi bekliyor: %1$s"</string>
+    <string name="goal_status_met">"Hedefe ulaşıldı: %1$s"</string>
+    <string name="goal_status_limit">"Hedef %2$d turdan sonra durdu: %1$s"</string>
 </resources>

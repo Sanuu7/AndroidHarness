@@ -943,6 +943,7 @@ class ChatViewModel(
                 return true
             }
             SlashCommands.Kind.BTW -> return askAside(resolved.sideQuestion.orEmpty())
+            SlashCommands.Kind.GOAL -> return handleGoal(resolved.goalArgument.orEmpty(), steering)
             SlashCommands.Kind.UNKNOWN -> {
                 _state.update { it.copy(error = resolved.error) }
                 return false
@@ -1032,6 +1033,53 @@ class ChatViewModel(
             reader.join(2_000)
             synchronized(output) { output.toString(Charsets.UTF_8.name()) }.trimEnd()
         } finally { if (process.isAlive) process.destroyForcibly() }
+    }
+
+    /** /goal shows, clears or sets this chat's goal. Setting one sends it as the next turn. */
+    private fun handleGoal(argument: String, steering: SteeringMode?): Boolean {
+        fun toast(text: String) = _state.update { it.copy(error = null, modeToast = text) }
+        val current = sessionId?.let { c.runManager.controls.flow(it).value.goal }
+        when (val command = com.androidharness.app.agent.GoalJudge.command(argument)) {
+            com.androidharness.app.agent.GoalJudge.Command.Status -> toast(goalStatus(current))
+            com.androidharness.app.agent.GoalJudge.Command.Clear -> {
+                val sid = sessionId
+                if (sid == null || current == null) toast(c.appContext.getString(R.string.goal_none))
+                else viewModelScope.launch {
+                    try {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            c.runManager.controls.update(sid) { it.copy(goal = null) }
+                        }
+                        toast(c.appContext.getString(R.string.goal_cleared))
+                    } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+                    catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+                }
+            }
+            is com.androidharness.app.agent.GoalJudge.Command.Set -> viewModelScope.launch {
+                try {
+                    val sid = ensureSession(command.text.take(48))
+                    val goal = com.androidharness.app.agent.GoalState(command.text)
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        c.runManager.controls.update(sid) { it.copy(goal = goal) }
+                    }
+                    if (dispatchAgentText(com.androidharness.app.agent.GoalJudge.kickoff(command.text), steering))
+                        toast(c.appContext.getString(R.string.goal_set, goal.turnLimit))
+                } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+                catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+            }
+        }
+        return true
+    }
+
+    private fun goalStatus(goal: com.androidharness.app.agent.GoalState?): String {
+        val text = when (goal?.status) {
+            null -> return c.appContext.getString(R.string.goal_none)
+            com.androidharness.app.agent.GoalState.Status.ACTIVE ->
+                c.appContext.getString(R.string.goal_status_active, goal.text, goal.turns, goal.turnLimit)
+            com.androidharness.app.agent.GoalState.Status.BLOCKED -> c.appContext.getString(R.string.goal_status_blocked, goal.text)
+            com.androidharness.app.agent.GoalState.Status.MET -> c.appContext.getString(R.string.goal_status_met, goal.text)
+            com.androidharness.app.agent.GoalState.Status.LIMIT -> c.appContext.getString(R.string.goal_status_limit, goal.text, goal.turnLimit)
+        }
+        return goal.lastReason?.takeIf { it.isNotBlank() }?.let { "$text\n$it" } ?: text
     }
 
     private fun dispatchAgentText(agentText: String, steering: SteeringMode? = null): Boolean {

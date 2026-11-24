@@ -1216,4 +1216,13 @@
     <string name="memory_folder_agents_none">"你还没有聊天智能体。"</string>
     <string name="memory_folder_agents_pick">"至少选择一个智能体。"</string>
     <string name="memory_folder_agents_row">"只有 %1$s 能看到此文件夹。"</string>
+    <string name="goal_command_title">"目标"</string>
+    <string name="goal_command_hint">"持续工作直到完成，例如 /goal 所有测试通过"</string>
+    <string name="goal_set">"已设定目标。智能体会持续工作，直到检查确认完成，最多 %1$d 轮。用 /goal 查看进度，用 /goal clear 停止。"</string>
+    <string name="goal_cleared">"目标已清除。"</string>
+    <string name="goal_none">"此聊天没有目标。输入 /goal 和完成的样子，例如 /goal 所有测试通过。"</string>
+    <string name="goal_status_active">"目标：%1$s\n已使用 %2$d/%3$d 轮。"</string>
+    <string name="goal_status_blocked">"目标在等你：%1$s"</string>
+    <string name="goal_status_met">"目标已达成：%1$s"</string>
+    <string name="goal_status_limit">"目标在 %2$d 轮后停止：%1$s"</string>
 </resources>

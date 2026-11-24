@@ -1191,4 +1191,13 @@
     <string name="memory_folder_agents_none">"Du hast noch keine Chat-Agenten."</string>
     <string name="memory_folder_agents_pick">"Wähle mindestens einen Agenten."</string>
     <string name="memory_folder_agents_row">"Nur %1$s können diesen Ordner sehen."</string>
+    <string name="goal_command_title">"Ziel"</string>
+    <string name="goal_command_hint">"Weiterarbeiten, bis es erledigt ist, z. B. /goal alle Tests bestehen"</string>
+    <string name="goal_set">"Ziel gesetzt. Der Agent arbeitet weiter, bis eine Prüfung sagt, dass es erledigt ist, bis zu %1$d Züge lang. /goal zeigt den Fortschritt, /goal clear stoppt."</string>
+    <string name="goal_cleared">"Ziel entfernt."</string>
+    <string name="goal_none">"Kein Ziel in diesem Chat. Gib /goal und wie „fertig“ aussieht ein, z. B. /goal alle Tests bestehen."</string>
+    <string name="goal_status_active">"Ziel: %1$s\n%2$d von %3$d Ziel-Zügen genutzt."</string>
+    <string name="goal_status_blocked">"Ziel wartet auf dich: %1$s"</string>
+    <string name="goal_status_met">"Ziel erreicht: %1$s"</string>
+    <string name="goal_status_limit">"Ziel nach %2$d Zügen gestoppt: %1$s"</string>
 </resources>

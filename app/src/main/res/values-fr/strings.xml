@@ -1197,4 +1197,13 @@
     <string name="memory_folder_agents_none">"Vous n\'avez pas encore d\'agents de chat."</string>
     <string name="memory_folder_agents_pick">"Choisissez au moins un agent."</string>
     <string name="memory_folder_agents_row">"Seuls %1$s peuvent voir ce dossier."</string>
+    <string name="goal_command_title">"Objectif"</string>
+    <string name="goal_command_hint">"Continuer jusqu\'à ce que ce soit fait, par ex. /goal tous les tests passent"</string>
+    <string name="goal_set">"Objectif défini. L\'agent continue jusqu\'à ce qu\'un contrôle confirme que c\'est fait, sur %1$d tours au maximum. /goal montre la progression, /goal clear l\'arrête."</string>
+    <string name="goal_cleared">"Objectif effacé."</string>
+    <string name="goal_none">"Aucun objectif dans ce chat. Écrivez /goal et ce que « terminé » signifie, par ex. /goal tous les tests passent."</string>
+    <string name="goal_status_active">"Objectif : %1$s\n%2$d tours sur %3$d utilisés."</string>
+    <string name="goal_status_blocked">"Objectif en attente : %1$s"</string>
+    <string name="goal_status_met">"Objectif atteint : %1$s"</string>
+    <string name="goal_status_limit">"Objectif arrêté après %2$d tours : %1$s"</string>
 </resources>

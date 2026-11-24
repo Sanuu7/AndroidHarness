@@ -163,4 +163,35 @@ class RunFollowUpsTest {
         assertEquals(3, saved.autoContinueLimit)
         assertEquals(0, saved.autoContinueAttempts)
     }
+
+    @Test fun `finished turn with an active goal asks for a check and keeps the run current`() {
+        store.update("a") { it.copy(goal = GoalState("ship it")) }
+        val event = end().copy(checkGoal = true)
+        assertEquals(RunFollowUps.Action.CheckGoal, followUps.next(event))
+        assertTrue(followUps.isCurrent("a", event.runId))
+        assertNotNull(followUps.advance("a", event.runId))
+    }
+
+    @Test fun `queued messages run before the goal check`() {
+        val queued = QueuedPrompt(text = "user first")
+        store.update("a") { it.copy(goal = GoalState("ship it"), queue = listOf(queued)) }
+        assertEquals(RunFollowUps.Action.Send(queued), followUps.next(end().copy(checkGoal = true)))
+    }
+
+    @Test fun `reached, stopped or missing goals are not checked`() {
+        for (goal in listOf(null, GoalState("g", status = GoalState.Status.MET), GoalState("g", status = GoalState.Status.LIMIT))) {
+            store.update("a") { it.copy(goal = goal) }
+            val event = end().copy(checkGoal = true)
+            assertNull(followUps.next(event))
+            assertFalse(followUps.isCurrent("a", event.runId))
+        }
+    }
+
+    @Test fun `stop during a goal check prevents the next goal turn`() {
+        store.update("a") { it.copy(goal = GoalState("ship it")) }
+        val event = end().copy(checkGoal = true)
+        assertEquals(RunFollowUps.Action.CheckGoal, followUps.next(event))
+        followUps.stop("a")
+        assertNull(followUps.advance("a", event.runId))
+    }
 }

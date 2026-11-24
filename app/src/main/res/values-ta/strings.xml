@@ -1191,4 +1191,13 @@
     <string name="memory_folder_agents_none">"உங்களிடம் இன்னும் அரட்டை முகவர்கள் இல்லை."</string>
     <string name="memory_folder_agents_pick">"குறைந்தது ஒரு முகவரைத் தேர்ந்தெடுக்கவும்."</string>
     <string name="memory_folder_agents_row">"%1$s மட்டுமே இந்தக் கோப்புறையைப் பார்க்கலாம்."</string>
+    <string name="goal_command_title">"இலக்கு"</string>
+    <string name="goal_command_hint">"முடியும் வரை தொடர்ந்து வேலை செய், எ.கா. /goal எல்லா சோதனைகளும் வெற்றி"</string>
+    <string name="goal_set">"இலக்கு அமைக்கப்பட்டது. சரிபார்ப்பு முடிந்ததாகச் சொல்லும் வரை முகவர் தொடர்ந்து வேலை செய்யும், அதிகபட்சம் %1$d சுற்றுகள். முன்னேற்றத்திற்கு /goal, நிறுத்த /goal clear."</string>
+    <string name="goal_cleared">"இலக்கு நீக்கப்பட்டது."</string>
+    <string name="goal_none">"இந்த அரட்டையில் இலக்கு இல்லை. /goal எனத் தட்டச்சு செய்து முடிந்ததன் அர்த்தத்தைச் சொல்லுங்கள், எ.கா. /goal எல்லா சோதனைகளும் வெற்றி."</string>
+    <string name="goal_status_active">"இலக்கு: %1$s\n%3$d சுற்றுகளில் %2$d பயன்படுத்தப்பட்டது."</string>
+    <string name="goal_status_blocked">"இலக்கு உங்களுக்காகக் காத்திருக்கிறது: %1$s"</string>
+    <string name="goal_status_met">"இலக்கு எட்டப்பட்டது: %1$s"</string>
+    <string name="goal_status_limit">"%2$d சுற்றுகளுக்குப் பின் இலக்கு நின்றது: %1$s"</string>
 </resources>

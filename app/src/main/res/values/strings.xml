@@ -1155,6 +1155,15 @@
     <string name="auto_compact_input_label">Tokens or auto</string>
     <string name="auto_compact_invalid">Enter at least 1,024 tokens, such as 258K, 350K or 1M, or use auto for 80%.</string>
     <string name="auto_compact_slash_hint">Set this chat’s threshold, e.g. /autocompact 350K</string>
+    <string name="goal_command_title">Goal</string>
+    <string name="goal_command_hint">Keep working until it is done, e.g. /goal all tests pass</string>
+    <string name="goal_set">Goal set. The agent keeps going until a check says it is done, for up to %1$d turns. Use /goal to see progress or /goal clear to stop.</string>
+    <string name="goal_cleared">Goal cleared.</string>
+    <string name="goal_none">No goal in this chat. Type /goal and what done looks like, e.g. /goal all tests pass.</string>
+    <string name="goal_status_active">Goal: %1$s\n%2$d of %3$d goal turns used.</string>
+    <string name="goal_status_blocked">Goal waiting for you: %1$s</string>
+    <string name="goal_status_met">Goal reached: %1$s</string>
+    <string name="goal_status_limit">Goal stopped after %2$d turns: %1$s</string>
     <string name="auto_compact_status">This chat auto compacts at about %1$s context tokens. Use /autocompact 350K to change it, or /autocompact default to follow settings.</string>
     <string name="auto_compact_saved">This chat will auto compact at about %1$s context tokens, then continue. Space for the reply is reserved.</string>
     <string name="auto_compact_reset">Following the default: auto compact at about %1$s context tokens.</string>

@@ -9,7 +9,7 @@ import com.androidharness.app.skills.buildSlashSkillMessage
 object SlashCommands {
 
     enum class Kind {
-        CLEAR, COMPACT, AUTO_COMPACT, COST, CONTEXT, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW, REVIEW,
+        CLEAR, COMPACT, AUTO_COMPACT, COST, CONTEXT, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW, REVIEW, GOAL,
     }
 
     enum class Dispatch { START, QUEUE }
@@ -21,6 +21,8 @@ object SlashCommands {
         /** /btw: the side question, blank when the sheet should open empty. */
         val sideQuestion: String? = null,
         val autoCompactArgument: String? = null,
+        /** /goal: what follows the command, blank to show the current goal. */
+        val goalArgument: String? = null,
         /** Set when a command's !`shell` lines and @file references still have to be filled in before it is sent. */
         val command: com.androidharness.app.skills.SkillStore.Command? = null,
     ) {
@@ -156,6 +158,9 @@ object SlashCommands {
         if (command == "/review" && "review" !in skillNames && snippetBodies.keys.none { it.equals("review", ignoreCase = true) }) {
             return Result(Kind.REVIEW, agentText = com.androidharness.app.core.ChangeReview.prompt(focus = argument))
         }
+        if (command == GOAL_COMMAND && "goal" !in skillNames && snippetBodies.keys.none { it.equals("goal", ignoreCase = true) }) {
+            return Result(Kind.GOAL, goalArgument = argument.trim())
+        }
         return when (command) {
             "/clear" -> Result(Kind.CLEAR)
             "/compact" -> Result(Kind.COMPACT)
@@ -210,6 +215,7 @@ object SlashCommands {
     }
 
     const val SIDE_COMMAND = "/btw"
+    const val GOAL_COMMAND = "/goal"
     private val WHITESPACE = Regex("\\s+")
 
     /** Chat mode skips slash commands, except this one that never reaches the agent. */
@@ -232,7 +238,7 @@ object SlashCommands {
             } else ""
             return Pick.AttachSkill(entryCommand.removePrefix("/"), leftover)
         }
-        if (kind == Kind.BTW || kind == Kind.AUTO_COMPACT) return Pick.Insert("$entryCommand ")
+        if (kind == Kind.BTW || kind == Kind.AUTO_COMPACT || kind == Kind.GOAL) return Pick.Insert("$entryCommand ")
         if (kind == Kind.PLAN) {
             // Stay in the composer: "/plan" stays put so the user can append
             // the instruction and hit send themselves. No auto-send.

@@ -1215,4 +1215,13 @@
     <string name="memory_folder_agents_none">"ليس لديك وكلاء دردشة بعد."</string>
     <string name="memory_folder_agents_pick">"اختر وكيلاً واحداً على الأقل."</string>
     <string name="memory_folder_agents_row">"لا يرى هذا المجلد إلا %1$s."</string>
+    <string name="goal_command_title">"الهدف"</string>
+    <string name="goal_command_hint">"استمر بالعمل حتى ينتهي، مثل /goal نجاح كل الاختبارات"</string>
+    <string name="goal_set">"تم ضبط الهدف. يستمر الوكيل حتى تؤكد مراجعة أنه انتهى، لمدة تصل إلى %1$d جولات. استخدم /goal للاطلاع على التقدم أو /goal clear للتوقف."</string>
+    <string name="goal_cleared">"تم مسح الهدف."</string>
+    <string name="goal_none">"لا هدف في هذه الدردشة. اكتب /goal وما يعنيه الانتهاء، مثل /goal نجاح كل الاختبارات."</string>
+    <string name="goal_status_active">"الهدف: %1$s\nاستُخدمت %2$d من %3$d جولات."</string>
+    <string name="goal_status_blocked">"الهدف ينتظرك: %1$s"</string>
+    <string name="goal_status_met">"تم بلوغ الهدف: %1$s"</string>
+    <string name="goal_status_limit">"توقف الهدف بعد %2$d جولات: %1$s"</string>
 </resources>

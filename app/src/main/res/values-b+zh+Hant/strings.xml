@@ -1185,4 +1185,13 @@
     <string name="memory_folder_agents_none">"你還沒有聊天代理程式。"</string>
     <string name="memory_folder_agents_pick">"至少選一個代理程式。"</string>
     <string name="memory_folder_agents_row">"只有 %1$s 能看到此資料夾。"</string>
+    <string name="goal_command_title">"目標"</string>
+    <string name="goal_command_hint">"持續工作直到完成，例如 /goal 所有測試通過"</string>
+    <string name="goal_set">"已設定目標。代理程式會持續工作，直到檢查確認完成，最多 %1$d 輪。用 /goal 查看進度，用 /goal clear 停止。"</string>
+    <string name="goal_cleared">"目標已清除。"</string>
+    <string name="goal_none">"此聊天沒有目標。輸入 /goal 和完成的樣子，例如 /goal 所有測試通過。"</string>
+    <string name="goal_status_active">"目標：%1$s\n已使用 %2$d/%3$d 輪。"</string>
+    <string name="goal_status_blocked">"目標在等你：%1$s"</string>
+    <string name="goal_status_met">"目標已達成：%1$s"</string>
+    <string name="goal_status_limit">"目標在 %2$d 輪後停止：%1$s"</string>
 </resources>
