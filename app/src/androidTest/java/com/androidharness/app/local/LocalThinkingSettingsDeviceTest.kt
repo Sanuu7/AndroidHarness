@@ -8,7 +8,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.androidharness.app.MainActivity
-import com.androidharness.app.ui.settings.LocalLimitsDialog
+import com.androidharness.app.ui.settings.LocalModelSettingsSheet
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -55,12 +55,12 @@ class LocalThinkingSettingsDeviceTest {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 fun open() {
                     val generation = java.util.UUID.randomUUID()
-                    scenario.onActivity { activity -> activity.setContent { MaterialTheme { androidx.compose.runtime.key(generation) { LocalLimitsDialog(spec, manager, onDismiss = {}) } } } }
+                    scenario.onActivity { activity -> activity.setContent { MaterialTheme { androidx.compose.runtime.key(generation) { LocalModelSettingsSheet(spec, manager, onDismiss = {}) } } } }
                 }
-                open(); click("Thinking model · request reasoning"); click("Save")
+                open(); click(context.getString(com.androidharness.app.R.string.lms_thinking_always)); click("Save")
                 withTimeout(5000) { while (manager.limits(id).thinkingMode != LocalThinkingMode.THINKING) kotlinx.coroutines.delay(50) }
                 assertEquals(LocalThinkingMode.THINKING, LocalModelManager(context).limits(id).thinkingMode)
-                open(); click("Non-thinking model · direct answers"); click("Save")
+                open(); click(context.getString(com.androidharness.app.R.string.lms_thinking_never)); click("Save")
                 withTimeout(5000) { while (manager.limits(id).thinkingMode != LocalThinkingMode.DIRECT) kotlinx.coroutines.delay(50) }
                 open(); click(context.getString(com.androidharness.app.R.string.settings_action_reset_defaults)); click("Save")
                 withTimeout(5000) { while (manager.limits(id).thinkingMode != LocalThinkingMode.AUTO) kotlinx.coroutines.delay(50) }

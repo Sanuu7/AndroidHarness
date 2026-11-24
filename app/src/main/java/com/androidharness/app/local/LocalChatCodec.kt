@@ -16,9 +16,11 @@ internal object LocalChatCodec {
         .filter { it.role == Role.USER || it.text.isNotBlank() || it.imageData.isNotEmpty() || it.images.isNotEmpty() }
 
     fun request(system: String, messages: List<ChatMessage>, tools: List<ToolSchema>, thinking: Boolean = false,
-        includeAgentContext: Boolean = true, thinkingMode: LocalThinkingMode = LocalThinkingMode.AUTO): String = buildJsonObject {
+        includeAgentContext: Boolean = true, thinkingMode: LocalThinkingMode = LocalThinkingMode.AUTO,
+        speculative: LocalSpeculativeMode = LocalSpeculativeMode.OFF): String = buildJsonObject {
         put("enable_thinking", thinkingMode.enabled(thinking))
         put("thinking_model", thinkingMode.name)
+        put("speculative", speculative.name)
         putJsonArray("messages") {
             if (includeAgentContext && system.isNotBlank()) add(buildJsonObject { put("role", "system"); put("content", system) })
             (if (includeAgentContext) messages else plainChatMessages(messages)).forEach { message -> add(buildJsonObject {

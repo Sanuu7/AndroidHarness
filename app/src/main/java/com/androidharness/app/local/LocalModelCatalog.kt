@@ -64,6 +64,10 @@ object LocalModelCatalog {
     fun isLocal(id: String) = id.startsWith(PROVIDER_PREFIX)
 }
 
+/** Draftless n-gram speculative decoding in llama.cpp. Experimental, so it stays off by default. */
+@Serializable
+enum class LocalSpeculativeMode { OFF, NGRAM_SIMPLE, NGRAM_MOD }
+
 @Serializable
 enum class LocalThinkingMode {
     AUTO, THINKING, DIRECT;
@@ -79,6 +83,7 @@ data class LocalModelLimits(
     val backend: LocalBackend = LocalBackend.AUTO,
     val promptThreads: Int? = null,
     val thinkingMode: LocalThinkingMode = LocalThinkingMode.AUTO,
+    val speculative: LocalSpeculativeMode = LocalSpeculativeMode.OFF,
 ) {
     fun validate() {
         require(context > 0) { "Context must be a positive number." }

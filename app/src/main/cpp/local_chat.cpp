@@ -4,6 +4,7 @@
 #include "ggml-backend.h"
 #include "chat.h"
 #include "sampling.h"
+#include "speculative.h"
 #include "mtmd.h"
 #include "mtmd-helper.h"
 #include <nlohmann/json.hpp>
@@ -394,14 +395,31 @@ Java_com_androidharness_app_local_LocalNative_generateChat(
             previous = parsed;
             return parsed;
         };
+        // Draftless speculative decoding: guesses come from repeated n-grams in
+        // the conversation and the model verifies them in one batch. Sampling is
+        // greedy, so the output is identical to plain decoding. Image chats and
+        // recurrent or hybrid models cannot roll back rejected guesses, so they
+        // always decode one token at a time.
+        const auto speculativeMode = raw.value("speculative", std::string("OFF"));
+        common_params_speculative specParams;
+        specParams.ngram_simple.size_n = 8; specParams.ngram_simple.size_m = 16;
+        specParams.ngram_mod.n_match = 16; specParams.ngram_mod.n_max = 16; specParams.ngram_mod.n_min = 4;
+        if (speculativeMode == "NGRAM_SIMPLE") specParams.types = {COMMON_SPECULATIVE_TYPE_NGRAM_SIMPLE};
+        else if (speculativeMode == "NGRAM_MOD") specParams.types = {COMMON_SPECULATIVE_TYPE_NGRAM_MOD};
+        const bool speculate = specParams.types.front() != COMMON_SPECULATIVE_TYPE_NONE && !vision &&
+            !llama_model_is_recurrent(model.get()) && !llama_model_is_hybrid(model.get());
+        common_speculative_ptr spec(speculate ? common_speculative_init(specParams, 1) : nullptr);
+        constexpr int maxDraft = 16;
+        llama_tokens history, draft;
+        if (spec) { history = tokens; common_speculative_begin(spec.get(), 0, history); }
+        int drafted = 0, accepted = 0;
+
         stage("Generating");
         int generated = 0;
         bool ended = false;
-        while (generated < outputLimit) {
-            if (aborted(request)) throw std::runtime_error("Local generation stopped.");
-            auto token = common_sampler_sample(sampler.get(), ctx.get(), -1);
-            common_sampler_accept(sampler.get(), token, true);
-            if (llama_vocab_is_eog(vocab, token)) { ended = true; break; }
+        // Returns true once generation must end (end token, stop marker or output limit).
+        auto emit = [&](llama_token token) {
+            if (llama_vocab_is_eog(vocab, token)) { ended = true; return true; }
             std::vector<char> piece(256);
             int size = llama_token_to_piece(vocab, token, piece.data(), piece.size(), 0, true);
             if (size < 0) { piece.resize(-size); size = llama_token_to_piece(vocab, token, piece.data(), piece.size(), 0, true); }
@@ -409,20 +427,68 @@ Java_com_androidharness_app_local_LocalNative_generateChat(
             output.append(std::string(piece.data(), size), token);
             ++generated;
             if (complete_utf8(output.text)) publish(true);
-            bool stop = false;
             for (const auto & marker : chat.additional_stops) if (!marker.empty() && output.text.size() >= marker.size() &&
-                output.text.compare(output.text.size() - marker.size(), marker.size(), marker) == 0) stop = true;
-            if (stop) { ended = true; break; }
-            if (generated < outputLimit) {
-                // Explicit positions also work for image models using M-RoPE.
-                auto batch = llama_batch_init(1, 0, 1);
-                batch.n_tokens = 1; batch.token[0] = token; batch.pos[0] = nPast++;
-                batch.n_seq_id[0] = 1; batch.seq_id[0][0] = 0; batch.logits[0] = true;
-                int result = llama_decode(ctx.get(), batch);
-                llama_batch_free(batch);
-                if (result != 0) throw std::runtime_error("Generation failed or was stopped.");
+                output.text.compare(output.text.size() - marker.size(), marker.size(), marker) == 0) { ended = true; return true; }
+            return generated >= outputLimit;
+        };
+        // Decodes the last sampled token followed by any draft, all with logits.
+        // Explicit positions also work for image models using M-RoPE.
+        auto decode = [&](llama_token token) {
+            const int count = 1 + int(draft.size());
+            auto batch = llama_batch_init(count, 0, 1);
+            batch.n_tokens = count;
+            for (int i = 0; i < count; ++i) {
+                batch.token[i] = i == 0 ? token : draft[i - 1]; batch.pos[i] = nPast + i;
+                batch.n_seq_id[i] = 1; batch.seq_id[i][0] = 0; batch.logits[i] = true;
             }
+            int result = llama_decode(ctx.get(), batch);
+            llama_batch_free(batch);
+            if (result != 0) throw std::runtime_error("Generation failed or was stopped.");
+        };
+        if (aborted(request)) throw std::runtime_error("Local generation stopped.");
+        auto token = common_sampler_sample(sampler.get(), ctx.get(), -1);
+        common_sampler_accept(sampler.get(), token, true);
+        while (!emit(token)) {
+            if (aborted(request)) throw std::runtime_error("Local generation stopped.");
+            draft.clear();
+            if (spec) {
+                const int room = std::min({maxDraft, outputLimit - generated - 1, contextSize - int(nPast) - 2});
+                if (room > 0) {
+                    auto & dp = common_speculative_get_draft_params(spec.get(), 0);
+                    dp.drafting = true; dp.n_max = room; dp.pos0 = nPast; dp.id_last = token;
+                    dp.prompt = &history; dp.result = &draft;
+                    common_speculative_draft(spec.get());
+                    if (int(draft.size()) > room) draft.resize(room);
+                }
+            }
+            decode(token);
+            if (spec) history.push_back(token);
+            ++nPast;
+            if (draft.empty()) {
+                token = common_sampler_sample(sampler.get(), ctx.get(), -1);
+                common_sampler_accept(sampler.get(), token, true);
+                continue;
+            }
+            // Samples (and accepts) each position until the model disagrees with the draft.
+            auto ids = common_sampler_sample_and_accept_n(sampler.get(), ctx.get(), draft);
+            const int matched = int(ids.size()) - 1;
+            drafted += int(draft.size()); accepted += matched;
+            common_speculative_accept(spec.get(), 0, uint16_t(matched));
+            // Rejected guesses must leave the KV cache before the next decode.
+            if (!llama_memory_seq_rm(llama_get_memory(ctx.get()), 0, nPast + matched, -1))
+                throw std::runtime_error("This model cannot use speculative decoding. Turn it off in the model's settings.");
+            bool done = false;
+            for (int i = 0; i < matched && !done; ++i) {
+                done = emit(ids[i]);
+                history.push_back(ids[i]); ++nPast;
+            }
+            if (done) break;
+            token = ids.back();
         }
+#ifdef __ANDROID__
+        if (spec) __android_log_print(ANDROID_LOG_INFO, "HarnessLocal", "speculative %s: %d/%d draft tokens accepted, %d generated",
+            speculativeMode.c_str(), accepted, drafted, generated);
+#endif
         auto final = publish(false);
         json calls = json::array();
         // A truncated tool call must never become an executable action.
@@ -434,7 +500,8 @@ Java_com_androidharness_app_local_LocalNative_generateChat(
             if (!known) throw std::runtime_error("The local model requested an unknown tool.");
             calls.push_back({{"name", call.name}, {"arguments", arguments}, {"id", call.id}});
         }
-        auto result = json({{"input", promptCount}, {"output", generated}, {"ended", ended}, {"calls", calls}, {"backend", useGpu ? "GPU" : "CPU"}, {"reused_prompt_tokens", reused}}).dump();
+        auto result = json({{"input", promptCount}, {"output", generated}, {"ended", ended}, {"calls", calls}, {"backend", useGpu ? "GPU" : "CPU"}, {"reused_prompt_tokens", reused},
+            {"speculative", bool(spec)}, {"drafted_tokens", drafted}, {"accepted_tokens", accepted}}).dump();
         if (canCache && !aborted(request)) {
             llama_set_abort_callback(ctx.get(), nullptr, nullptr);
             cached_context = std::move(ctx); cached_tokens = tokens; cached_session = session;

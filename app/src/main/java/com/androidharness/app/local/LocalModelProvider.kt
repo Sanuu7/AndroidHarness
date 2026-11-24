@@ -21,7 +21,8 @@ class LocalModelProvider(private val manager: LocalModelManager,
         try {
             val id = config.id.removePrefix(LocalModelCatalog.PROVIDER_PREFIX)
             check(config.model == config.id) { "Choose this provider's installed model. Other model IDs cannot run locally." }
-            val mode = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { manager.limits(id).thinkingMode }
+            val limits = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { manager.limits(id) }
+            val mode = limits.thinkingMode
             val requested = options.resolveThinking(config)
             val thinking = requested.copy(level = if (mode.enabled(requested.level != com.androidharness.app.agent.ThinkingLevel.OFF)) com.androidharness.app.agent.ThinkingLevel.HIGH else com.androidharness.app.agent.ThinkingLevel.OFF)
             emit(StreamEvent.ThinkingConfigured(thinking.detail))
@@ -29,7 +30,8 @@ class LocalModelProvider(private val manager: LocalModelManager,
             val chatMessages = if (enabled) messages else LocalChatCodec.plainChatMessages(messages)
             val chatTools = if (enabled) tools else emptyList()
             val request = LocalChatCodec.request(systemPrompt, chatMessages, chatTools,
-                thinking.level != com.androidharness.app.agent.ThinkingLevel.OFF, includeAgentContext = enabled, thinkingMode = mode)
+                thinking.level != com.androidharness.app.agent.ThinkingLevel.OFF, includeAgentContext = enabled, thinkingMode = mode,
+                speculative = limits.speculative)
             val images = chatMessages.flatMap { it.imageData }.map {
                 android.util.Base64.decode(it.base64, android.util.Base64.DEFAULT)
             }.toTypedArray()

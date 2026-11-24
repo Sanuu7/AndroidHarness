@@ -446,7 +446,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
             confirmButton = { TextButton(onClick = { removing = null; removeNow(model) }) { Text(stringResource(R.string.settings_action_remove), color = MaterialTheme.colorScheme.error) } },
             dismissButton = { TextButton(onClick = { removing = null }) { Text(stringResource(R.string.settings_local_models_keep)) } })
     }
-    editing?.let { model -> LocalLimitsDialog(model, manager, onDismiss = { editing = null }) }
+    editing?.let { model -> LocalModelSettingsSheet(model, manager, onDismiss = { editing = null }) }
     }
 }
 
@@ -597,109 +597,6 @@ private fun LocalModelDetailsDialog(model: LocalModelSpec, context: Int, onDismi
             if (!model.localFile) TextButton(onClick = { uri.openUri(model.modelPage) }) { Text(stringResource(R.string.settings_projector_open_page)) }
         }
     }, confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_done)) } })
-}
-
-@Composable
-internal fun LocalLimitsDialog(model: LocalModelSpec, manager: LocalModelManager, onDismiss: () -> Unit) {
-    val uiContext = androidx.compose.ui.platform.LocalContext.current
-    var saved by remember { mutableStateOf<LocalModelLimits?>(null) }
-    LaunchedEffect(model.id) { saved = withContext(Dispatchers.IO) { manager.limits(model.id) } }
-    val limits = saved ?: return
-    var context by remember { mutableStateOf(limits.context.toString()) }
-    var input by remember { mutableStateOf(limits.input.toString()) }
-    var output by remember { mutableStateOf(limits.output.toString()) }
-    var threads by remember { mutableStateOf(limits.threads.toString()) }
-    var promptThreads by remember { mutableStateOf((limits.promptThreads ?: limits.threads).toString()) }
-    var backend by remember { mutableStateOf(limits.backend) }
-    var thinkingMode by remember { mutableStateOf(limits.thinkingMode) }
-    var advanced by rememberSaveable { mutableStateOf(false) }
-    val experimentalSettings = remember(uiContext) { com.androidharness.app.data.SettingsRepository(uiContext) }
-    val experimental by experimentalSettings.settings
-        .collectAsStateWithLifecycle(initialValue = AppSettings())
-    var error by remember { mutableStateOf<String?>(null) }
-    var saving by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    AlertDialog(onDismissRequest = { if (!saving) onDismiss() }, title = { Text(stringResource(R.string.settings_local_models_model_settings)) }, text = {
-        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(model.title, style = MaterialTheme.typography.titleSmall)
-            if (experimental.localModelExperimental) LocalBackendPicker(manager, backend, !saving) { backend = it }
-            Text(stringResource(R.string.local_thinking_behavior), style = MaterialTheme.typography.titleSmall)
-            Column {
-                LocalThinkingMode.entries.forEach { option ->
-                    Row(Modifier.fillMaxWidth().selectable(selected = thinkingMode == option, enabled = !saving,
-                        role = Role.RadioButton, onClick = { thinkingMode = option }), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = thinkingMode == option, onClick = null, enabled = !saving)
-                        Text(stringResource(when (option) { LocalThinkingMode.AUTO -> R.string.local_thinking_auto; LocalThinkingMode.THINKING -> R.string.local_thinking_on; LocalThinkingMode.DIRECT -> R.string.local_thinking_direct }))
-                    }
-                }
-            }
-            Text(stringResource(R.string.local_thinking_help), style = MaterialTheme.typography.bodySmall)
-
-            LocalNumberField(
-                stringResource(R.string.settings_local_models_conversation_size),
-                context,
-                stringResource(R.string.settings_local_models_tokens_unit),
-                stringResource(R.string.settings_local_models_conversation_hint),
-                !saving,
-            ) { context = it }
-            LocalNumberField(
-                stringResource(R.string.settings_local_models_reply_length),
-                output,
-                stringResource(R.string.settings_local_models_tokens_unit),
-                stringResource(R.string.settings_local_models_reply_hint),
-                !saving,
-            ) { output = it }
-            Text(
-                stringResource(
-                    R.string.settings_local_models_estimated_ram,
-                    size(model.estimatedMemory(context.toIntOrNull()?.coerceAtLeast(1) ?: limits.context)),
-                ),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            TextButton(onClick = { advanced = !advanced }, enabled = !saving) {
-                Text(
-                    if (advanced) stringResource(R.string.settings_local_models_advanced_hide)
-                    else stringResource(R.string.settings_local_models_advanced_show),
-                )
-                Spacer(Modifier.width(6.dp)); Icon(if (advanced) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null)
-            }
-            AnimatedVisibility(visible = advanced) { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                LocalNumberField(uiContext.getString(R.string.ui_input_budget), input, "tokens", uiContext.getString(R.string.ui_includes_instructions_and_chat_history_you_can), !saving) { input = it }
-                LocalNumberField(uiContext.getString(R.string.local_generation_threads), threads, "threads", uiContext.getString(R.string.ui_more_threads_can_increase_heat_and_may), !saving) { threads = it }
-                LocalNumberField(uiContext.getString(R.string.local_prompt_threads), promptThreads, "threads", uiContext.getString(R.string.local_prompt_threads_help), !saving) { promptThreads = it }
-            }
-            }
-            TextButton(enabled = !saving, onClick = {
-                context = model.defaultContext.toString()
-                input = (model.defaultContext * 3 / 4).coerceAtLeast(1).toString()
-                output = (model.defaultContext / 4).coerceAtLeast(1).toString()
-                threads = manager.device().cores.coerceIn(1, 4).toString()
-                promptThreads = threads
-                backend = LocalBackend.AUTO
-                thinkingMode = LocalThinkingMode.AUTO
-                error = null
-            }) { Text(stringResource(R.string.settings_action_reset_defaults)) }
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        }
-    }, confirmButton = { TextButton(enabled = !saving, onClick = {
-        scope.launch {
-            saving = true
-            try {
-                manager.saveLimits(model.id, LocalModelLimits(context.toIntOrNull() ?: 0, input.toIntOrNull() ?: 0,
-                    output.toIntOrNull() ?: 0, threads.toIntOrNull() ?: 0, backend, promptThreads.toIntOrNull() ?: 0, thinkingMode))
-                onDismiss()
-            } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { error = e.message }
-            finally { saving = false }
-        }
-    }) { Text(stringResource(R.string.settings_action_save)) } }, dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } })
-
-}
-
-@Composable
-private fun LocalNumberField(label: String, value: String, unit: String, help: String, enabled: Boolean, onChange: (String) -> Unit) {
-    OutlinedTextField(value, onChange, label = { Text(label) }, suffix = { Text(unit) }, supportingText = { Text(help) },
-        singleLine = true, enabled = enabled, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
 }
 
 internal fun size(bytes: Long): String = if (bytes < 1_000_000_000L) String.format(Locale.US, "%.0f MB", bytes / 1_000_000.0)
