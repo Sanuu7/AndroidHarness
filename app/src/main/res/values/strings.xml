@@ -1010,6 +1010,10 @@
     <string name="chat_quote_reply">Quote</string>
     <string name="chat_quoted_text">Quoted text</string>
     <string name="chat_attachment_resolve">Wait for attachments to finish reading, or remove files that could not be attached.</string>
+    <string name="edit_message_hint">Resending removes the replies after this message.</string>
+    <string name="edit_message_add_photo">Add photo</string>
+    <string name="edit_message_add_file">Add file</string>
+    <string name="edit_message_resend">Resend</string>
     <string name="chat_attachment_model_unsupported">This model does not accept images. Choose an image-capable model or remove the image.</string>
     <string name="chat_attachment_too_large">This file exceeds the 64 MB attachment limit.</string>
     <string name="chat_attachment_text_too_large">This text file is too large to read in Chat. Attach a smaller file or use Code.</string>

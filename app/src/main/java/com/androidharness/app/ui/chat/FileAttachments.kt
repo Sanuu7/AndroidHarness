@@ -38,19 +38,27 @@ object FileAttachments {
             "inspect it with shell tools (file, unzip, python) as needed."
 
     /** Appends every attachment as model-readable blocks after the user's text. */
-    fun buildMessageSuffix(files: List<FileAttachment>): String =
-        files.joinToString("\n\n") { file ->
-            file.inlineText?.let { inlineBlock(file.name, file.mime, file.sizeLabel, it, langFor(file.name)) }
-                ?: workspaceNote(file.name, file.mime, file.sizeLabel, file.workspacePath.orEmpty())
-        }
+    fun buildMessageSuffix(files: List<FileAttachment>): String = files.joinToString("\n\n", transform = ::block)
+
+    /** The model-readable block for one attachment. */
+    fun block(file: FileAttachment): String =
+        file.inlineText?.let { inlineBlock(file.name, file.mime, file.sizeLabel, it, langFor(file.name)) }
+            ?: workspaceNote(file.name, file.mime, file.sizeLabel, file.workspacePath.orEmpty())
 
     /**
      * Splits a user message into the visible text plus one chip per attached
      * file: inline fenced bodies collapse into the chip, binary notes become
      * a chip as well.
      */
-    fun splitForDisplay(text: String): Pair<String, List<Block>> {
-        val blocks = mutableListOf<Block>()
+    fun splitForDisplay(text: String): Pair<String, List<Block>> =
+        splitForEdit(text).let { (cleaned, files) -> cleaned to files.map { it.block } }
+
+    /** A file block of a sent message, kept verbatim so an edit resends exactly what the model saw. */
+    data class SentFile(val block: Block, val raw: String)
+
+    /** Like [splitForDisplay], but each file keeps its raw block for [rejoin]. */
+    fun splitForEdit(text: String): Pair<String, List<SentFile>> {
+        val files = mutableListOf<SentFile>()
         val cleaned = StringBuilder()
         val lines = text.lines()
         var i = 0
@@ -63,6 +71,7 @@ object FileAttachments {
                 continue
             }
             val (name, mime, size) = match.destructured
+            val start = i
             // Inline blocks carry a fenced body; skip past its closing fence.
             if (i + 1 < lines.size && lines[i + 1].startsWith("```")) {
                 var j = i + 2
@@ -71,9 +80,19 @@ object FileAttachments {
             } else {
                 i++
             }
-            blocks += Block(name, mime, size)
+            files += SentFile(Block(name, mime, size), lines.subList(start, i).joinToString("\n"))
         }
-        return cleaned.toString().trimEnd() to blocks
+        return cleaned.toString().trimEnd() to files
+    }
+
+    /** Puts an edited message back together: the text, then each raw file block, as a send lays them out. */
+    fun rejoin(text: String, blocks: List<String>): String {
+        val suffix = blocks.filter { it.isNotBlank() }.joinToString("\n\n")
+        return when {
+            suffix.isEmpty() -> text
+            text.isBlank() -> suffix
+            else -> "$text\n\n$suffix"
+        }
     }
 
     // --- text detection -------------------------------------------------------

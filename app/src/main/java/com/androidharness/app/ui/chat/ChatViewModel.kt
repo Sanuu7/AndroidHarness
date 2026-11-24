@@ -130,6 +130,8 @@ data class ChatUiState(
     val attachments: List<String> = emptyList(), // display names of picked images
     val fileAttachments: List<FileAttachment> = emptyList(),
     val attachmentImports: List<AttachmentImport> = emptyList(),
+    /** The sent message open in the editor sheet, or null. */
+    val editDraft: MessageEditDraft? = null,
     val maxContextTokens: Int = 1_000_000,
     /** "providerId|model" to the window its server named when it rejected a request as too long. */
     val learnedContextLimits: Map<String, Int> = emptyMap(),
@@ -341,6 +343,8 @@ class ChatViewModel(
 
     private var pendingAttachments = mutableListOf<ImageRef>()
     private val pendingFileAttachments = mutableListOf<FileAttachment>()
+    /** Photos imported while editing a message; deleted again if the edit is abandoned. */
+    private val editAddedImages = mutableSetOf<String>()
     /** Workspace key the @-mention file list was built for (empty until loaded). */
     private var mentionCacheKey: String? = null
     private var steering = false
@@ -1332,6 +1336,8 @@ class ChatViewModel(
 
     override fun onCleared() {
         _live.value?.close()
+        editAddedImages.forEach { c.images.delete(it) }
+        editAddedImages.clear()
         super.onCleared()
     }
 
@@ -1389,8 +1395,98 @@ class ChatViewModel(
 
     fun attachImage(uri: Uri) = importAttachment(uri, imageOnly = true)
 
-    fun removeAttachmentImport(id: String) {
-        _state.update { it.copy(attachmentImports = it.attachmentImports.filterNot { pending -> pending.id == id }) }
+    fun removeAttachmentImport(id: String) = updateImports(AttachTarget.COMPOSER) { list -> list.filterNot { it.id == id } }
+
+    /** Where an import lands: the composer's next message, or the message being edited. */
+    private enum class AttachTarget { COMPOSER, EDIT }
+
+    private fun importsOf(target: AttachTarget, state: ChatUiState = _state.value) =
+        if (target == AttachTarget.COMPOSER) state.attachmentImports else state.editDraft?.imports.orEmpty()
+
+    private fun updateImports(target: AttachTarget, transform: (List<AttachmentImport>) -> List<AttachmentImport>) =
+        _state.update { s ->
+            if (target == AttachTarget.COMPOSER) s.copy(attachmentImports = transform(s.attachmentImports))
+            else s.editDraft?.let { d -> s.copy(editDraft = d.copy(imports = transform(d.imports))) } ?: s
+        }
+
+    private fun updateEditDraft(transform: (MessageEditDraft) -> MessageEditDraft) =
+        _state.update { s -> s.editDraft?.let { s.copy(editDraft = transform(it)) } ?: s }
+
+    // ------------------------------------------------------------------
+    // Editing a sent message: its text, photos and files, resent from there.
+    // ------------------------------------------------------------------
+
+    fun beginEdit(message: ChatMessage) {
+        if (message.role != Role.USER || message.id == null) return
+        if (_state.value.editDraft != null) cancelEdit()
+        val (text, files) = FileAttachments.splitForEdit(com.androidharness.app.core.response.UserMessageContent.visibleText(message.text))
+        _state.update { it.copy(editDraft = MessageEditDraft(message, text, message.images, files)) }
+    }
+
+    fun setEditText(text: String) = updateEditDraft { it.copy(text = text) }
+
+    fun attachEditImage(uri: Uri) = importAttachment(uri, imageOnly = true, target = AttachTarget.EDIT)
+
+    fun attachEditFile(uri: Uri) = importAttachment(uri, target = AttachTarget.EDIT)
+
+    fun removeEditImage(index: Int) {
+        val removed = _state.value.editDraft?.images?.getOrNull(index) ?: return
+        updateEditDraft { it.copy(images = it.images.filterIndexed { i, _ -> i != index }) }
+        if (editAddedImages.remove(removed.name)) c.images.delete(removed.name)
+    }
+
+    /** [index] counts kept files first, then added ones, matching [MessageEditDraft.trayFiles]. */
+    fun removeEditFile(index: Int) {
+        val draft = _state.value.editDraft ?: return
+        if (index < draft.keptFiles.size) {
+            // The original copy stays in the workspace: earlier turns may still point at it.
+            updateEditDraft { it.copy(keptFiles = it.keptFiles.filterIndexed { i, _ -> i != index }) }
+            return
+        }
+        val added = index - draft.keptFiles.size
+        val removed = draft.addedFiles.getOrNull(added) ?: return
+        updateEditDraft { it.copy(addedFiles = it.addedFiles.filterIndexed { i, _ -> i != added }) }
+        removed.workspacePath?.let(::deleteWorkspaceCopy)
+    }
+
+    fun removeEditImport(id: String) = updateImports(AttachTarget.EDIT) { list -> list.filterNot { it.id == id } }
+
+    /** Why the edit cannot be resent yet, or null when it can. */
+    fun editBlockReason(): String? {
+        val state = _state.value
+        val draft = state.editDraft ?: return null
+        if (draft.imports.isNotEmpty()) return c.appContext.getString(R.string.chat_attachment_resolve)
+        if (state.conversation.isChat && draft.images.isNotEmpty() && state.imageInputSupport() == false && !state.readImageText)
+            return c.appContext.getString(R.string.chat_attachment_model_unsupported)
+        return null
+    }
+
+    /** The message and text the confirm step resends, or null while the edit cannot go out. */
+    fun editResendRequest(): Pair<ChatMessage, String>? {
+        val draft = _state.value.editDraft ?: return null
+        if (!draft.hasContent || editBlockReason() != null) return null
+        val text = com.androidharness.app.core.response.UserMessageContent.edit(draft.visibleMessage(), draft.message.text)
+        return draft.message.copy(images = draft.images) to text
+    }
+
+    /** Resends the edit. The draft stays open if the run could not start, so nothing picked is lost. */
+    fun resendEdit(message: ChatMessage, text: String) {
+        if (!editAndResend(message, text)) return
+        editAddedImages.clear()
+        _state.update { it.copy(editDraft = null) }
+    }
+
+    /** Closes the editor and removes whatever was picked during it. */
+    fun cancelEdit() {
+        val draft = _state.value.editDraft ?: return
+        _state.update { it.copy(editDraft = null) }
+        editAddedImages.forEach { c.images.delete(it) }
+        editAddedImages.clear()
+        draft.addedFiles.mapNotNull { it.workspacePath }.forEach(::deleteWorkspaceCopy)
+    }
+
+    private fun deleteWorkspaceCopy(path: String) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) { runCatching { chatWorkspace().resolve(path).delete() } }
     }
 
     fun attachmentBlockReason(): String? {
@@ -1403,18 +1499,19 @@ class ChatViewModel(
 
     private class AttachmentProblem(val status: AttachmentImportStatus, message: String) : Exception(message)
 
-    private fun importAttachment(uri: Uri, imageOnly: Boolean = false, mimeHint: String? = null) {
+    private fun importAttachment(uri: Uri, imageOnly: Boolean = false, mimeHint: String? = null, target: AttachTarget = AttachTarget.COMPOSER) {
         val id = java.util.UUID.randomUUID().toString()
         val snapshot = _state.value
-        _state.update { it.copy(attachmentImports = it.attachmentImports + AttachmentImport(id, uri.lastPathSegment?.substringAfterLast('/').orEmpty())) }
-        fun active() = _state.value.attachmentImports.any { it.id == id }
+        if (target == AttachTarget.EDIT && snapshot.editDraft == null) return
+        updateImports(target) { it + AttachmentImport(id, uri.lastPathSegment?.substringAfterLast('/').orEmpty()) }
+        fun active() = importsOf(target).any { it.id == id }
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
                 val resolver = c.appContext.contentResolver
                 val name = queryDisplayName(resolver, uri) ?: uri.lastPathSegment?.substringAfterLast('/') ?: "Attachment"
                 val mime = resolver.getType(uri)?.takeUnless { it.contains('*') }
                     ?: mimeHint?.takeUnless { it.contains('*') } ?: "application/octet-stream"
-                _state.update { it.copy(attachmentImports = it.attachmentImports.map { item -> if (item.id == id) item.copy(name = name) else item }) }
+                updateImports(target) { list -> list.map { item -> if (item.id == id) item.copy(name = name) else item } }
                 val size = querySize(resolver, uri)
                 if (imageOnly || mime.startsWith("image/")) {
                     if (size != null && size > FileAttachments.IMAGE_BYTE_LIMIT) throw AttachmentProblem(
@@ -1426,10 +1523,14 @@ class ChatViewModel(
                     val stored = c.images.import(uri, keepOriginal = keepOriginal) ?: throw IllegalStateException(c.appContext.getString(R.string.ui_could_not_load_that_image))
                     val image = c.images.metadata(ImageRef(stored.file.name, stored.mime, caption = name.take(200), origin = "user_upload"))
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
-                        if (active()) {
+                        if (!active()) c.images.delete(stored.file.name)
+                        else if (target == AttachTarget.EDIT) {
+                            editAddedImages += stored.file.name
+                            updateEditDraft { it.copy(images = it.images + image) }
+                        } else {
                             pendingAttachments += image
                             _state.update { it.copy(attachments = it.attachments + stored.file.name) }
-                        } else c.images.delete(stored.file.name)
+                        }
                     }
                 } else {
                     val pdf = FileAttachments.isPdf(name, mime)
@@ -1445,20 +1546,20 @@ class ChatViewModel(
                             if (active()) {
                                 val sizeLabel = FileAttachments.humanBytes(size ?: extracted.length.toLong()) +
                                     (pdfExtract?.let { ", " + if (it.pageCount == 1) "1 page" else c.appContext.getString(R.string.ui_pages, it.pageCount.toString()) } ?: "")
-                                addFileAttachment(FileAttachment(name, mime, sizeLabel, extracted, null))
+                                addFileAttachment(FileAttachment(name, mime, sizeLabel, extracted, null), target)
                             }
                         }
                     } else if (_state.value.conversation.isChat) {
                         throw AttachmentProblem(AttachmentImportStatus.UNSUPPORTED,
                             c.appContext.getString(if (pdf) R.string.chat_attachment_pdf_unreadable else R.string.chat_file_requires_code))
-                    } else copyAttachmentToWorkspace(resolver, uri, name, mime, size, id)
+                    } else copyAttachmentToWorkspace(resolver, uri, name, mime, size, id, target)
                 }
-                removeAttachmentImport(id)
+                updateImports(target) { list -> list.filterNot { it.id == id } }
             } catch (e: kotlinx.coroutines.CancellationException) { throw e }
             catch (e: Exception) {
-                _state.update { it.copy(attachmentImports = it.attachmentImports.map { item ->
+                updateImports(target) { list -> list.map { item ->
                     if (item.id == id) item.copy(status = (e as? AttachmentProblem)?.status ?: AttachmentImportStatus.FAILED, detail = e.message) else item
-                }) }
+                } }
             }
         }
     }
@@ -1512,7 +1613,11 @@ class ChatViewModel(
         }
     }
 
-    private fun addFileAttachment(file: FileAttachment) {
+    private fun addFileAttachment(file: FileAttachment, target: AttachTarget = AttachTarget.COMPOSER) {
+        if (target == AttachTarget.EDIT) {
+            updateEditDraft { it.copy(addedFiles = it.addedFiles + file) }
+            return
+        }
         pendingFileAttachments += file
         _state.update { it.copy(fileAttachments = it.fileAttachments + file) }
     }
@@ -1524,6 +1629,7 @@ class ChatViewModel(
         mime: String,
         size: Long?,
         importId: String,
+        target: AttachTarget,
     ) {
         val fs = chatWorkspace()
         val dir = fs.resolve(".harness/attachments")
@@ -1539,15 +1645,15 @@ class ChatViewModel(
                 node.writeFrom(object : java.io.FilterInputStream(input) {
                     override fun read(b: ByteArray, off: Int, len: Int): Int {
                         // Removing the chip mid-copy stops a large transfer instead of finishing it first.
-                        if (_state.value.attachmentImports.none { it.id == importId }) throw java.io.IOException("Attachment removed")
+                        if (importsOf(target).none { it.id == importId }) throw java.io.IOException("Attachment removed")
                         return super.read(b, off, len).also { if (it > 0) copied += it }
                     }
                     override fun read(): Int = super.read().also { if (it >= 0) copied++ }
                 })
             }
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
-                if (_state.value.attachmentImports.any { it.id == importId }) {
-                    addFileAttachment(FileAttachment(name, mime, FileAttachments.humanBytes(size ?: copied), null, ".harness/attachments/$unique"))
+                if (importsOf(target).any { it.id == importId }) {
+                    addFileAttachment(FileAttachment(name, mime, FileAttachments.humanBytes(size ?: copied), null, ".harness/attachments/$unique"), target)
                 } else node.delete()
             }
         } catch (e: Exception) { runCatching { node.delete() }; throw e }
@@ -2249,9 +2355,10 @@ class ChatViewModel(
      * as a fresh run. The UI warns before calling this.
      */
     fun editAndResend(message: ChatMessage, newText: String, retryModel: com.androidharness.app.data.ModelShortcut? = null,
-        searchDepth: com.androidharness.app.data.SearchDepth? = null) {
-        if (sessionId == null || message.id == null || message.role != Role.USER || newText.isBlank()) return
-        startRun(newText, replacement = message, retryModel = retryModel, searchDepth = searchDepth)
+        searchDepth: com.androidharness.app.data.SearchDepth? = null): Boolean {
+        // A photo-only message is resent with blank text, as it was first sent.
+        if (sessionId == null || message.id == null || message.role != Role.USER || newText.isBlank() && message.images.isEmpty()) return false
+        return startRun(newText, replacement = message, retryModel = retryModel, searchDepth = searchDepth)
     }
 
     /** Answers the latest question again with Deep search, kept as a new answer version; the saved depth is unchanged. */

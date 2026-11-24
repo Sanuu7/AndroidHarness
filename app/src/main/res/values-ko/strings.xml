@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"트리거 단어"</string>
     <string name="memory_triggers_help">"선택 사항. 쉼표로 구분합니다. 하나가 나타나면 이 기억이 먼저 사용됩니다."</string>
     <string name="memory_triggers_row">"트리거: %1$s"</string>
+    <string name="edit_message_hint">"다시 보내면 이 메시지 뒤의 답변이 제거됩니다."</string>
+    <string name="edit_message_add_photo">"사진 추가"</string>
+    <string name="edit_message_add_file">"파일 추가"</string>
+    <string name="edit_message_resend">"다시 보내기"</string>
 </resources>

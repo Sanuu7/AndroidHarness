@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"ट्रिगर शब्द"</string>
     <string name="memory_triggers_help">"वैकल्पिक। कॉमा से अलग करें। जब कोई आए, यह मेमोरी पहले उपयोग होती है।"</string>
     <string name="memory_triggers_row">"ट्रिगर: %1$s"</string>
+    <string name="edit_message_hint">"दोबारा भेजने पर इस संदेश के बाद के जवाब हट जाएंगे।"</string>
+    <string name="edit_message_add_photo">"फ़ोटो जोड़ें"</string>
+    <string name="edit_message_add_file">"फ़ाइल जोड़ें"</string>
+    <string name="edit_message_resend">"दोबारा भेजें"</string>
 </resources>

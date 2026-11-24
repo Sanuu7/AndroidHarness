@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"தூண்டல் சொற்கள்"</string>
     <string name="memory_triggers_help">"விருப்பத்தேர்வு. காற்புள்ளிகளால் பிரிக்கவும். ஒன்று வரும்போது இந்த நினைவு முதலில் பயன்படும்."</string>
     <string name="memory_triggers_row">"தூண்டல்கள்: %1$s"</string>
+    <string name="edit_message_hint">"மீண்டும் அனுப்பினால் இந்தச் செய்திக்குப் பின் வரும் பதில்கள் நீக்கப்படும்."</string>
+    <string name="edit_message_add_photo">"புகைப்படம் சேர்"</string>
+    <string name="edit_message_add_file">"கோப்பைச் சேர்"</string>
+    <string name="edit_message_resend">"மீண்டும் அனுப்பு"</string>
 </resources>

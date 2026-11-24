@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"Tetikleyici kelimeler"</string>
     <string name="memory_triggers_help">"İsteğe bağlı. Virgülle ayırın. Biri göründüğünde bu anı önce kullanılır."</string>
     <string name="memory_triggers_row">"Tetikleyiciler: %1$s"</string>
+    <string name="edit_message_hint">"Yeniden göndermek bu mesajdan sonraki yanıtları kaldırır."</string>
+    <string name="edit_message_add_photo">"Fotoğraf ekle"</string>
+    <string name="edit_message_add_file">"Dosya ekle"</string>
+    <string name="edit_message_resend">"Yeniden gönder"</string>
 </resources>

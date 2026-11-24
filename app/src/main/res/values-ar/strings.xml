@@ -1199,4 +1199,8 @@
     <string name="memory_triggers_label">"كلمات التشغيل"</string>
     <string name="memory_triggers_help">"اختياري. افصل بفواصل. عند ظهور إحداها تُستخدم هذه الذكرى أولاً."</string>
     <string name="memory_triggers_row">"المشغلات: %1$s"</string>
+    <string name="edit_message_hint">"إعادة الإرسال تحذف الردود بعد هذه الرسالة."</string>
+    <string name="edit_message_add_photo">"إضافة صورة"</string>
+    <string name="edit_message_add_file">"إضافة ملف"</string>
+    <string name="edit_message_resend">"إعادة الإرسال"</string>
 </resources>

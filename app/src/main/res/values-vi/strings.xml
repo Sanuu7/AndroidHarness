@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"Từ kích hoạt"</string>
     <string name="memory_triggers_help">"Tùy chọn. Ngăn cách bằng dấu phẩy. Khi một từ xuất hiện, ký ức này được dùng trước."</string>
     <string name="memory_triggers_row">"Kích hoạt: %1$s"</string>
+    <string name="edit_message_hint">"Gửi lại sẽ xóa các câu trả lời sau tin nhắn này."</string>
+    <string name="edit_message_add_photo">"Thêm ảnh"</string>
+    <string name="edit_message_add_file">"Thêm tệp"</string>
+    <string name="edit_message_resend">"Gửi lại"</string>
 </resources>

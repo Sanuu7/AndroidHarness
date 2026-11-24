@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"Palavras-gatilho"</string>
     <string name="memory_triggers_help">"Opcional. Separe com vírgulas. Quando uma aparecer, esta memória é usada primeiro."</string>
     <string name="memory_triggers_row">"Gatilhos: %1$s"</string>
+    <string name="edit_message_hint">"Reenviar remove as respostas depois desta mensagem."</string>
+    <string name="edit_message_add_photo">"Adicionar foto"</string>
+    <string name="edit_message_add_file">"Adicionar arquivo"</string>
+    <string name="edit_message_resend">"Reenviar"</string>
 </resources>

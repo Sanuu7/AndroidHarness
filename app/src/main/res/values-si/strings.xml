@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"මුලික වචන"</string>
     <string name="memory_triggers_help">"අනිවාර්ය නොවේ. කොමාවලින් වෙන් කරන්න. එකක් පැමිණි විට මෙම මතකය මුලින් භාවිතා වේ."</string>
     <string name="memory_triggers_row">"මුලික: %1$s"</string>
+    <string name="edit_message_hint">"නැවත යැවීමෙන් මෙම පණිවිඩයට පසු පිළිතුරු ඉවත් වේ."</string>
+    <string name="edit_message_add_photo">"ඡායාරූපය එකතු කරන්න"</string>
+    <string name="edit_message_add_file">"ගොනුවක් එකතු කරන්න"</string>
+    <string name="edit_message_resend">"නැවත යවන්න"</string>
 </resources>

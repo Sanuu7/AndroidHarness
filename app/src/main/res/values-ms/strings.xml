@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"Kata pencetus"</string>
     <string name="memory_triggers_help">"Pilihan. Asingkan dengan koma. Apabila satu muncul, memori ini digunakan dahulu."</string>
     <string name="memory_triggers_row">"Pencetus: %1$s"</string>
+    <string name="edit_message_hint">"Menghantar semula membuang jawapan selepas mesej ini."</string>
+    <string name="edit_message_add_photo">"Tambah foto"</string>
+    <string name="edit_message_add_file">"Tambah fail"</string>
+    <string name="edit_message_resend">"Hantar semula"</string>
 </resources>

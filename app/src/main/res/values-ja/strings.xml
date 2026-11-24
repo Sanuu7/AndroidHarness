@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"トリガーワード"</string>
     <string name="memory_triggers_help">"任意。カンマで区切ります。いずれかが出てくると、この記憶が先に使われます。"</string>
     <string name="memory_triggers_row">"トリガー: %1$s"</string>
+    <string name="edit_message_hint">"再送信すると、このメッセージより後の返信は削除されます。"</string>
+    <string name="edit_message_add_photo">"写真を追加"</string>
+    <string name="edit_message_add_file">"ファイルを追加"</string>
+    <string name="edit_message_resend">"再送信"</string>
 </resources>

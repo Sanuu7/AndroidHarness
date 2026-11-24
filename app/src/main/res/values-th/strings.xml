@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"คำทริกเกอร์"</string>
     <string name="memory_triggers_help">"ไม่บังคับ คั่นด้วยจุลภาค เมื่อคำใดปรากฏ ความจำนี้จะถูกใช้ก่อน"</string>
     <string name="memory_triggers_row">"ทริกเกอร์: %1$s"</string>
+    <string name="edit_message_hint">"การส่งอีกครั้งจะลบคำตอบหลังข้อความนี้"</string>
+    <string name="edit_message_add_photo">"เพิ่มรูปภาพ"</string>
+    <string name="edit_message_add_file">"เพิ่มไฟล์"</string>
+    <string name="edit_message_resend">"ส่งอีกครั้ง"</string>
 </resources>

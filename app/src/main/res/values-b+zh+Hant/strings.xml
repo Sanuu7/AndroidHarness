@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"觸發詞"</string>
     <string name="memory_triggers_help">"選填。以逗號分隔。當其中一個出現時，會優先使用此記憶。"</string>
     <string name="memory_triggers_row">"觸發詞：%1$s"</string>
+    <string name="edit_message_hint">"重新傳送會移除此訊息之後的回覆。"</string>
+    <string name="edit_message_add_photo">"新增照片"</string>
+    <string name="edit_message_add_file">"新增檔案"</string>
+    <string name="edit_message_resend">"重新傳送"</string>
 </resources>

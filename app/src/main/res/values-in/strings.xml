@@ -1169,4 +1169,8 @@
     <string name="memory_triggers_label">"Kata pemicu"</string>
     <string name="memory_triggers_help">"Opsional. Pisahkan dengan koma. Saat salah satunya muncul, memori ini dipakai lebih dulu."</string>
     <string name="memory_triggers_row">"Pemicu: %1$s"</string>
+    <string name="edit_message_hint">"Mengirim ulang menghapus balasan setelah pesan ini."</string>
+    <string name="edit_message_add_photo">"Tambah foto"</string>
+    <string name="edit_message_add_file">"Tambah file"</string>
+    <string name="edit_message_resend">"Kirim ulang"</string>
 </resources>

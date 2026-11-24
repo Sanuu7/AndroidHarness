@@ -1181,4 +1181,8 @@
     <string name="memory_triggers_label">"Mots déclencheurs"</string>
     <string name="memory_triggers_help">"Facultatif. Séparez par des virgules. Quand l\'un apparaît, ce souvenir est utilisé en premier."</string>
     <string name="memory_triggers_row">"Déclencheurs : %1$s"</string>
+    <string name="edit_message_hint">"Le renvoi supprime les réponses qui suivent ce message."</string>
+    <string name="edit_message_add_photo">"Ajouter une photo"</string>
+    <string name="edit_message_add_file">"Ajouter un fichier"</string>
+    <string name="edit_message_resend">"Renvoyer"</string>
 </resources>

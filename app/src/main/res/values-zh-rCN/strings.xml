@@ -1200,4 +1200,8 @@
     <string name="memory_triggers_label">"触发词"</string>
     <string name="memory_triggers_help">"可选。用逗号分隔。当其中一个出现时，会优先使用此记忆。"</string>
     <string name="memory_triggers_row">"触发词：%1$s"</string>
+    <string name="edit_message_hint">"重新发送会删除此消息之后的回复。"</string>
+    <string name="edit_message_add_photo">"添加照片"</string>
+    <string name="edit_message_add_file">"添加文件"</string>
+    <string name="edit_message_resend">"重新发送"</string>
 </resources>

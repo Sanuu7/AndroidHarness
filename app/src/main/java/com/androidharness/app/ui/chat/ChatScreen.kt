@@ -562,7 +562,8 @@ private fun ChatScreenContent(
     val quoteComposerFocus = com.androidharness.app.ui.LocalComposerFocus.current
     val clipboard = LocalClipboardManager.current
     var actionsMessage by remember { mutableStateOf<ChatMessage?>(null) }
-    var editingMessage by remember { mutableStateOf<ChatMessage?>(null) }
+    // True when the pending confirm resends the editor sheet's draft rather than a plain retry.
+    var confirmFromDraft by remember { mutableStateOf(false) }
     // Set while the retry choice (same model or another) is open; runs the chosen retry.
     var retryRequest by remember { mutableStateOf<((com.androidharness.app.data.ModelShortcut?) -> Unit)?>(null) }
     var confirmingEdit by remember { mutableStateOf<Pair<ChatMessage, String>?>(null) }
@@ -990,12 +991,13 @@ private fun ChatScreenContent(
                         actionsMessage = null
                     }) { Text(uiContext.getString(R.string.ui_copy)) }
                     TextButton(onClick = {
-                        editingMessage = msg
+                        viewModel.beginEdit(msg)
                         actionsMessage = null
                     }) { Text(uiContext.getString(R.string.settings_action_edit)) }
                     TextButton(
                         onClick = {
                             actionsMessage = null
+                            confirmFromDraft = false
                             confirmingEdit = msg to msg.text
                         },
                         enabled = !state.busy,
@@ -1014,46 +1016,34 @@ private fun ChatScreenContent(
         )
     }
 
-    // Prefilled editor for a user message.
-    editingMessage?.let { msg ->
-        var text by remember(msg) { mutableStateOf(UserMessageContent.visibleText(msg.text)) }
-        // The message's photos ride along with the edit; removing one here drops it from the resend.
-        var keptImages by remember(msg) { mutableStateOf(msg.images) }
-        AlertDialog(
-            onDismissRequest = { editingMessage = null },
-            title = { Text(uiContext.getString(R.string.ui_edit_message)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (keptImages.isNotEmpty()) com.androidharness.app.ui.chat.components.EditMessagePhotos(
-                        images = keptImages,
-                        dir = viewModel.container.images.imagesDir,
-                        onRemove = { ref -> keptImages = keptImages - ref },
-                    )
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (text.isNotBlank()) {
-                        confirmingEdit = msg.copy(images = keptImages) to UserMessageContent.edit(text, msg.text)
-                        editingMessage = null
-                    }
-                }) { Text(uiContext.getString(R.string.settings_action_continue)) }
-            },
-            dismissButton = { TextButton(onClick = { editingMessage = null }) { Text(uiContext.getString(R.string.settings_action_cancel)) } },
+    // Editor sheet for a sent message: text, photos and files. It steps aside
+    // while the confirm dialog is up and comes back if that is cancelled.
+    state.editDraft?.takeIf { confirmingEdit == null }?.let { draft ->
+        com.androidharness.app.ui.chat.components.EditMessageSheet(
+            draft = draft,
+            imageDir = viewModel.container.images.imagesDir,
+            imageSupport = if (state.conversation.isChat) state.imageInputSupport() else true,
+            imagesAsText = state.readImageText,
+            canResend = !state.busy && viewModel.editResendRequest() != null,
+            onTextChange = viewModel::setEditText,
+            onPickImages = { uris -> uris.forEach(viewModel::attachEditImage) },
+            onPickFiles = { uris -> uris.forEach(viewModel::attachEditFile) },
+            onRemoveImage = viewModel::removeEditImage,
+            onRemoveFile = viewModel::removeEditFile,
+            onRemoveImport = viewModel::removeEditImport,
+            onOpenImage = { refs, index -> imagePreview = refs to index },
+            onResend = { viewModel.editResendRequest()?.let { request -> confirmFromDraft = true; confirmingEdit = request } },
+            onCancel = viewModel::cancelEdit,
         )
     }
 
     // Editing a message rewinds files and truncates the chat, warn first.
     confirmingEdit?.let { (msg, newText) ->
+        // Same text with changed photos is still an edit, not a retry.
+        val retry = newText == msg.text && (!confirmFromDraft || msg.images == state.editDraft?.message?.images)
         AlertDialog(
             onDismissRequest = { confirmingEdit = null },
-            title = { Text(if (newText == msg.text) uiContext.getString(R.string.ui_retry_this_message) else uiContext.getString(R.string.ui_edit_this_message)) },
+            title = { Text(if (retry) uiContext.getString(R.string.ui_retry_this_message) else uiContext.getString(R.string.ui_edit_this_message)) },
             text = {
                 Text(
                     uiContext.getString(R.string.ui_everything_after_this_message_will_be_deleted) +
@@ -1063,9 +1053,9 @@ private fun ChatScreenContent(
             },
             confirmButton = {
                 Button(onClick = {
-                    viewModel.editAndResend(msg, newText)
+                    if (confirmFromDraft) viewModel.resendEdit(msg, newText) else viewModel.editAndResend(msg, newText)
                     confirmingEdit = null
-                }) { Text(if (newText == msg.text) uiContext.getString(R.string.ui_retry) else uiContext.getString(R.string.ui_edit_resend)) }
+                }) { Text(if (retry) uiContext.getString(R.string.ui_retry) else uiContext.getString(R.string.ui_edit_resend)) }
             },
             dismissButton = { TextButton(onClick = { confirmingEdit = null }) { Text(uiContext.getString(R.string.settings_action_cancel)) } },
         )
@@ -2110,7 +2100,7 @@ private fun ChatScreenContent(
                                             AnimatedVisibility(state.conversation.isChat && message.turnId == latestUserTurnId && !state.busy,
                                                 enter = fadeIn(fastEffectsSpec()) + scaleIn(initialScale = 0.8f, animationSpec = fastEffectsSpec()),
                                                 exit = fadeOut(fastEffectsSpec())) {
-                                                com.androidharness.app.ui.common.FilledTonalIconButton(onClick = { editingMessage = message },
+                                                com.androidharness.app.ui.common.FilledTonalIconButton(onClick = { viewModel.beginEdit(message) },
                                                     modifier = Modifier.padding(top = 4.dp).size(34.dp),
                                                     colors = androidx.compose.material3.IconButtonDefaults.filledTonalIconButtonColors(
                                                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,

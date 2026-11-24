@@ -538,7 +538,9 @@ class RunManager(
             if (conversation.isChat) {
                 val rows = sessions.messages(sid)
                 val question = rows.lastOrNull { it.role == Role.USER }
-                if (question?.id == replacementMessageId && question.text == text) {
+                // Only an unchanged question keeps its old answer as a version; new photos make it a different question.
+                if (question?.id == replacementMessageId && question.text == text &&
+                    question.images.map { it.name } == imageRefs.map { it.name }) {
                     sessions.archiveChatAnswer(sid, replacementMessageId)
                 }
             }

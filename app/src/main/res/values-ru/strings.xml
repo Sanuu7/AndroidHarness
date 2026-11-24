@@ -1187,4 +1187,8 @@
     <string name="memory_triggers_label">"Слова-триггеры"</string>
     <string name="memory_triggers_help">"Необязательно. Разделяйте запятыми. Когда одно появляется, это воспоминание используется первым."</string>
     <string name="memory_triggers_row">"Триггеры: %1$s"</string>
+    <string name="edit_message_hint">"Повторная отправка удалит ответы после этого сообщения."</string>
+    <string name="edit_message_add_photo">"Добавить фото"</string>
+    <string name="edit_message_add_file">"Добавить файл"</string>
+    <string name="edit_message_resend">"Отправить снова"</string>
 </resources>

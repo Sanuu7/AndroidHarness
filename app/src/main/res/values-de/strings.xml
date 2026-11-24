@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"Auslösewörter"</string>
     <string name="memory_triggers_help">"Optional. Mit Kommas trennen. Kommt eines vor, wird diese Erinnerung zuerst genutzt."</string>
     <string name="memory_triggers_row">"Auslöser: %1$s"</string>
+    <string name="edit_message_hint">"Beim erneuten Senden werden die Antworten nach dieser Nachricht entfernt."</string>
+    <string name="edit_message_add_photo">"Foto hinzufügen"</string>
+    <string name="edit_message_add_file">"Datei hinzufügen"</string>
+    <string name="edit_message_resend">"Erneut senden"</string>
 </resources>

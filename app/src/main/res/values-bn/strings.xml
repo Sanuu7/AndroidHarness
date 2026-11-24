@@ -1175,4 +1175,8 @@
     <string name="memory_triggers_label">"ট্রিগার শব্দ"</string>
     <string name="memory_triggers_help">"ঐচ্ছিক। কমা দিয়ে আলাদা করুন। কোনোটি এলে এই মেমরি আগে ব্যবহৃত হয়।"</string>
     <string name="memory_triggers_row">"ট্রিগার: %1$s"</string>
+    <string name="edit_message_hint">"আবার পাঠালে এই বার্তার পরের উত্তরগুলো মুছে যাবে।"</string>
+    <string name="edit_message_add_photo">"ছবি যোগ করুন"</string>
+    <string name="edit_message_add_file">"ফাইল যোগ করুন"</string>
+    <string name="edit_message_resend">"আবার পাঠান"</string>
 </resources>
