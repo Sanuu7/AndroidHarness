@@ -63,6 +63,34 @@ class NpmOnSharedStorageTest {
     }
 
     @Test
+    fun `global installs are left alone`() {
+        for (command in listOf(
+            "npm i -g 9router@latest --prefer-online",
+            "npm install --global typescript",
+            "npm install --location=global typescript",
+            "npm install --location global typescript",
+            "npm install typescript -g",
+        )) {
+            val (cmd, note) = NpmOnSharedStorage.prepare(command, shared)
+            assertEquals(command, cmd)
+            assertNull(note)
+        }
+    }
+
+    @Test
+    fun `package names containing g are not mistaken for the global flag`() {
+        val (cmd, _) = NpmOnSharedStorage.prepare("npm install lodash-g graceful-fs", shared)
+        assertEquals("npm install --no-bin-links lodash-g graceful-fs", cmd)
+    }
+
+    @Test
+    fun `only the local install in a chain gets the flag`() {
+        val (cmd, note) = NpmOnSharedStorage.prepare("npm i -g tsx && npm install", shared)
+        assertEquals("npm i -g tsx && npm install --no-bin-links", cmd)
+        requireNotNull(note)
+    }
+
+    @Test
     fun `chained installs all get the flag`() {
         val (cmd, _) = NpmOnSharedStorage.prepare("npm i && npm ci", shared)
         assertTrue(cmd.contains("npm i --no-bin-links"))
