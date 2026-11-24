@@ -1144,4 +1144,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"%1$d giây nữa sẽ tiếp tục"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Mỗi yêu cầu nhận khoảng %1$d đến %2$d token bộ nhớ, nhiều hơn với mô hình có cửa sổ ngữ cảnh lớn. Ký ức được ghim và khớp từ kích hoạt đến trước, phần còn lại vẫn tìm kiếm được."</string>
+    <string name="memory_folder_label">"Thư mục"</string>
+    <string name="memory_folders_all">"Tất cả thư mục"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Thư mục mới"</string>
+    <string name="memory_folder_rename">"Đổi tên"</string>
+    <string name="memory_folder_rename_title">"Đổi tên thư mục"</string>
+    <string name="memory_folder_name">"Tên thư mục"</string>
+    <string name="memory_folder_create">"Tạo"</string>
+    <string name="memory_folder_delete">"Xóa thư mục"</string>
+    <string name="memory_folder_delete_title">"Xóa \"%1$s\"?"</string>
+    <string name="memory_folder_delete_empty">"Thư mục này trống."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"Có %1$d ký ức."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Chuyển đến"</string>
+    <string name="memory_folder_empty">"Chưa có ký ức trong thư mục này."</string>
+    <string name="memory_folder_delete_with_memories">"Xóa cả các ký ức"</string>
+    <string name="memory_folder_deleted_moved">"Đã xóa \"%1$s\" và chuyển các ký ức của nó."</string>
+    <string name="memory_folder_deleted_all">"Đã xóa \"%1$s\" và các ký ức của nó."</string>
+    <string name="memory_folder_deleted_empty">"Đã xóa \"%1$s\"."</string>
+    <string name="memory_folder_undo">"Hoàn tác"</string>
+    <string name="memory_triggers_label">"Từ kích hoạt"</string>
+    <string name="memory_triggers_help">"Tùy chọn. Ngăn cách bằng dấu phẩy. Khi một từ xuất hiện, ký ức này được dùng trước."</string>
+    <string name="memory_triggers_row">"Kích hoạt: %1$s"</string>
 </resources>

@@ -23,6 +23,8 @@ data class BackupMemory(
     val consolidatedInto: String? = null,
     val isSummary: Boolean = false,
     val agentId: String? = null,
+    val folder: String? = null,
+    val keywords: String = "",
 )
 
 /** A saved prompt snippet, the chat's custom slash commands. */
@@ -46,6 +48,8 @@ internal fun MemoryEntity.toBackupMemory(): BackupMemory = BackupMemory(
     consolidatedInto = consolidatedInto,
     isSummary = isSummary,
     agentId = agentId,
+    folder = folder,
+    keywords = keywords,
 )
 
 internal fun SnippetEntity.toBackupSnippet(): BackupSnippet = BackupSnippet(id, name, body)
@@ -84,12 +88,18 @@ internal object MemoryBackupMerge {
         text ?: return null
         if (entry.id.isBlank() || entry.id.length > MAX_ID) return null
         val projectId = remapProject(entry.projectId)?.takeIf { it.isNotBlank() }
+        // A folder name that is invalid here, or that names a built-in folder, falls back to the category.
+        val place = runCatching { MemoryFolders.target(entry.folder, MemoryCategory.fromStored(entry.category)) }
+            .getOrDefault(MemoryFolderTarget(MemoryCategory.fromStored(entry.category), null))
         val scope = if (entry.scope == MemoryScope.PROJECT.name && projectId != null) {
             MemoryScope.PROJECT.name
         } else MemoryScope.GLOBAL.name
         return entry.copy(
             text = text,
-            category = MemoryCategory.fromStored(entry.category).name,
+            category = place.category.name,
+            folder = place.folder,
+            keywords = MemoryKeywords.parse(entry.keywords).filter { it.length <= MemoryKeywords.MAX_KEYWORD }
+                .take(MemoryKeywords.MAX_KEYWORDS).joinToString(", "),
             scope = scope,
             projectId = projectId.takeIf { scope == MemoryScope.PROJECT.name },
             section = MemorySection.fromStored(entry.section).name,
@@ -115,6 +125,8 @@ internal object MemoryBackupMerge {
         consolidatedInto = entry.consolidatedInto,
         isSummary = entry.isSummary,
         agentId = entry.agentId,
+        folder = entry.folder,
+        keywords = entry.keywords,
     )
 
     private fun key(text: String, scope: String, projectId: String?, section: String, parent: String?, summary: Boolean, agentId: String?): String =

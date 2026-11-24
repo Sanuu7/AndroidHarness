@@ -1149,4 +1149,30 @@
         <item quantity="one">"ادامه در %1$d ثانیه"</item>
         <item quantity="other">"ادامه در %1$d ثانیه"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"هر درخواست حدود %1$d تا %2$d توکن حافظه می‌گیرد، برای مدل‌های با پنجره زمینه بزرگ‌تر بیشتر. حافظه‌های سنجاق‌شده و تطبیق واژه‌های محرک اول می‌آیند و بقیه قابل جستجو می‌مانند."</string>
+    <string name="memory_folder_label">"پوشه"</string>
+    <string name="memory_folders_all">"همه پوشه‌ها"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"پوشه جدید"</string>
+    <string name="memory_folder_rename">"تغییر نام"</string>
+    <string name="memory_folder_rename_title">"تغییر نام پوشه"</string>
+    <string name="memory_folder_name">"نام پوشه"</string>
+    <string name="memory_folder_create">"ساختن"</string>
+    <string name="memory_folder_delete">"حذف پوشه"</string>
+    <string name="memory_folder_delete_title">"«%1$s» حذف شود؟"</string>
+    <string name="memory_folder_delete_empty">"این پوشه خالی است."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"دارای %1$d حافظه است."</item>
+        <item quantity="other">"دارای %1$d حافظه است."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"انتقال به"</string>
+    <string name="memory_folder_empty">"هنوز حافظه‌ای در این پوشه نیست."</string>
+    <string name="memory_folder_delete_with_memories">"حافظه‌ها هم حذف شوند"</string>
+    <string name="memory_folder_deleted_moved">"«%1$s» حذف و حافظه‌هایش منتقل شد."</string>
+    <string name="memory_folder_deleted_all">"«%1$s» و حافظه‌هایش حذف شد."</string>
+    <string name="memory_folder_deleted_empty">"«%1$s» حذف شد."</string>
+    <string name="memory_folder_undo">"واگرد"</string>
+    <string name="memory_triggers_label">"واژه‌های محرک"</string>
+    <string name="memory_triggers_help">"اختیاری. با ویرگول جدا کنید. وقتی یکی ظاهر شود، این حافظه اول استفاده می‌شود."</string>
+    <string name="memory_triggers_row">"محرک‌ها: %1$s"</string>
 </resources>

@@ -1149,4 +1149,30 @@
         <item quantity="one">"%1$d வினாடியில் தொடரும்"</item>
         <item quantity="other">"%1$d வினாடிகளில் தொடரும்"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"ஒவ்வொரு கோரிக்கைக்கும் சுமார் %1$d முதல் %2$d டோக்கன் நினைவகம் கிடைக்கும், பெரிய சூழல் சாளர மாதிரிகளுக்கு அதிகம். பின் செய்த மற்றும் தூண்டல் சொல் பொருந்தும் நினைவுகள் முதலில் வரும், மற்றவை தேடக்கூடியதாக இருக்கும்."</string>
+    <string name="memory_folder_label">"கோப்புறை"</string>
+    <string name="memory_folders_all">"எல்லா கோப்புறைகள்"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"புதிய கோப்புறை"</string>
+    <string name="memory_folder_rename">"பெயர் மாற்று"</string>
+    <string name="memory_folder_rename_title">"கோப்புறை பெயரை மாற்று"</string>
+    <string name="memory_folder_name">"கோப்புறை பெயர்"</string>
+    <string name="memory_folder_create">"உருவாக்கு"</string>
+    <string name="memory_folder_delete">"கோப்புறையை நீக்கு"</string>
+    <string name="memory_folder_delete_title">"\"%1$s\" நீக்கவா?"</string>
+    <string name="memory_folder_delete_empty">"இந்த கோப்புறை காலியாக உள்ளது."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"இதில் %1$d நினைவு உள்ளது."</item>
+        <item quantity="other">"இதில் %1$d நினைவுகள் உள்ளன."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"இங்கே நகர்த்து"</string>
+    <string name="memory_folder_empty">"இந்த கோப்புறையில் இன்னும் நினைவுகள் இல்லை."</string>
+    <string name="memory_folder_delete_with_memories">"நினைவுகளையும் நீக்கு"</string>
+    <string name="memory_folder_deleted_moved">"\"%1$s\" நீக்கப்பட்டு அதன் நினைவுகள் நகர்த்தப்பட்டன."</string>
+    <string name="memory_folder_deleted_all">"\"%1$s\" மற்றும் அதன் நினைவுகள் நீக்கப்பட்டன."</string>
+    <string name="memory_folder_deleted_empty">"\"%1$s\" நீக்கப்பட்டது."</string>
+    <string name="memory_folder_undo">"செயல்தவிர்"</string>
+    <string name="memory_triggers_label">"தூண்டல் சொற்கள்"</string>
+    <string name="memory_triggers_help">"விருப்பத்தேர்வு. காற்புள்ளிகளால் பிரிக்கவும். ஒன்று வரும்போது இந்த நினைவு முதலில் பயன்படும்."</string>
+    <string name="memory_triggers_row">"தூண்டல்கள்: %1$s"</string>
 </resources>

@@ -155,6 +155,17 @@ data class MemoryEntity(
     val consolidatedInto: String? = null,
     @ColumnInfo(defaultValue = "0") val isSummary: Boolean = false,
     val agentId: String? = null,
+    /** A folder the user or agent created; null means the built-in folder named by [category]. */
+    val folder: String? = null,
+    /** Comma-separated trigger words; a hit in the recent messages ranks this memory first after pinned ones. */
+    @ColumnInfo(defaultValue = "''") val keywords: String = "",
+)
+
+/** Folders exist on their own so an empty one survives until the user deletes it. */
+@Entity(tableName = "memory_folders")
+data class MemoryFolderEntity(
+    @PrimaryKey val name: String,
+    val createdAt: Long,
 )
 
 @Entity(tableName = "checkpoints", indices = [Index("sessionId")])
@@ -833,6 +844,21 @@ interface HarnessDao {
     @Query("UPDATE memories SET consolidatedInto = NULL WHERE consolidatedInto = :summaryId")
     suspend fun restoreConsolidatedMemories(summaryId: String)
 
+    @Query("SELECT * FROM memory_folders ORDER BY createdAt ASC")
+    fun memoryFoldersFlow(): Flow<List<MemoryFolderEntity>>
+
+    @Query("SELECT * FROM memory_folders ORDER BY createdAt ASC")
+    suspend fun memoryFolders(): List<MemoryFolderEntity>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertMemoryFolder(folder: MemoryFolderEntity)
+
+    @Query("DELETE FROM memory_folders WHERE name = :name")
+    suspend fun deleteMemoryFolder(name: String)
+
+    @Query("UPDATE memories SET folder = :folder, updatedAt = :now WHERE folder = :old")
+    suspend fun renameMemoryFolder(old: String, folder: String, now: Long)
+
     // session file changes (GitHub-style "Files changed" per chat)
     @Query(
         "SELECT * FROM session_file_changes WHERE sessionId = :sessionId " +
@@ -864,16 +890,24 @@ interface HarnessDao {
         SessionFileChangeEntity::class,
         MessageFtsEntity::class,
         MemoryEntity::class,
+        MemoryFolderEntity::class,
         ChatAnswerVersionEntity::class,
         SavedAnswerEntity::class,
     ],
-    version = 27,
+    version = 28,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_27_28 = object : androidx.room.migration.Migration(27, 28) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE memories ADD COLUMN folder TEXT")
+                db.execSQL("ALTER TABLE memories ADD COLUMN keywords TEXT NOT NULL DEFAULT ''")
+                db.execSQL("CREATE TABLE IF NOT EXISTS memory_folders (name TEXT NOT NULL PRIMARY KEY, createdAt INTEGER NOT NULL)")
+            }
+        }
         val MIGRATION_26_27 = object : androidx.room.migration.Migration(26, 27) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE work_projects ADD COLUMN chatNamePattern TEXT")

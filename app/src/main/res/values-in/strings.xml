@@ -1144,4 +1144,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"Melanjutkan dalam %1$d detik"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Setiap permintaan mendapat sekitar %1$d hingga %2$d token memori, lebih banyak untuk model dengan jendela konteks lebih besar. Memori yang disematkan dan cocok kata pemicu didahulukan, sisanya tetap bisa dicari."</string>
+    <string name="memory_folder_label">"Folder"</string>
+    <string name="memory_folders_all">"Semua folder"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Folder baru"</string>
+    <string name="memory_folder_rename">"Ganti nama"</string>
+    <string name="memory_folder_rename_title">"Ganti nama folder"</string>
+    <string name="memory_folder_name">"Nama folder"</string>
+    <string name="memory_folder_create">"Buat"</string>
+    <string name="memory_folder_delete">"Hapus folder"</string>
+    <string name="memory_folder_delete_title">"Hapus \"%1$s\"?"</string>
+    <string name="memory_folder_delete_empty">"Folder ini kosong."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"Berisi %1$d memori."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Pindahkan ke"</string>
+    <string name="memory_folder_empty">"Belum ada memori di folder ini."</string>
+    <string name="memory_folder_delete_with_memories">"Hapus memorinya juga"</string>
+    <string name="memory_folder_deleted_moved">"\"%1$s\" dihapus dan memorinya dipindahkan."</string>
+    <string name="memory_folder_deleted_all">"\"%1$s\" dan memorinya dihapus."</string>
+    <string name="memory_folder_deleted_empty">"\"%1$s\" dihapus."</string>
+    <string name="memory_folder_undo">"Urungkan"</string>
+    <string name="memory_triggers_label">"Kata pemicu"</string>
+    <string name="memory_triggers_help">"Opsional. Pisahkan dengan koma. Saat salah satunya muncul, memori ini dipakai lebih dulu."</string>
+    <string name="memory_triggers_row">"Pemicu: %1$s"</string>
 </resources>

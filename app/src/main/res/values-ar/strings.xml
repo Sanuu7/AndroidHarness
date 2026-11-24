@@ -1169,4 +1169,34 @@
         <item quantity="many">"الاستئناف خلال %1$d ثانية"</item>
         <item quantity="other">"الاستئناف خلال %1$d ثانية"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"يحصل كل طلب على نحو %1$d إلى %2$d رمزاً من الذاكرة، وأكثر للنماذج ذات نوافذ السياق الأكبر. تأتي الذكريات المثبتة ومطابقات كلمات التشغيل أولاً، ويبقى الباقي قابلاً للبحث."</string>
+    <string name="memory_folder_label">"المجلد"</string>
+    <string name="memory_folders_all">"كل المجلدات"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"مجلد جديد"</string>
+    <string name="memory_folder_rename">"إعادة تسمية"</string>
+    <string name="memory_folder_rename_title">"إعادة تسمية المجلد"</string>
+    <string name="memory_folder_name">"اسم المجلد"</string>
+    <string name="memory_folder_create">"إنشاء"</string>
+    <string name="memory_folder_delete">"حذف المجلد"</string>
+    <string name="memory_folder_delete_title">"حذف \"%1$s\"؟"</string>
+    <string name="memory_folder_delete_empty">"هذا المجلد فارغ."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="zero">"فيه %1$d ذكرى."</item>
+        <item quantity="one">"فيه %1$d ذكرى."</item>
+        <item quantity="two">"فيه %1$d ذكرى."</item>
+        <item quantity="few">"فيه %1$d ذكريات."</item>
+        <item quantity="many">"فيه %1$d ذكرى."</item>
+        <item quantity="other">"فيه %1$d ذكرى."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"نقل إلى"</string>
+    <string name="memory_folder_empty">"لا توجد ذكريات في هذا المجلد بعد."</string>
+    <string name="memory_folder_delete_with_memories">"حذف الذكريات أيضاً"</string>
+    <string name="memory_folder_deleted_moved">"تم حذف \"%1$s\" ونقل ذكرياته."</string>
+    <string name="memory_folder_deleted_all">"تم حذف \"%1$s\" وذكرياته."</string>
+    <string name="memory_folder_deleted_empty">"تم حذف \"%1$s\"."</string>
+    <string name="memory_folder_undo">"تراجع"</string>
+    <string name="memory_triggers_label">"كلمات التشغيل"</string>
+    <string name="memory_triggers_help">"اختياري. افصل بفواصل. عند ظهور إحداها تُستخدم هذه الذكرى أولاً."</string>
+    <string name="memory_triggers_row">"المشغلات: %1$s"</string>
 </resources>

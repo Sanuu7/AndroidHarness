@@ -1144,4 +1144,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"%1$d초 후 계속합니다"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"요청마다 약 %1$d~%2$d 토큰의 기억이 제공되며, 컨텍스트 창이 큰 모델일수록 더 많습니다. 고정된 기억과 트리거 단어 일치가 먼저 오고 나머지는 검색할 수 있습니다."</string>
+    <string name="memory_folder_label">"폴더"</string>
+    <string name="memory_folders_all">"모든 폴더"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"새 폴더"</string>
+    <string name="memory_folder_rename">"이름 변경"</string>
+    <string name="memory_folder_rename_title">"폴더 이름 변경"</string>
+    <string name="memory_folder_name">"폴더 이름"</string>
+    <string name="memory_folder_create">"만들기"</string>
+    <string name="memory_folder_delete">"폴더 삭제"</string>
+    <string name="memory_folder_delete_title">"\'%1$s\'을(를) 삭제할까요?"</string>
+    <string name="memory_folder_delete_empty">"이 폴더는 비어 있습니다."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"기억이 %1$d개 있습니다."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"이동 대상"</string>
+    <string name="memory_folder_empty">"이 폴더에는 아직 기억이 없습니다."</string>
+    <string name="memory_folder_delete_with_memories">"기억도 삭제"</string>
+    <string name="memory_folder_deleted_moved">"\'%1$s\'을(를) 삭제하고 기억을 옮겼습니다."</string>
+    <string name="memory_folder_deleted_all">"\'%1$s\'과(와) 그 기억을 삭제했습니다."</string>
+    <string name="memory_folder_deleted_empty">"\'%1$s\'을(를) 삭제했습니다."</string>
+    <string name="memory_folder_undo">"실행 취소"</string>
+    <string name="memory_triggers_label">"트리거 단어"</string>
+    <string name="memory_triggers_help">"선택 사항. 쉼표로 구분합니다. 하나가 나타나면 이 기억이 먼저 사용됩니다."</string>
+    <string name="memory_triggers_row">"트리거: %1$s"</string>
 </resources>

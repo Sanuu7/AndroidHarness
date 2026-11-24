@@ -1144,4 +1144,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"%1$d 秒後に再開します"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"リクエストごとに約 %1$d〜%2$d トークンのメモリが付与され、コンテキストウィンドウが大きいモデルほど多くなります。ピン留めされた記憶とトリガーワード一致が優先され、残りは検索できます。"</string>
+    <string name="memory_folder_label">"フォルダー"</string>
+    <string name="memory_folders_all">"すべてのフォルダー"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"新しいフォルダー"</string>
+    <string name="memory_folder_rename">"名前を変更"</string>
+    <string name="memory_folder_rename_title">"フォルダー名を変更"</string>
+    <string name="memory_folder_name">"フォルダー名"</string>
+    <string name="memory_folder_create">"作成"</string>
+    <string name="memory_folder_delete">"フォルダーを削除"</string>
+    <string name="memory_folder_delete_title">"「%1$s」を削除しますか？"</string>
+    <string name="memory_folder_delete_empty">"このフォルダーは空です。"</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"記憶が %1$d 件あります。"</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"移動先"</string>
+    <string name="memory_folder_empty">"このフォルダーにはまだ記憶がありません。"</string>
+    <string name="memory_folder_delete_with_memories">"記憶も削除する"</string>
+    <string name="memory_folder_deleted_moved">"「%1$s」を削除し、記憶を移動しました。"</string>
+    <string name="memory_folder_deleted_all">"「%1$s」とその記憶を削除しました。"</string>
+    <string name="memory_folder_deleted_empty">"「%1$s」を削除しました。"</string>
+    <string name="memory_folder_undo">"元に戻す"</string>
+    <string name="memory_triggers_label">"トリガーワード"</string>
+    <string name="memory_triggers_help">"任意。カンマで区切ります。いずれかが出てくると、この記憶が先に使われます。"</string>
+    <string name="memory_triggers_row">"トリガー: %1$s"</string>
 </resources>

@@ -1149,4 +1149,30 @@
         <item quantity="one">"Retomando em %1$d segundo"</item>
         <item quantity="other">"Retomando em %1$d segundos"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Cada solicitação recebe cerca de %1$d a %2$d tokens de memória, mais para modelos com janelas de contexto maiores. Memórias fixadas e correspondências de palavras-gatilho vêm primeiro. O resto continua pesquisável."</string>
+    <string name="memory_folder_label">"Pasta"</string>
+    <string name="memory_folders_all">"Todas as pastas"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Nova pasta"</string>
+    <string name="memory_folder_rename">"Renomear"</string>
+    <string name="memory_folder_rename_title">"Renomear pasta"</string>
+    <string name="memory_folder_name">"Nome da pasta"</string>
+    <string name="memory_folder_create">"Criar"</string>
+    <string name="memory_folder_delete">"Excluir pasta"</string>
+    <string name="memory_folder_delete_title">"Excluir \"%1$s\"?"</string>
+    <string name="memory_folder_delete_empty">"Esta pasta está vazia."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"Ela tem %1$d memória."</item>
+        <item quantity="other">"Ela tem %1$d memórias."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Mover para"</string>
+    <string name="memory_folder_empty">"Ainda não há memórias nesta pasta."</string>
+    <string name="memory_folder_delete_with_memories">"Excluir as memórias também"</string>
+    <string name="memory_folder_deleted_moved">"Excluída \"%1$s\" e movidas suas memórias."</string>
+    <string name="memory_folder_deleted_all">"Excluída \"%1$s\" e suas memórias."</string>
+    <string name="memory_folder_deleted_empty">"Excluída \"%1$s\"."</string>
+    <string name="memory_folder_undo">"Desfazer"</string>
+    <string name="memory_triggers_label">"Palavras-gatilho"</string>
+    <string name="memory_triggers_help">"Opcional. Separe com vírgulas. Quando uma aparecer, esta memória é usada primeiro."</string>
+    <string name="memory_triggers_row">"Gatilhos: %1$s"</string>
 </resources>

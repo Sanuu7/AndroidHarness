@@ -23,6 +23,28 @@ private fun readMemoryNode(workspace: WorkspaceFs, relPath: String): String? {
 }
 
 /**
+ * Lines from this workspace's project notes that share words with [query],
+ * best first, as `path:line: text`. Empty when the workspace has no notes or
+ * cannot be read (a Chat with no workspace, an unreachable SSH host).
+ */
+internal suspend fun searchWorkspaceNotes(ctx: ToolContext, query: String, limit: Int = 15): List<String> =
+    withContext(Dispatchers.IO) {
+        runCatching {
+            val core = ctx.configuration?.memory?.file ?: MemoryWriteTool.MEMORY_PATH
+            val topics = ctx.configuration?.memory?.topics ?: MemoryTopics.DIR
+            val paths = listOf(core) + listMemoryTopics(ctx.workspace, topics).map { "$topics/$it.md" }
+            paths.flatMap { path ->
+                val content = readMemoryNode(ctx.workspace, path).orEmpty()
+                content.lineSequence().mapIndexedNotNull { index, line ->
+                    val score = com.androidharness.app.data.MemoryMatch.relevance(line, query)
+                    if (line.isBlank() || score <= 0) null else Triple(score, "$path:${index + 1}: ${line.trim().take(300)}", index)
+                }.toList()
+            }.sortedWith(compareByDescending<Triple<Double, String, Int>> { it.first }.thenBy { it.third })
+                .take(limit).map { it.second }
+        }.getOrDefault(emptyList())
+    }
+
+/**
  * Reads agent memory without the system prompt's truncation: the core file,
  * a topic file in full, or (with no arguments) the core plus a topic index.
  */

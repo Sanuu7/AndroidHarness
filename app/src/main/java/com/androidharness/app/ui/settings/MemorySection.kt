@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.*
@@ -16,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,6 +30,8 @@ import com.androidharness.app.data.MemoryCategory
 import com.androidharness.app.data.MemoryPrompt
 import com.androidharness.app.data.MemorySection
 import com.androidharness.app.data.MemoryConsolidation
+import com.androidharness.app.data.MemoryFolderTarget
+import com.androidharness.app.data.MemoryRepository
 import com.androidharness.app.data.MemoryScope
 import com.androidharness.app.data.MemoryText
 import com.androidharness.app.data.db.MemoryEntity
@@ -171,11 +175,29 @@ internal fun MemoryManagerSection(container: AppContainer) {
     var saving by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var consolidation by remember { mutableStateOf<MemoryConsolidation?>(null) }
+    val folderNames = rememberMemoryFolderNames(container)
+    // "c:FACT" is a built-in folder, "f:Name" one the user or agent created.
+    var folderFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var naming by remember { mutableStateOf<String?>(null) } // "" creates, a name renames
+    var removingFolder by remember { mutableStateOf<String?>(null) }
+    var undo by remember { mutableStateOf<Pair<MemoryRepository.FolderDeletion, String>?>(null) }
+    val builtInLabels = MemoryCategory.entries.associateWith { stringResource(categoryLabel(it.name)) }
     val entries = memories.filter { it.consolidatedInto == null }
     val active = entries.count { it.enabled }
-    val visible = entries.filter {
-        (section == null || it.section == section) &&
-            (query.isBlank() || it.text.contains(query.trim(), ignoreCase = true) || it.category.contains(query.trim(), ignoreCase = true))
+    fun inFolder(memory: MemoryEntity, key: String?): Boolean = when {
+        key == null -> true
+        key.startsWith("c:") -> memory.folder == null && memory.category == key.removePrefix("c:")
+        else -> memory.folder == key.removePrefix("f:")
+    }
+    val inSection = entries.filter { section == null || it.section == section }
+    LaunchedEffect(folderNames) {
+        // A folder renamed or deleted elsewhere (by the agent, or a restore) drops out of the filter.
+        if (folderFilter?.startsWith("f:") == true && folderFilter?.removePrefix("f:") !in folderNames) folderFilter = null
+    }
+    val visible = inSection.filter {
+        inFolder(it, folderFilter) &&
+            (query.isBlank() || it.text.contains(query.trim(), ignoreCase = true) || it.keywords.contains(query.trim(), ignoreCase = true) ||
+                (it.folder ?: builtInLabels[MemoryCategory.fromStored(it.category)].orEmpty()).contains(query.trim(), ignoreCase = true))
     }.sortedWith(compareByDescending<MemoryEntity> { it.pinned }.thenByDescending { it.updatedAt })
     val plans = remember(memories, section) { MemoryConsolidation.plans(entries.filter { section == null || it.section == section }) }
     fun mutate(action: suspend () -> Unit, finished: () -> Unit = {}) {
@@ -208,6 +230,30 @@ internal fun MemoryManagerSection(container: AppContainer) {
                     FilterChip(selected = section == option.name, onClick = { section = option.name }, label = { Text(stringResource(sectionLabel(option))) })
                 }
             }
+            Text(stringResource(R.string.memory_folder_label), style = MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FilterChip(selected = folderFilter == null, onClick = { folderFilter = null }, label = { Text(stringResource(R.string.memory_folders_all)) })
+                MemoryCategory.entries.forEach { category ->
+                    val key = "c:${category.name}"
+                    FilterChip(selected = folderFilter == key, onClick = { folderFilter = key },
+                        label = { Text(stringResource(R.string.memory_folder_chip, builtInLabels.getValue(category), inSection.count { inFolder(it, key) })) })
+                }
+                folderNames.forEach { name ->
+                    val key = "f:$name"
+                    FilterChip(selected = folderFilter == key, onClick = { folderFilter = key },
+                        label = { Text(stringResource(R.string.memory_folder_chip, name, inSection.count { inFolder(it, key) }), maxLines = 1, overflow = TextOverflow.Ellipsis) })
+                }
+                AssistChip(enabled = !saving, onClick = { naming = ""; error = null }, label = { Text(stringResource(R.string.memory_folder_new)) },
+                    leadingIcon = { Icon(Icons.Rounded.Add, contentDescription = null, Modifier.size(AssistChipDefaults.IconSize)) })
+            }
+            folderFilter?.takeIf { it.startsWith("f:") }?.removePrefix("f:")?.let { name ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(enabled = !saving, onClick = { naming = name; error = null }) { Text(stringResource(R.string.memory_folder_rename)) }
+                    OutlinedButton(enabled = !saving, onClick = { removingFolder = name; error = null }) {
+                        Text(stringResource(R.string.memory_folder_delete), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
@@ -216,14 +262,26 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
-                stringResource(R.string.settings_memory_budget, MemoryPrompt.approxTokens(MemoryPrompt.MAX_CHARS)),
+                stringResource(R.string.settings_memory_budget_scaled, MemoryPrompt.approxTokens(MemoryPrompt.MIN_CHARS),
+                    MemoryPrompt.approxTokens(MemoryPrompt.LARGE_MAX_CHARS)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 
-    error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp)) }
+    // Folder dialogs show their own error; showing it here too would repeat it behind the dialog.
+    if (naming == null && removingFolder == null) error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp)) }
+    undo?.let { (deletion, message) ->
+        SettingsPanel(Modifier.fillMaxWidth()) {
+            Row(Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(message, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                TextButton(enabled = !saving, onClick = { mutate({ container.memory.restoreFolder(deletion) }) { undo = null } }) {
+                    Text(stringResource(R.string.memory_folder_undo))
+                }
+            }
+        }
+    }
     if (plans.isNotEmpty()) SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(if (plans.any { it.originals.size >= 10 }) R.string.memory_cleanup_suggestion else R.string.memory_consolidate), style = MaterialTheme.typography.titleSmall)
@@ -245,7 +303,11 @@ internal fun MemoryManagerSection(container: AppContainer) {
     if (visible.isEmpty()) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Text(
-                stringResource(if (memories.isEmpty()) R.string.settings_memory_empty else R.string.settings_memory_empty_search),
+                stringResource(when {
+                    memories.isEmpty() -> R.string.settings_memory_empty
+                    folderFilter != null && query.isBlank() -> R.string.memory_folder_empty
+                    else -> R.string.settings_memory_empty_search
+                }),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp),
@@ -256,6 +318,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
             visible.forEachIndexed { index, memory ->
                 MemoryRow(
                     memory = memory,
+                    folderLabel = memory.folder ?: builtInLabels.getValue(MemoryCategory.fromStored(memory.category)),
                     projectName = memory.projectId?.let { projectNames[it] },
                     agentName = agentSettings.chatAgents.firstOrNull { it.id == memory.agentId }?.name,
                     onEdit = { if (!saving) { editing = memory; error = null } },
@@ -287,11 +350,18 @@ internal fun MemoryManagerSection(container: AppContainer) {
             error = error,
             settings = agentSettings,
             initialSection = section?.let { MemorySection.fromStored(it) } ?: MemorySection.CHAT,
-            onSave = { text, category, memoryScope, projectId, owner ->
+            folders = folderNames,
+            initialFolder = folderFilter?.let { key ->
+                if (key.startsWith("c:")) MemoryFolderTarget(MemoryCategory.fromStored(key.removePrefix("c:")), null)
+                else MemoryFolderTarget(MemoryCategory.FACT, key.removePrefix("f:"))
+            },
+            onSave = { draft ->
                 val target = editing
                 mutate({
-                    if (target == null) container.memory.add(text, category, memoryScope, projectId, owner)
-                    else container.memory.update(target, text, category, memoryScope, projectId, owner)
+                    if (target == null) container.memory.add(draft.text, draft.folder.category, draft.scope, draft.projectId, draft.section,
+                        folder = draft.folder.folder, keywords = draft.keywords)
+                    else container.memory.update(target, draft.text, draft.folder.category, draft.scope, draft.projectId, draft.section,
+                        folder = draft.folder.folder, keywords = draft.keywords)
                 }) { adding = false; editing = null }
             },
             onDelete = {
@@ -300,6 +370,34 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 editing = null
             },
         )
+    }
+
+    naming?.let { current ->
+        MemoryFolderNameDialog(current, saving, error, onDismiss = { if (!saving) { naming = null; error = null } }) { name ->
+            mutate({
+                val saved = if (current.isEmpty()) container.memory.createFolder(name) else container.memory.renameFolder(current, name)
+                folderFilter = "f:$saved"
+            }) { naming = null }
+        }
+    }
+
+    removingFolder?.let { name ->
+        val count = entries.count { it.folder == name }
+        val deletedMoved = stringResource(R.string.memory_folder_deleted_moved, name)
+        val deletedAll = stringResource(R.string.memory_folder_deleted_all, name)
+        val deletedEmpty = stringResource(R.string.memory_folder_deleted_empty, name)
+        MemoryFolderDeleteDialog(name, count, folderNames.filter { it != name }, builtInLabels, saving, error,
+            onDismiss = { if (!saving) { removingFolder = null; error = null } }) { moveTo ->
+            mutate({
+                val deletion = container.memory.deleteFolder(name, moveTo)
+                undo = deletion to when {
+                    deletion.before.isEmpty() -> deletedEmpty
+                    deletion.moved -> deletedMoved
+                    else -> deletedAll
+                }
+                folderFilter = null
+            }) { removingFolder = null }
+        }
     }
 
     deleting?.let { memory ->
@@ -338,6 +436,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
 @Composable
 private fun MemoryRow(
     memory: MemoryEntity,
+    folderLabel: String,
     projectName: String?,
     agentName: String? = null,
     onEdit: () -> Unit,
@@ -365,12 +464,19 @@ private fun MemoryRow(
                 listOfNotNull(
                     if (memory.agentId == null) stringResource(sectionLabel(MemorySection.fromStored(memory.section))) else
                         stringResource(R.string.chat_agents_private_memory_label) + " · " + (agentName ?: memory.agentId.take(8)),
-                    stringResource(if (memory.isSummary) R.string.memory_consolidated else categoryLabel(memory.category)),
+                    if (memory.isSummary) stringResource(R.string.memory_consolidated) + " · " + folderLabel else folderLabel,
                     if (memory.scope == MemoryScope.PROJECT.name) projectName ?: stringResource(R.string.settings_memory_project)
                     else stringResource(R.string.settings_memory_global),
                 ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (memory.keywords.isNotBlank()) Text(
+                stringResource(R.string.memory_triggers_row, memory.keywords),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         IconButton(enabled = enabled, onClick = { onPinned(!memory.pinned) }) {
@@ -394,17 +500,20 @@ internal fun MemoryEditDialog(
     initial: MemoryEntity?,
     projects: List<ProjectEntity>,
     onDismiss: () -> Unit,
-    onSave: (String, MemoryCategory, MemoryScope, String?, MemorySection) -> Unit,
+    onSave: (MemoryDraft) -> Unit,
     onDelete: () -> Unit,
     enabled: Boolean = true,
     initialSection: MemorySection = MemorySection.CHAT,
     error: String? = null,
     settings: AppSettings = AppSettings(),
+    folders: List<String> = emptyList(),
+    initialFolder: MemoryFolderTarget? = null,
 ) {
     var owner by remember(initial?.id) { mutableStateOf(initial?.let { MemorySection.fromStored(it.section) } ?: initialSection) }
     val maxChars = MemoryText.maxChars(settings, summary = initial?.isSummary == true)
     var text by remember(initial?.id) { mutableStateOf(initial?.text.orEmpty()) }
-    var category by remember(initial?.id) { mutableStateOf(MemoryCategory.fromStored(initial?.category)) }
+    var folder by remember(initial?.id) { mutableStateOf(initial?.let { MemoryFolderTarget.of(it) } ?: initialFolder ?: MemoryFolderTarget(MemoryCategory.FACT, null)) }
+    var keywords by remember(initial?.id) { mutableStateOf(initial?.keywords.orEmpty()) }
     var scope by remember(initial?.id) { mutableStateOf(MemoryScope.fromStored(initial?.scope)) }
     var projectId by remember(initial?.id, projects) {
         mutableStateOf(initial?.projectId ?: projects.firstOrNull()?.id)
@@ -438,17 +547,34 @@ internal fun MemoryEditDialog(
                         FilterChip(enabled = enabled && initial?.agentId == null, selected = owner == option, onClick = { owner = option }, label = { Text(stringResource(sectionLabel(option))) })
                     }
                 }
-                Text(stringResource(R.string.settings_memory_category_label), style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.memory_folder_label), style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MemoryCategory.entries.forEach { option ->
                         FilterChip(
                             enabled = enabled,
-                            selected = category == option,
-                            onClick = { category = option },
+                            selected = folder.folder == null && folder.category == option,
+                            onClick = { folder = MemoryFolderTarget(option, null) },
                             label = { Text(stringResource(categoryLabel(option.name))) },
                         )
                     }
+                    (folders + listOfNotNull(folder.folder)).distinct().forEach { name ->
+                        FilterChip(
+                            enabled = enabled,
+                            selected = folder.folder == name,
+                            onClick = { folder = MemoryFolderTarget(folder.category, name) },
+                            label = { Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        )
+                    }
                 }
+                OutlinedTextField(
+                    value = keywords,
+                    onValueChange = { keywords = it },
+                    enabled = enabled,
+                    label = { Text(stringResource(R.string.memory_triggers_label)) },
+                    supportingText = { Text(stringResource(R.string.memory_triggers_help)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 Text(stringResource(R.string.settings_memory_scope_label), style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
@@ -471,7 +597,7 @@ internal fun MemoryEditDialog(
         confirmButton = {
             TextButton(
                 enabled = enabled && text.isNotBlank() && (maxChars == null || text.length <= maxChars),
-                onClick = { onSave(text, category, scope, if (scope == MemoryScope.PROJECT) projectId else null, owner) },
+                onClick = { onSave(MemoryDraft(text, folder, scope, if (scope == MemoryScope.PROJECT) projectId else null, owner, keywords)) },
             ) { Text(stringResource(R.string.settings_memory_save)) }
         },
         dismissButton = {
@@ -484,6 +610,113 @@ internal fun MemoryEditDialog(
                 TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) }
             }
         },
+    )
+}
+
+/** What the memory edit dialog hands back. */
+internal data class MemoryDraft(
+    val text: String,
+    val folder: MemoryFolderTarget,
+    val scope: MemoryScope,
+    val projectId: String?,
+    val section: MemorySection,
+    val keywords: String,
+)
+
+/** Folders the user or agent created, plus any a restored memory names, in creation order. */
+@Composable
+internal fun rememberMemoryFolderNames(container: AppContainer): List<String> {
+    val rows by container.memory.folders.collectAsStateWithLifecycle(initialValue = emptyList())
+    val memories by container.memory.memories.collectAsStateWithLifecycle(initialValue = emptyList())
+    return remember(rows, memories) {
+        (rows.map { it.name } + memories.mapNotNull { it.folder }).distinctBy { it.lowercase() }
+    }
+}
+
+@Composable
+private fun MemoryFolderNameDialog(current: String, saving: Boolean, error: String?, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var name by rememberSaveable(current) { mutableStateOf(current) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(if (current.isEmpty()) R.string.memory_folder_new else R.string.memory_folder_rename_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    enabled = !saving,
+                    label = { Text(stringResource(R.string.memory_folder_name)) },
+                    singleLine = true,
+                    isError = name.length > com.androidharness.app.data.MemoryFolders.MAX_NAME,
+                    supportingText = { Text("${name.length} / ${com.androidharness.app.data.MemoryFolders.MAX_NAME}") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !saving && name.isNotBlank() && name.trim() != current, onClick = { onSave(name) }) {
+                Text(stringResource(if (current.isEmpty()) R.string.memory_folder_create else R.string.settings_memory_save))
+            }
+        },
+        dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } },
+    )
+}
+
+/** Deleting a folder asks where its memories go; nothing is removed without that choice. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MemoryFolderDeleteDialog(
+    name: String,
+    count: Int,
+    others: List<String>,
+    builtInLabels: Map<MemoryCategory, String>,
+    saving: Boolean,
+    error: String?,
+    onDismiss: () -> Unit,
+    onDelete: (MemoryFolderTarget?) -> Unit,
+) {
+    // null deletes the memories too.
+    var destination by remember(name) { mutableStateOf<MemoryFolderTarget?>(MemoryFolderTarget(MemoryCategory.FACT, null)) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.memory_folder_delete_title, name)) },
+        text = {
+            Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (count == 0) Text(stringResource(R.string.memory_folder_delete_empty))
+                else {
+                    Text(pluralStringResource(R.plurals.memory_folder_delete_count, count, count))
+                    Text(stringResource(R.string.memory_folder_delete_move), style = MaterialTheme.typography.labelLarge)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        MemoryCategory.entries.forEach { category ->
+                            val option = MemoryFolderTarget(category, null)
+                            FilterChip(enabled = !saving, selected = destination == option, onClick = { destination = option },
+                                label = { Text(builtInLabels.getValue(category)) })
+                        }
+                        others.forEach { other ->
+                            val option = MemoryFolderTarget(MemoryCategory.FACT, other)
+                            FilterChip(enabled = !saving, selected = destination == option, onClick = { destination = option },
+                                label = { Text(other, maxLines = 1, overflow = TextOverflow.Ellipsis) })
+                        }
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().clickable(enabled = !saving) { destination = null }.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = destination == null, onClick = null, enabled = !saving)
+                        Text(stringResource(R.string.memory_folder_delete_with_memories), Modifier.padding(start = 8.dp),
+                            color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !saving, onClick = { onDelete(if (count == 0) null else destination) }) {
+                Text(stringResource(R.string.memory_folder_delete), color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } },
     )
 }
 

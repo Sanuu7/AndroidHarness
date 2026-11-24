@@ -1144,4 +1144,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"Menyambung dalam %1$d saat"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Setiap permintaan mendapat kira-kira %1$d hingga %2$d token memori, lebih banyak untuk model dengan tetingkap konteks lebih besar. Memori yang dipin dan padanan kata pencetus didahulukan, selebihnya kekal boleh dicari."</string>
+    <string name="memory_folder_label">"Folder"</string>
+    <string name="memory_folders_all">"Semua folder"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Folder baharu"</string>
+    <string name="memory_folder_rename">"Namakan semula"</string>
+    <string name="memory_folder_rename_title">"Namakan semula folder"</string>
+    <string name="memory_folder_name">"Nama folder"</string>
+    <string name="memory_folder_create">"Cipta"</string>
+    <string name="memory_folder_delete">"Padam folder"</string>
+    <string name="memory_folder_delete_title">"Padam \"%1$s\"?"</string>
+    <string name="memory_folder_delete_empty">"Folder ini kosong."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"Ia mempunyai %1$d memori."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Alih ke"</string>
+    <string name="memory_folder_empty">"Belum ada memori dalam folder ini."</string>
+    <string name="memory_folder_delete_with_memories">"Padam memorinya juga"</string>
+    <string name="memory_folder_deleted_moved">"\"%1$s\" dipadam dan memorinya dialihkan."</string>
+    <string name="memory_folder_deleted_all">"\"%1$s\" dan memorinya dipadam."</string>
+    <string name="memory_folder_deleted_empty">"\"%1$s\" dipadam."</string>
+    <string name="memory_folder_undo">"Buat asal"</string>
+    <string name="memory_triggers_label">"Kata pencetus"</string>
+    <string name="memory_triggers_help">"Pilihan. Asingkan dengan koma. Apabila satu muncul, memori ini digunakan dahulu."</string>
+    <string name="memory_triggers_row">"Pencetus: %1$s"</string>
 </resources>

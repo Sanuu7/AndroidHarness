@@ -1149,4 +1149,30 @@
         <item quantity="one">"%1$d තත්පරයකින් නැවත අරඹයි"</item>
         <item quantity="other">"%1$d තත්පරවලින් නැවත අරඹයි"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"සෑම ඉල්ලීමකටම දළ වශයෙන් %1$d සිට %2$d දක්වා ටෝකන් මතකයක් ලැබේ, විශාල සන්දර්භ කවුළු ඇති ආකෘතිවලට වැඩිපුර. අමුණන ලද සහ මුලික වචන ගැලපෙන මතක මුලින් එයි, ඉතිරිය සොයාගත හැක."</string>
+    <string name="memory_folder_label">"ෆෝල්ඩරය"</string>
+    <string name="memory_folders_all">"සියලු ෆෝල්ඩර"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"නව ෆෝල්ඩරය"</string>
+    <string name="memory_folder_rename">"නම වෙනස් කරන්න"</string>
+    <string name="memory_folder_rename_title">"ෆෝල්ඩරයේ නම වෙනස් කරන්න"</string>
+    <string name="memory_folder_name">"ෆෝල්ඩරයේ නම"</string>
+    <string name="memory_folder_create">"සාදන්න"</string>
+    <string name="memory_folder_delete">"ෆෝල්ඩරය මකන්න"</string>
+    <string name="memory_folder_delete_title">"\"%1$s\" මකන්නද?"</string>
+    <string name="memory_folder_delete_empty">"මෙම ෆෝල්ඩරය හිස්ය."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"එහි මතක %1$dක් ඇත."</item>
+        <item quantity="other">"එහි මතක %1$dක් ඇත."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"මෙතැනට ගෙනයන්න"</string>
+    <string name="memory_folder_empty">"මෙම ෆෝල්ඩරයේ තවම මතක නැත."</string>
+    <string name="memory_folder_delete_with_memories">"මතක ද මකන්න"</string>
+    <string name="memory_folder_deleted_moved">"\"%1$s\" මකා එහි මතක ගෙනගියා."</string>
+    <string name="memory_folder_deleted_all">"\"%1$s\" සහ එහි මතක මකන ලදී."</string>
+    <string name="memory_folder_deleted_empty">"\"%1$s\" මකන ලදී."</string>
+    <string name="memory_folder_undo">"අහෝසි කරන්න"</string>
+    <string name="memory_triggers_label">"මුලික වචන"</string>
+    <string name="memory_triggers_help">"අනිවාර්ය නොවේ. කොමාවලින් වෙන් කරන්න. එකක් පැමිණි විට මෙම මතකය මුලින් භාවිතා වේ."</string>
+    <string name="memory_triggers_row">"මුලික: %1$s"</string>
 </resources>

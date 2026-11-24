@@ -19,7 +19,10 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
         "For a consolidated memory, first retrieve its full text with recall(memory_id) and preserve the other facts when editing. " +
             "Use it for stable user preferences, ongoing work, decisions, and reusable project facts. " +
             "Keep each entry short and standalone. Do not save secrets, credentials, transient details, " +
-            "or long code. Use recall first when you may be repeating or correcting an existing memory."
+            "or long code. Use recall first when you may be repeating or correcting an existing memory. " +
+            "Memories live in folders: the built-in profile, preference, project, decision and fact folders, or a folder you name. " +
+            "Name a new folder only when a topic keeps coming up (for example \"Lease 2027\"); it is created and the user can rename or delete it. " +
+            "Add keywords when a fact matters only around certain words, so it is supplied whenever they come up."
     override val parametersSchema = Schema.obj(
         mapOf(
             "memory_id" to Schema.string("Existing memory ID to update. Omit only for a new fact."),
@@ -31,7 +34,15 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
                     "'auto' (default) uses the project when this conversation has one and global otherwise.",
             ),
             "category" to Schema.string(
-                "One of profile, preference, project, decision, or fact (default fact).",
+                "One of profile, preference, project, decision, or fact (default fact). Ignored when folder is set.",
+            ),
+            "folder" to Schema.string(
+                "Optional folder name. A built-in name (profile, preference, project, decision, fact) sets the category; " +
+                    "any other name puts the memory in that folder, creating it if needed. Up to 40 characters, no commas.",
+            ),
+            "keywords" to Schema.string(
+                "Optional comma-separated trigger words or short phrases (at most 12). When one appears in the recent messages, " +
+                    "this memory is supplied ahead of others. When updating, the list replaces the old one; pass an empty string to clear it.",
             ),
         ),
         required = listOf("text"),
@@ -42,7 +53,9 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
         if (!memory.isEnabled(ctx.sessionId)) throw ToolFailure("Memory is off for this section in Settings > Memory.")
         val text = args["text"]?.jsonPrimitive?.content
             ?: throw ToolFailure("Missing required argument: text")
-        val category = args["category"]?.jsonPrimitive?.content?.let { MemoryCategory.fromStored(it) }
+        val folder = args["folder"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+        val category = (folder?.let { com.androidharness.app.data.MemoryFolders.builtIn(it) })
+            ?: args["category"]?.jsonPrimitive?.content?.let { MemoryCategory.fromStored(it) }
         val requested = when (args["scope"]?.jsonPrimitive?.content?.trim()?.lowercase()) {
             "global" -> MemoryScope.GLOBAL
             "project" -> MemoryScope.PROJECT
@@ -55,7 +68,9 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
             memory.rememberResult(text, category, requested, ctx.sessionId,
                 memoryId = args["memory_id"]?.jsonPrimitive?.content,
                 previousText = args["previous_text"]?.jsonPrimitive?.content,
-                allowSimilar = args["allow_similar"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() == true)
+                allowSimilar = args["allow_similar"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() == true,
+                folder = folder,
+                keywords = args["keywords"]?.jsonPrimitive?.content)
         } catch (e: IllegalArgumentException) { throw ToolFailure(e.message ?: "Could not save memory.") }
           catch (e: IllegalStateException) { throw ToolFailure(e.message ?: "Could not save memory.") }
         val action = result.action.name.lowercase()
@@ -63,7 +78,10 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
             MemoryRepository.Action.SAVED -> "Memory saved."
             MemoryRepository.Action.UPDATED -> "Memory updated."
             MemoryRepository.Action.UNCHANGED -> "Already saved; no duplicate was created."
-        } + "\n[memory_id:${result.memory.id}]\n[memory_action:$action]")
+        } + (result.createdFolder?.let { "\nCreated folder \"$it\". Tell the user, since it shows in Settings > Memory." } ?: "") +
+            "\n[memory_id:${result.memory.id}]\n[folder:${com.androidharness.app.data.MemoryFolders.label(result.memory)}]" +
+            (if (result.memory.keywords.isNotBlank()) "\n[keywords:${result.memory.keywords}]" else "") +
+            "\n[memory_action:$action]")
 
     }
 }
@@ -73,14 +91,16 @@ class RecallTool(private val memory: MemoryRepository) : Tool {
     override val name = "recall"
     override val description =
         "Search the user's saved memories (written with remember) for the current section, including existing shared memories. " +
-        "Workspace project notes in .harness/memory are separate; memory_search covers those. " +
+        "A query also searches this workspace's project notes (.harness/memory.md and .harness/memory/*.md), so one call covers both. " +
+        "Pass folder to list or search one folder. " +
         "Use section=chat or section=code for an explicit other-section lookup when enabled in Settings. Use it when the user refers to " +
             "something from an earlier conversation or when stored preferences or project facts would help. " +
             "With no query, returns the most recently saved memories."
     override val parametersSchema = Schema.obj(
         mapOf("memory_id" to Schema.string("Read the complete memory by ID before updating, especially an organized digest."),
             "query" to Schema.string("Optional words to find in saved memories."),
-            "section" to Schema.string("current (default), chat, or code. Other-section access requires its Settings switch.")),
+            "section" to Schema.string("current (default), chat, or code. Other-section access requires its Settings switch."),
+            "folder" to Schema.string("Optional folder to search, such as preference or a folder the user created.")),
     )
     override val isReadOnly = true
 
@@ -98,12 +118,17 @@ class RecallTool(private val memory: MemoryRepository) : Tool {
                 catch (e: IllegalStateException) { throw ToolFailure(e.message ?: "Memory is unavailable.") }
             return ToolResult(true, "[id:${entry.id} ${entry.section.lowercase()}/${entry.category.lowercase()}${if (entry.isSummary) "/digest" else ""}]\n${entry.text}")
         }
-        val results = try { memory.search(query, ctx.sessionId, target) }
+        val folder = args["folder"]?.jsonPrimitive?.content?.trim()?.takeIf { it.isNotEmpty() }
+        val results = try { memory.search(query, ctx.sessionId, target, folder) }
             catch (e: IllegalStateException) { throw ToolFailure(e.message ?: "Memory lookup is unavailable.") }
-        if (results.isEmpty()) {
-            return ToolResult(true, "No saved memories matched" + if (query.isEmpty()) "." else " '$query'.")
+        // Project notes have no folders, so a folder lookup stays in saved memories.
+        val notes = if (query.isEmpty() || folder != null) emptyList() else searchWorkspaceNotes(ctx, query)
+        if (results.isEmpty() && notes.isEmpty()) {
+            return ToolResult(true, "No saved memories matched" + (if (query.isEmpty()) "." else " '$query'.") +
+                if (folder != null) " (folder: $folder)" else "")
         }
         val output = StringBuilder()
+        if (results.isEmpty()) output.append("No saved memories matched.\n")
         for (entry in results) {
             val scope = if (entry.scope == MemoryScope.PROJECT.name) "project" else "global"
             val text = if (entry.isSummary) entry.text.lines().filter { it.isNotBlank() && !it.endsWith(":") }
@@ -111,14 +136,19 @@ class RecallTool(private val memory: MemoryRepository) : Tool {
                 .take(12).joinToString("\n").take(4_000)
                 else com.androidharness.app.data.MemoryText.excerpt(entry.text, 4_000, query)
             val partial = entry.isSummary || text != entry.text
-            val line = "- [id:${entry.id} ${entry.section.lowercase()}/$scope/${entry.category.lowercase()}${if (entry.isSummary) "/digest" else ""}${if (partial) "; recall(memory_id) for full text" else ""}] $text\n"
-            if (output.length + line.length > 12_000) {
+            val triggers = if (entry.keywords.isNotBlank()) "; keywords: ${entry.keywords}" else ""
+            val line = "- [id:${entry.id} ${entry.section.lowercase()}/$scope/${com.androidharness.app.data.MemoryFolders.label(entry)}${if (entry.isSummary) "/digest" else ""}$triggers${if (partial) "; recall(memory_id) for full text" else ""}] $text\n"
+            if (output.length + line.length > 10_000) {
                 output.append("More matches are available; refine your query.\n")
                 break
             }
             output.append(line)
         }
-        return ToolResult(true, output.toString())
+        if (notes.isNotEmpty()) {
+            output.append("\nProject notes (memory_read for the whole file):\n")
+            notes.forEach { output.append("- ").append(it).append('\n') }
+        }
+        return ToolResult(true, output.toString().trimEnd())
 
     }
 }

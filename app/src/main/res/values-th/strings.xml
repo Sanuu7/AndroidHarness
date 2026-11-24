@@ -1144,4 +1144,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"จะทำต่อใน %1$d วินาที"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"แต่ละคำขอได้หน่วยความจำประมาณ %1$d ถึง %2$d โทเค็น มากขึ้นสำหรับโมเดลที่หน้าต่างบริบทใหญ่กว่า ความจำที่ปักหมุดและที่ตรงกับคำทริกเกอร์มาก่อน ที่เหลือยังค้นหาได้"</string>
+    <string name="memory_folder_label">"โฟลเดอร์"</string>
+    <string name="memory_folders_all">"โฟลเดอร์ทั้งหมด"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"โฟลเดอร์ใหม่"</string>
+    <string name="memory_folder_rename">"เปลี่ยนชื่อ"</string>
+    <string name="memory_folder_rename_title">"เปลี่ยนชื่อโฟลเดอร์"</string>
+    <string name="memory_folder_name">"ชื่อโฟลเดอร์"</string>
+    <string name="memory_folder_create">"สร้าง"</string>
+    <string name="memory_folder_delete">"ลบโฟลเดอร์"</string>
+    <string name="memory_folder_delete_title">"ลบ \"%1$s\" หรือไม่?"</string>
+    <string name="memory_folder_delete_empty">"โฟลเดอร์นี้ว่างเปล่า"</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"มี %1$d ความจำ"</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"ย้ายไปยัง"</string>
+    <string name="memory_folder_empty">"ยังไม่มีความจำในโฟลเดอร์นี้"</string>
+    <string name="memory_folder_delete_with_memories">"ลบความจำด้วย"</string>
+    <string name="memory_folder_deleted_moved">"ลบ \"%1$s\" และย้ายความจำแล้ว"</string>
+    <string name="memory_folder_deleted_all">"ลบ \"%1$s\" และความจำแล้ว"</string>
+    <string name="memory_folder_deleted_empty">"ลบ \"%1$s\" แล้ว"</string>
+    <string name="memory_folder_undo">"เลิกทำ"</string>
+    <string name="memory_triggers_label">"คำทริกเกอร์"</string>
+    <string name="memory_triggers_help">"ไม่บังคับ คั่นด้วยจุลภาค เมื่อคำใดปรากฏ ความจำนี้จะถูกใช้ก่อน"</string>
+    <string name="memory_triggers_row">"ทริกเกอร์: %1$s"</string>
 </resources>

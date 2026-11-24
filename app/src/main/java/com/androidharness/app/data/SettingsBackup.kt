@@ -201,6 +201,7 @@ object SettingsBackupValidation {
             check((memory.projectId?.length ?: 0) <= 500 && (memory.sourceSessionId?.length ?: 0) <= 200, SettingsBackupProblem.MEMORY)
             check(memory.agentId == null || memory.agentId.length in 1..100 && memory.section == "CHAT", SettingsBackupProblem.MEMORY)
             check(memory.useCount >= 0, SettingsBackupProblem.MEMORY)
+            check((memory.folder?.length ?: 0) <= 200 && memory.keywords.length <= 2_000, SettingsBackupProblem.MEMORY)
         }
     }
 }

@@ -1149,4 +1149,30 @@
         <item quantity="one">"%1$d সেকেন্ডে আবার শুরু হবে"</item>
         <item quantity="other">"%1$d সেকেন্ডে আবার শুরু হবে"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"প্রতিটি অনুরোধে প্রায় %1$d থেকে %2$d টোকেন মেমরি যায়, বড় কনটেক্সট উইন্ডোর মডেলে বেশি। পিন করা ও ট্রিগার শব্দে মেলা মেমরি আগে আসে, বাকিগুলো খোঁজা যায়।"</string>
+    <string name="memory_folder_label">"ফোল্ডার"</string>
+    <string name="memory_folders_all">"সব ফোল্ডার"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"নতুন ফোল্ডার"</string>
+    <string name="memory_folder_rename">"নাম বদলান"</string>
+    <string name="memory_folder_rename_title">"ফোল্ডারের নাম বদলান"</string>
+    <string name="memory_folder_name">"ফোল্ডারের নাম"</string>
+    <string name="memory_folder_create">"তৈরি করুন"</string>
+    <string name="memory_folder_delete">"ফোল্ডার মুছুন"</string>
+    <string name="memory_folder_delete_title">"\"%1$s\" মুছবেন?"</string>
+    <string name="memory_folder_delete_empty">"এই ফোল্ডার খালি।"</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"এতে %1$d মেমরি আছে।"</item>
+        <item quantity="other">"এতে %1$d মেমরি আছে।"</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"এখানে সরান"</string>
+    <string name="memory_folder_empty">"এই ফোল্ডারে এখনো কোনো মেমরি নেই।"</string>
+    <string name="memory_folder_delete_with_memories">"মেমরিগুলোও মুছুন"</string>
+    <string name="memory_folder_deleted_moved">"\"%1$s\" মুছে এর মেমরিগুলো সরানো হয়েছে।"</string>
+    <string name="memory_folder_deleted_all">"\"%1$s\" ও এর মেমরিগুলো মোছা হয়েছে।"</string>
+    <string name="memory_folder_deleted_empty">"\"%1$s\" মোছা হয়েছে।"</string>
+    <string name="memory_folder_undo">"আগের অবস্থায় ফেরান"</string>
+    <string name="memory_triggers_label">"ট্রিগার শব্দ"</string>
+    <string name="memory_triggers_help">"ঐচ্ছিক। কমা দিয়ে আলাদা করুন। কোনোটি এলে এই মেমরি আগে ব্যবহৃত হয়।"</string>
+    <string name="memory_triggers_row">"ট্রিগার: %1$s"</string>
 </resources>

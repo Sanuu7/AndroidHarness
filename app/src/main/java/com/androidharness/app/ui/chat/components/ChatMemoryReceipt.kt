@@ -81,10 +81,15 @@ internal fun ChatMemoryReceipt(messages: List<ChatMessage>, container: AppContai
     editing?.let { memory ->
         if (saved.none { it.id == memory.id }) { LaunchedEffect(memory.id) { editing = null }; return@let }
         MemoryEditDialog(memory, projects, enabled = !busy && !saving, error = error, settings = settings,
+            folders = com.androidharness.app.ui.settings.rememberMemoryFolderNames(container),
             onDismiss = { if (!saving) { editing = null; error = null } },
-            onSave = { text, category, memoryScope, project, section ->
+            onSave = { draft ->
                 if (!saving && !busy) { saving = true; scope.launch {
-                    try { container.memory.update(memory, text, category, memoryScope, project, section); editing = null }
+                    try {
+                        container.memory.update(memory, draft.text, draft.folder.category, draft.scope, draft.projectId, draft.section,
+                            folder = draft.folder.folder, keywords = draft.keywords)
+                        editing = null
+                    }
                     catch (e: kotlinx.coroutines.CancellationException) { throw e }
                     catch (e: Exception) { error = e.message }
                     finally { saving = false }

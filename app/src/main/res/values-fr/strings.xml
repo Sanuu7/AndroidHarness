@@ -1154,4 +1154,31 @@
         <item quantity="many">"Reprise dans %1$d de secondes"</item>
         <item quantity="other">"Reprise dans %1$d secondes"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Chaque requête reçoit environ %1$d à %2$d jetons de mémoire, davantage pour les modèles à grande fenêtre. Les souvenirs épinglés et les correspondances de mots déclencheurs passent en premier. Le reste reste consultable."</string>
+    <string name="memory_folder_label">"Dossier"</string>
+    <string name="memory_folders_all">"Tous les dossiers"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Nouveau dossier"</string>
+    <string name="memory_folder_rename">"Renommer"</string>
+    <string name="memory_folder_rename_title">"Renommer le dossier"</string>
+    <string name="memory_folder_name">"Nom du dossier"</string>
+    <string name="memory_folder_create">"Créer"</string>
+    <string name="memory_folder_delete">"Supprimer le dossier"</string>
+    <string name="memory_folder_delete_title">"Supprimer « %1$s » ?"</string>
+    <string name="memory_folder_delete_empty">"Ce dossier est vide."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"Il contient %1$d souvenir."</item>
+        <item quantity="many">"Il contient %1$d de souvenirs."</item>
+        <item quantity="other">"Il contient %1$d souvenirs."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Déplacer vers"</string>
+    <string name="memory_folder_empty">"Aucun souvenir dans ce dossier pour l\'instant."</string>
+    <string name="memory_folder_delete_with_memories">"Supprimer aussi les souvenirs"</string>
+    <string name="memory_folder_deleted_moved">"« %1$s » supprimé et ses souvenirs déplacés."</string>
+    <string name="memory_folder_deleted_all">"« %1$s » et ses souvenirs supprimés."</string>
+    <string name="memory_folder_deleted_empty">"« %1$s » supprimé."</string>
+    <string name="memory_folder_undo">"Annuler"</string>
+    <string name="memory_triggers_label">"Mots déclencheurs"</string>
+    <string name="memory_triggers_help">"Facultatif. Séparez par des virgules. Quand l\'un apparaît, ce souvenir est utilisé en premier."</string>
+    <string name="memory_triggers_row">"Déclencheurs : %1$s"</string>
 </resources>

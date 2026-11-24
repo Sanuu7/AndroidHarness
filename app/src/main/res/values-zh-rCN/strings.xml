@@ -1175,4 +1175,29 @@
     <plurals name="harness_free_resuming_in">
         <item quantity="other">"将在 %1$d 秒后继续"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"每次请求大约获得 %1$d 到 %2$d 个 token 的记忆，上下文窗口更大的模型会更多。置顶记忆和触发词匹配优先，其余仍可搜索。"</string>
+    <string name="memory_folder_label">"文件夹"</string>
+    <string name="memory_folders_all">"所有文件夹"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"新建文件夹"</string>
+    <string name="memory_folder_rename">"重命名"</string>
+    <string name="memory_folder_rename_title">"重命名文件夹"</string>
+    <string name="memory_folder_name">"文件夹名称"</string>
+    <string name="memory_folder_create">"创建"</string>
+    <string name="memory_folder_delete">"删除文件夹"</string>
+    <string name="memory_folder_delete_title">"删除“%1$s”？"</string>
+    <string name="memory_folder_delete_empty">"此文件夹为空。"</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="other">"它有 %1$d 条记忆。"</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"移动到"</string>
+    <string name="memory_folder_empty">"此文件夹中还没有记忆。"</string>
+    <string name="memory_folder_delete_with_memories">"同时删除记忆"</string>
+    <string name="memory_folder_deleted_moved">"已删除“%1$s”并移动其记忆。"</string>
+    <string name="memory_folder_deleted_all">"已删除“%1$s”及其记忆。"</string>
+    <string name="memory_folder_deleted_empty">"已删除“%1$s”。"</string>
+    <string name="memory_folder_undo">"撤销"</string>
+    <string name="memory_triggers_label">"触发词"</string>
+    <string name="memory_triggers_help">"可选。用逗号分隔。当其中一个出现时，会优先使用此记忆。"</string>
+    <string name="memory_triggers_row">"触发词：%1$s"</string>
 </resources>

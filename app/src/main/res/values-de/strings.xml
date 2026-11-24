@@ -1149,4 +1149,30 @@
         <item quantity="one">"Fortsetzen in %1$d Sekunde"</item>
         <item quantity="other">"Fortsetzen in %1$d Sekunden"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Jede Anfrage bekommt etwa %1$d bis %2$d Token Gedächtnis, mehr bei Modellen mit größerem Kontextfenster. Angeheftete Erinnerungen und Treffer von Auslösewörtern kommen zuerst. Der Rest bleibt durchsuchbar."</string>
+    <string name="memory_folder_label">"Ordner"</string>
+    <string name="memory_folders_all">"Alle Ordner"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Neuer Ordner"</string>
+    <string name="memory_folder_rename">"Umbenennen"</string>
+    <string name="memory_folder_rename_title">"Ordner umbenennen"</string>
+    <string name="memory_folder_name">"Ordnername"</string>
+    <string name="memory_folder_create">"Erstellen"</string>
+    <string name="memory_folder_delete">"Ordner löschen"</string>
+    <string name="memory_folder_delete_title">"„%1$s“ löschen?"</string>
+    <string name="memory_folder_delete_empty">"Dieser Ordner ist leer."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"Er enthält %1$d Erinnerung."</item>
+        <item quantity="other">"Er enthält %1$d Erinnerungen."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Verschieben nach"</string>
+    <string name="memory_folder_empty">"Noch keine Erinnerungen in diesem Ordner."</string>
+    <string name="memory_folder_delete_with_memories">"Die Erinnerungen ebenfalls löschen"</string>
+    <string name="memory_folder_deleted_moved">"„%1$s“ gelöscht und die Erinnerungen verschoben."</string>
+    <string name="memory_folder_deleted_all">"„%1$s“ und seine Erinnerungen gelöscht."</string>
+    <string name="memory_folder_deleted_empty">"„%1$s“ gelöscht."</string>
+    <string name="memory_folder_undo">"Rückgängig"</string>
+    <string name="memory_triggers_label">"Auslösewörter"</string>
+    <string name="memory_triggers_help">"Optional. Mit Kommas trennen. Kommt eines vor, wird diese Erinnerung zuerst genutzt."</string>
+    <string name="memory_triggers_row">"Auslöser: %1$s"</string>
 </resources>

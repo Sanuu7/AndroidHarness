@@ -1149,4 +1149,30 @@
         <item quantity="one">"Se reanuda en %1$d segundo"</item>
         <item quantity="other">"Se reanuda en %1$d segundos"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Cada solicitud recibe unos %1$d a %2$d tokens de memoria, más en modelos con ventanas de contexto mayores. Las memorias fijadas y las que coinciden con palabras clave van primero. El resto sigue siendo buscable."</string>
+    <string name="memory_folder_label">"Carpeta"</string>
+    <string name="memory_folders_all">"Todas las carpetas"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Nueva carpeta"</string>
+    <string name="memory_folder_rename">"Renombrar"</string>
+    <string name="memory_folder_rename_title">"Renombrar carpeta"</string>
+    <string name="memory_folder_name">"Nombre de la carpeta"</string>
+    <string name="memory_folder_create">"Crear"</string>
+    <string name="memory_folder_delete">"Eliminar carpeta"</string>
+    <string name="memory_folder_delete_title">"¿Eliminar «%1$s»?"</string>
+    <string name="memory_folder_delete_empty">"Esta carpeta está vacía."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"Tiene %1$d memoria."</item>
+        <item quantity="other">"Tiene %1$d memorias."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Mover a"</string>
+    <string name="memory_folder_empty">"Aún no hay memorias en esta carpeta."</string>
+    <string name="memory_folder_delete_with_memories">"Eliminar también las memorias"</string>
+    <string name="memory_folder_deleted_moved">"Se eliminó «%1$s» y se movieron sus memorias."</string>
+    <string name="memory_folder_deleted_all">"Se eliminó «%1$s» y sus memorias."</string>
+    <string name="memory_folder_deleted_empty">"Se eliminó «%1$s»."</string>
+    <string name="memory_folder_undo">"Deshacer"</string>
+    <string name="memory_triggers_label">"Palabras clave"</string>
+    <string name="memory_triggers_help">"Opcional. Sepáralas con comas. Cuando aparezca una, esta memoria se usa primero."</string>
+    <string name="memory_triggers_row">"Activadores: %1$s"</string>
 </resources>

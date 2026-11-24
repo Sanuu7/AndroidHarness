@@ -1159,4 +1159,32 @@
         <item quantity="many">"Продолжение через %1$d секунд"</item>
         <item quantity="other">"Продолжение через %1$d секунды"</item>
     </plurals>
+    <string name="settings_memory_budget_scaled">"Каждый запрос получает примерно от %1$d до %2$d токенов памяти, больше для моделей с большим окном контекста. Закреплённые воспоминания и совпадения по словам-триггерам идут первыми. Остальное остаётся доступным для поиска."</string>
+    <string name="memory_folder_label">"Папка"</string>
+    <string name="memory_folders_all">"Все папки"</string>
+    <string name="memory_folder_chip">"%1$s %2$d"</string>
+    <string name="memory_folder_new">"Новая папка"</string>
+    <string name="memory_folder_rename">"Переименовать"</string>
+    <string name="memory_folder_rename_title">"Переименовать папку"</string>
+    <string name="memory_folder_name">"Название папки"</string>
+    <string name="memory_folder_create">"Создать"</string>
+    <string name="memory_folder_delete">"Удалить папку"</string>
+    <string name="memory_folder_delete_title">"Удалить «%1$s»?"</string>
+    <string name="memory_folder_delete_empty">"Эта папка пуста."</string>
+    <plurals name="memory_folder_delete_count">
+        <item quantity="one">"В ней %1$d воспоминание."</item>
+        <item quantity="few">"В ней %1$d воспоминания."</item>
+        <item quantity="many">"В ней %1$d воспоминаний."</item>
+        <item quantity="other">"В ней %1$d воспоминания."</item>
+    </plurals>
+    <string name="memory_folder_delete_move">"Переместить в"</string>
+    <string name="memory_folder_empty">"В этой папке пока нет воспоминаний."</string>
+    <string name="memory_folder_delete_with_memories">"Удалить и воспоминания"</string>
+    <string name="memory_folder_deleted_moved">"«%1$s» удалена, воспоминания перемещены."</string>
+    <string name="memory_folder_deleted_all">"«%1$s» и её воспоминания удалены."</string>
+    <string name="memory_folder_deleted_empty">"«%1$s» удалена."</string>
+    <string name="memory_folder_undo">"Отменить"</string>
+    <string name="memory_triggers_label">"Слова-триггеры"</string>
+    <string name="memory_triggers_help">"Необязательно. Разделяйте запятыми. Когда одно появляется, это воспоминание используется первым."</string>
+    <string name="memory_triggers_row">"Триггеры: %1$s"</string>
 </resources>
