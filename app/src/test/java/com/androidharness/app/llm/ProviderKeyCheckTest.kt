@@ -93,5 +93,29 @@ class ProviderKeyCheckTest {
         assertEquals("HTTP 403 Forbidden: denied", ProviderKeyCheck.errorMessage(403, "Forbidden", """{"error":"denied"}"""))
         assertEquals("HTTP 404: missing", ProviderKeyCheck.errorMessage(404, "", """{"message":"missing"}"""))
         assertEquals("HTTP 502", ProviderKeyCheck.errorMessage(502, "", "<html>bad gateway</html>"))
+        // NVIDIA puts its reason in RFC 7807 `detail`.
+        assertEquals("HTTP 403: Authorization failed", ProviderKeyCheck.errorMessage(403, "",
+            """{"status":403,"title":"Forbidden","detail":"Authorization failed"}"""))
+    }
+
+    @Test fun nvidiaMissingAndRetiredModelsSayWhatToDo() {
+        val missing = ProviderKeyCheck.errorMessage(404, "Not Found", "404 page not found", "nobody/not-a-model")
+        assertTrue(missing, missing.startsWith("HTTP 404 Not Found: The provider does not serve \"nobody/not-a-model\""))
+        assertTrue(missing, missing.contains("Refresh the model list"))
+        val retired = ProviderKeyCheck.errorMessage(410, "Gone",
+            """{"type":"about:blank","title":"Gone","status":410,"detail":"The model 'meta/llama-3.1-8b-instruct' has reached its end of life on 2026-08-26T09:00:00Z and is no longer available."}""",
+            "meta/llama-3.1-8b-instruct")
+        assertTrue(retired, retired.startsWith("HTTP 410 Gone: The model 'meta/llama-3.1-8b-instruct' has reached its end of life"))
+        assertTrue(retired, retired.endsWith("Refresh the model list and choose another model."))
+        assertEquals("HTTP 404: The provider has nothing at this address. Check the base URL.",
+            ProviderKeyCheck.errorMessage(404, "", "404 page not found"))
+    }
+
+    @Test fun chatErrorsExplainMissingModelsButKeepOtherBodies() {
+        assertTrue(ApiException(404, "404 page not found").message!!.contains("Refresh the model list"))
+        val explained = """{"error":{"message":"model gpt-x does not exist"}}"""
+        assertEquals("HTTP 404: $explained", ApiException(404, explained).message)
+        val overflow = """{"error":{"message":"maximum context length is 8192 tokens"}}"""
+        assertEquals("HTTP 400: $overflow", ApiException(400, overflow).message)
     }
 }

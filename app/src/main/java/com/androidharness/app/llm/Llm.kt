@@ -166,7 +166,7 @@ sealed interface StreamEvent {
 }
 
 class ApiException(val code: Int, message: String, retryAfterSecondsHeader: Long? = null) :
-    IOException("HTTP $code: ${ServerContext.overflowMessage(message) ?: message}") {
+    IOException("HTTP $code: ${ServerContext.overflowMessage(message) ?: ProviderErrorText.missingModel(code, message, namesModel = true) ?: message}") {
     val retryAfterSeconds: Long? = retryAfterSecondsHeader ?: runCatching {
         providerRetryAfterSeconds(Json.parseToJsonElement(message))
     }.getOrNull()

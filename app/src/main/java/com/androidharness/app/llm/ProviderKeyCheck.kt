@@ -2,13 +2,9 @@ package com.androidharness.app.llm
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
@@ -36,7 +32,6 @@ object ProviderKeyCheck {
     internal const val MAX_OUTPUT_TOKENS = 16
     private const val PROMPT = "Say ok"
 
-    private val json = Json { ignoreUnknownKeys = true }
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .writeTimeout(15, TimeUnit.SECONDS)
@@ -62,7 +57,7 @@ object ProviderKeyCheck {
             http.newCall(request).execute().use { resp ->
                 val body = resp.body?.string().orEmpty()
                 if (resp.isSuccessful) Result.Ok(System.currentTimeMillis() - started, config.model.ifBlank { null })
-                else Result.Failed(redact(errorMessage(resp.code, resp.message, body), apiKey), resp.code)
+                else Result.Failed(redact(errorMessage(resp.code, resp.message, body, config.model), apiKey), resp.code)
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
@@ -127,15 +122,8 @@ object ProviderKeyCheck {
     }
 
     /** Pulls the provider's own reason out of the usual error shapes. */
-    internal fun errorMessage(code: Int, status: String, body: String): String {
-        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
-        val error = root?.get("error")
-        val reason = when {
-            error is JsonObject -> error["message"]?.jsonPrimitive?.contentOrNull
-            error != null -> runCatching { error.jsonPrimitive.contentOrNull }.getOrNull()
-            else -> root?.get("message")?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
-        }?.trim()?.takeIf { it.isNotEmpty() }
-            ?: body.trim().takeIf { it.isNotEmpty() && !it.startsWith("<") }
+    internal fun errorMessage(code: Int, status: String, body: String, model: String? = null): String {
+        val reason = ProviderErrorText.missingModel(code, body, model) ?: ProviderErrorText.reason(body)
         val head = "HTTP $code" + status.takeIf { it.isNotBlank() }?.let { " $it" }.orEmpty()
         return if (reason == null) head else "$head: ${reason.take(240)}"
     }
