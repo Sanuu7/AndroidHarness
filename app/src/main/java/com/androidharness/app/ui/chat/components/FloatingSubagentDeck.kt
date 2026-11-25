@@ -115,6 +115,13 @@ internal fun FloatingSubagentDock(
     var savedPosition by remember(sessionId, store) { mutableStateOf(store.read()) }
     var placement by remember(sessionId) { mutableStateOf<SubagentBubblePlacement?>(null) }
     fun collapse() { expanded = false; selectedId = null }
+    // A tap on the bubble while the panel is open reaches the panel's window first as a tap
+    // outside, which already closes it; the bubble must not open it again right after.
+    var dismissedAt by remember { mutableLongStateOf(0L) }
+    fun toggle() {
+        if (expanded) collapse()
+        else if (android.os.SystemClock.uptimeMillis() - dismissedAt > 400) expanded = true
+    }
     LaunchedEffect(runs) { lifecycle = lifecycle.update(runs, android.os.SystemClock.uptimeMillis()) }
     LaunchedEffect(lifecycle.finishedAt) {
         lifecycle.finishedAt?.let { finished ->
@@ -156,29 +163,44 @@ internal fun FloatingSubagentDock(
         // Restore the bubble after typing, rather than drawing over the input controls.
         if (!keyboardOpen && anchorTop >= with(density) { 64.dp.roundToPx() } &&
             (popupVisibility.currentState || popupVisibility.targetState || !popupVisibility.isIdle)) {
+            // The bubble's window keeps one size. The open panel lives in a window of its own,
+            // so neither window has to move while the panel animates.
             Popup(popupPositionProvider = position, onDismissRequest = { collapse() },
                 properties = PopupProperties(focusable = false, dismissOnBackPress = true,
-                    dismissOnClickOutside = expanded, clippingEnabled = true, usePlatformDefaultWidth = false)) {
+                    dismissOnClickOutside = false, clippingEnabled = true, usePlatformDefaultWidth = false)) {
                 CompositionLocalProvider(LocalDensity provides density) {
                     AnimatedVisibility(popupVisibility,
                         enter = fadeIn(expressiveEffectsSpec()) + scaleIn(expressiveSpatialSpec(), initialScale = .55f),
                         exit = fadeOut(tween(180)) + scaleOut(tween(180, easing = FastOutLinearInEasing), targetScale = .8f)) {
-                    FloatingSubagentDeck(shown, expanded, { if (expanded) collapse() else expanded = true },
+                    FloatingSubagentDeck(shown, expanded, { toggle() },
                         onOpen = onOpen, onStop = { manager.subagents.stop(sessionId, it) },
                         selectedId = selectedId, onSelected = { selectedId = it }, maxPanelHeight = panelHeight,
                         bubbleOffset = { width -> placement?.bubbleOffset(width) ?: 0 }, panelAbove = placement?.panelAbove ?: true,
                         onDragStart = { dragging = true; collapse() },
                         onDrag = { delta -> placement?.let { savedPosition = savedPosition.moved(delta, it.bounds) } },
-                        onDragEnd = { store.save(savedPosition); dragging = false }, buttonSize = bubbleSize)
+                        onDragEnd = { store.save(savedPosition); dragging = false }, buttonSize = bubbleSize, showPanel = false)
                     }
+                }
+            }
+            FloatingPanelPopup(expanded && popupVisibility.targetState, placement, deckPanelWidth(), panelHeight,
+                dismissOnClickOutside = true, onDismiss = { dismissedAt = android.os.SystemClock.uptimeMillis(); collapse() }) { open ->
+                CompositionLocalProvider(LocalDensity provides density) {
+                    FloatingSubagentDeck(shown, open, { toggle() },
+                        onOpen = onOpen, onStop = { manager.subagents.stop(sessionId, it) },
+                        selectedId = selectedId, onSelected = { selectedId = it }, maxPanelHeight = panelHeight,
+                        panelAbove = placement?.panelAbove ?: true, buttonSize = bubbleSize, showBubble = false)
                 }
             }
         }
     }
 }
 
+/** The open panel's width, shared by the panel and its window. */
+@Composable
+internal fun deckPanelWidth(): Dp = (LocalConfiguration.current.screenWidthDp.dp - 32.dp).coerceIn(0.dp, 320.dp)
+
 internal data class SubagentBubblePlacement(val bounds: IntRect, val bubbleX: Int, val windowWidth: Int,
-    val bubbleWidth: Int, val panelAbove: Boolean, val maxPanelHeight: Int) {
+    val bubbleWidth: Int, val panelAbove: Boolean, val maxPanelHeight: Int, val bubbleY: Int = 0, val bubbleHeight: Int = 0) {
     fun popupX(width: Int) = (bubbleX + bubbleWidth - width).coerceIn(0, (windowWidth - width).coerceAtLeast(0))
     fun bubbleOffset(width: Int) = bubbleX - popupX(width)
 }
@@ -199,7 +221,7 @@ internal class SubagentBubblePositionProvider(private val gap: Int, private val 
         val y = (top + bounds.height * fraction.y).roundToInt()
         val above = y - top >= bottom - y
         val placement = SubagentBubblePlacement(bounds, x, windowSize.width, bubbleSize.width, above,
-            (if (above) y - top else bottom - y) - gap)
+            (if (above) y - top else bottom - y) - gap, y, bubbleSize.height)
         onPlaced(placement)
         return IntOffset(placement.popupX(popupContentSize.width), if (above) (y + bubbleSize.height - popupContentSize.height).coerceAtLeast(0) else y)
     }
@@ -236,6 +258,8 @@ internal fun FloatingSubagentDeck(
     onDrag: (Offset) -> Unit = {},
     onDragEnd: () -> Unit = {},
     buttonSize: IntSize? = null,
+    showPanel: Boolean = true,
+    showBubble: Boolean = true,
 ) {
     if (runs.isEmpty()) return
     val scheme = MaterialTheme.colorScheme
@@ -255,7 +279,7 @@ internal fun FloatingSubagentDeck(
     val dragStart by rememberUpdatedState(onDragStart)
     val dragMove by rememberUpdatedState(onDrag)
     val dragEnd by rememberUpdatedState(onDragEnd)
-    val width = (LocalConfiguration.current.screenWidthDp.dp - 32.dp).coerceIn(0.dp, 320.dp)
+    val width = deckPanelWidth()
     // Panel and bubble borders share one clock: an arc runs around both while any agent is working.
     val phase = remember { Animatable(0f) }
     val shimmer = animateFloatAsState(if (working > 0) 1f else 0f, tween(450), label = "Subagent outline shimmer")
@@ -342,7 +366,9 @@ internal fun FloatingSubagentDeck(
         var lifted by remember { mutableStateOf(false) }
         // Squish on press, rise while dragged, and square off a little while the panel is open.
         val scale = animateFloatAsState(when { lifted -> 1.08f; pressed -> .93f; else -> 1f }, expressiveSpatialSpec(), label = "Subagent bubble scale")
-        val corner by animateDpAsState(if (expanded) 16.dp else 24.dp, expressiveSpatialSpec(), label = "Subagent bubble corner")
+        // The curve settles without overshoot; a bouncy corner reads as the bubble wobbling on close.
+        val corner by animateDpAsState(if (expanded) 16.dp else 24.dp,
+            spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow), label = "Subagent bubble corner")
         val elevation by animateDpAsState(if (lifted) 10.dp else 3.dp, expressiveEffectsSpec(), label = "Subagent bubble elevation")
         val edge by animateColorAsState(if (expanded) scheme.primary.copy(alpha = .8f) else outline, expressiveEffectsSpec(), label = "Subagent bubble edge")
         val bubbleShape = RoundedCornerShape(corner)
@@ -368,7 +394,7 @@ internal fun FloatingSubagentDeck(
     }
     // Measure the bubble offset with the panel in the same layout pass. Recomposition after
     // popup placement otherwise lets a growing panel push a dragged bubble sideways for a frame.
-    Layout(modifier = modifier, content = { Box { panel() }; bubble() }) { measurables, constraints ->
+    Layout(modifier = modifier, content = { Box { if (showPanel) panel() }; Box { if (showBubble) bubble() } }) { measurables, constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val panelPlaceable = measurables[0].measure(loose)
         val bubblePlaceable = measurables[1].measure(loose)
