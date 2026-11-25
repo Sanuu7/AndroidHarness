@@ -129,9 +129,22 @@ class BrowserControllerAttachedDeviceTest {
             val hidden = com.androidharness.app.tools.BrowserScreenshotTool(controller).execute(
                 kotlinx.serialization.json.JsonObject(emptyMap()), com.androidharness.app.tools.ToolContext(fs))
             assertTrue("Background capture must be an explicit failure: ${hidden.output}", !hidden.ok)
-            assertTrue(hidden.output, hidden.output.contains("hidden"))
+            assertTrue(hidden.output, hidden.output.contains("background"))
             scenario.onActivity { it.container.visibility = android.view.View.VISIBLE }
             assertTrue("Capture must recover when the preview becomes visible", controller.screenshot(fs) != null)
+
+            // Closing the preview hands its page to the background browser, which keeps capturing it.
+            scenario.onActivity { activity ->
+                val view = requireNotNull(activity.container.getChildAt(0) as? WebView)
+                controller.adoptWebView(view)
+                activity.container.removeView(view)
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            val adopted = requireNotNull(controller.screenshot(fs))
+            val after = BitmapFactory.decodeFile(adopted.cachedFile.absolutePath)
+            val afterPixels = IntArray(after.width * after.height)
+            after.getPixels(afterPixels, 0, after.width, 0, 0, after.width, after.height)
+            assertTrue("Adopted page captured blank", afterPixels.count { Color.red(it) > 200 && Color.green(it) < 60 }.toDouble() / afterPixels.size > 0.33)
             controller.close()
         }
     }

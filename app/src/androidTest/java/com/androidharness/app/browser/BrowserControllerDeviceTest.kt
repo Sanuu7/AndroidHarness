@@ -44,7 +44,7 @@ class BrowserControllerDeviceTest {
      * draw of the viewport then had nothing left on screen.
      */
     @Test
-    fun hiddenScreenshotAfterScrollReportsErrorWithoutWritingBlankImage() = runBlocking {
+    fun backgroundScreenshotAfterScrollCapturesTheScrolledSection() = runBlocking {
         val (_, fs) = workspace()
         fs.resolve("tall.html").writeText(
             """
@@ -58,15 +58,21 @@ class BrowserControllerDeviceTest {
         controller.navigate("tall.html", fs)
         controller.scroll("down", 1_400)
 
+        // No activity and no preview: the browser renders in its offscreen window.
         val result = com.androidharness.app.tools.BrowserScreenshotTool(controller).execute(
             kotlinx.serialization.json.JsonObject(emptyMap()), com.androidharness.app.tools.ToolContext(fs))
-        assertFalse(result.ok)
-        assertTrue(result.output, result.output.contains("hidden or detached"))
-        assertTrue("No false-success JPEG should be written", fs.resolve(".harness/screenshots").let { !it.exists || it.list().isEmpty() })
+        assertTrue(result.output, result.ok)
+        val bytes = requireNotNull(fs.resolve(".harness/screenshots").list().firstOrNull()?.openInputStream()).use { it.readBytes() }
+        val bitmap = requireNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        val blue = pixels.count { android.graphics.Color.blue(it) > 200 && android.graphics.Color.red(it) < 60 }
+        bitmap.recycle()
+        assertTrue("Background capture was blank or the wrong section", blue.toDouble() / pixels.size > 0.3)
         controller.close()
     }
 
-    @Test fun hiddenSmoothScrollingAndAnchorsMoveAndReportHiddenSurface() = runBlocking {
+    @Test fun backgroundSmoothScrollingAndAnchorsMove() = runBlocking {
         val (_, fs) = workspace()
         fs.resolve("smooth.html").writeText("""
             <html><head><style>html{scroll-behavior:smooth}body{margin:0}</style></head><body>
@@ -76,9 +82,13 @@ class BrowserControllerDeviceTest {
         val controller = controller(fs)
         try {
             controller.navigate("smooth.html", fs)
-            assertEquals("hidden", controller.extractState().visibility)
             controller.evalUser("window.scrollTo({top:1400,behavior:'smooth'}); window.scrollY")
-            assertTrue(controller.extractState().scrollY > 500)
+            // The offscreen page is visible, so the smooth scroll animates like it does on screen.
+            val settled = kotlinx.coroutines.withTimeoutOrNull(3_000) {
+                while (controller.extractState().scrollY <= 500) kotlinx.coroutines.delay(100)
+                true
+            }
+            assertTrue("Smooth scroll never arrived", settled == true)
             controller.evalUser("window.scrollTo(0,0)")
             val jumped = controller.click(selector = "#go")
             assertTrue("Anchor did not move: $jumped", jumped.scrollY > 1000)
@@ -118,7 +128,7 @@ class BrowserControllerDeviceTest {
      * the agent "sees" an empty screen for every screenshot.
      */
     @Test
-    fun detachedScreenshotRefusesFalseSuccess() = runBlocking {
+    fun backgroundScreenshotIsNotBlank() = runBlocking {
         val (_, fs) = workspace()
         fs.resolve("red.html").writeText(
             """
@@ -130,9 +140,13 @@ class BrowserControllerDeviceTest {
         val controller = controller(fs)
         controller.navigate("red.html", fs)
 
-        val result = runCatching { controller.screenshot(fs) }
-        assertTrue("Detached capture must fail explicitly", result.isFailure)
-        assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("hidden or detached"))
+        val shot = requireNotNull(controller.screenshot(fs))
+        val bitmap = requireNotNull(BitmapFactory.decodeFile(shot.cachedFile.path))
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        val red = pixels.count { android.graphics.Color.red(it) > 200 && android.graphics.Color.green(it) < 60 }
+        bitmap.recycle()
+        assertTrue("Background capture is blank", red.toDouble() / pixels.size > 0.8)
         controller.close()
     }
 

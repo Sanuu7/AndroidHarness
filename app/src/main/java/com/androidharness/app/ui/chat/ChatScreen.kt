@@ -365,10 +365,6 @@ private fun ChatScreenContent(
         webPreviewUrl = target ?: viewModel.container.browser.getActiveUrl()?.takeUnless { it == "about:blank" }
         showWebPreview = true
     }
-    // browser_screenshot asks for the preview when it is hidden, so a screenshot never needs a tap.
-    LaunchedEffect(viewModel.container.browser) {
-        viewModel.container.browser.previewRequests.collect { if (!showWebPreview) watchBrowser(null) }
-    }
     val browserTargets = remember(state.messages) { BrowserToolActivity.targets(state.messages) }
     val latestBrowserActivity = remember(state.messages, state.runningCalls, state.pendingApproval, browserTargets) {
         val call = state.runningCalls.lastOrNull { BrowserToolActivity.isBrowserTool(it.name) }

@@ -1220,11 +1220,15 @@ private fun WebPageView(
                 modifier = Modifier.fillMaxSize(),
             )
 
+            // The factory sets webViewRef, which restarts this effect and runs
+            // the previous onDispose. Bind here as well, so the restart never
+            // leaves the controller without the page that is on screen.
             DisposableEffect(webViewRef, browserController) {
+                val bound = webViewRef
+                val controller = browserController
+                bound?.let { controller?.bindActiveWebView(it) }
                 onDispose {
-                    webViewRef?.let { wv ->
-                        browserController?.unbindActiveWebView(wv)
-                    }
+                    bound?.let { controller?.unbindActiveWebView(it) }
                 }
             }
 
