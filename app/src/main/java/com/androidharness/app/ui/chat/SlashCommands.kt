@@ -21,7 +21,7 @@ object SlashCommands {
         /** /btw: the side question, blank when the sheet should open empty. */
         val sideQuestion: String? = null,
         val autoCompactArgument: String? = null,
-        /** /goal: what follows the command, blank to show the current goal. */
+        /** /goal: what follows the command; it fills the goal sheet, blank opens it as is. */
         val goalArgument: String? = null,
         /** Set when a command's !`shell` lines and @file references still have to be filled in before it is sent. */
         val command: com.androidharness.app.skills.SkillStore.Command? = null,
@@ -32,7 +32,8 @@ object SlashCommands {
     data class Target(val mode: Dispatch, val text: String)
 
     sealed interface Pick {
-        data class Send(val text: String) : Pick
+        /** Send [text] now; [keep] stays in the composer, so words typed around a command are not lost. */
+        data class Send(val text: String, val keep: String = "") : Pick
         data class Insert(val text: String) : Pick
         data class AttachSkill(val name: String, val leftover: String) : Pick
     }
@@ -231,27 +232,70 @@ object SlashCommands {
      * the user finishes the instruction and sends manually. Other local
      * commands fire now.
      */
-    fun pickAction(entryCommand: String, typedQuery: String, kind: Kind): Pick {
-        if (kind == Kind.SKILL) {
-            val leftover = if (typedQuery.startsWith(entryCommand)) {
-                typedQuery.removePrefix(entryCommand).trim()
-            } else ""
-            return Pick.AttachSkill(entryCommand.removePrefix("/"), leftover)
+    fun pickAction(entryCommand: String, typedQuery: String, kind: Kind): Pick =
+        pick(entryCommand, if (typedQuery.startsWith(entryCommand)) typedQuery.removePrefix(entryCommand).trim() else "", kind)
+
+    /**
+     * Slash-menu tap, where [rest] is everything else typed in the composer, before
+     * or after the "/" word. Commands that take text get it as their argument;
+     * the others run now and leave [rest] in the composer.
+     */
+    fun pick(entryCommand: String, rest: String, kind: Kind): Pick {
+        val text = rest.trim()
+        val withText = if (text.isEmpty()) "$entryCommand " else "$entryCommand $text"
+        return when (kind) {
+            Kind.SKILL -> Pick.AttachSkill(entryCommand.removePrefix("/"), text)
+            // These wait for their argument, so they stay in the composer to be finished and sent.
+            Kind.BTW, Kind.AUTO_COMPACT, Kind.PLAN -> Pick.Insert(withText)
+            // /goal opens its sheet at once, carrying any goal text already typed.
+            Kind.GOAL -> Pick.Send(withText.trim())
+            Kind.REVIEW -> Pick.Send(withText.trim())
+            Kind.SNIPPET -> if (text.isEmpty()) Pick.Insert(withText) else Pick.Send(withText.trim())
+            else -> Pick.Send(entryCommand, keep = text)
         }
-        if (kind == Kind.BTW || kind == Kind.AUTO_COMPACT || kind == Kind.GOAL) return Pick.Insert("$entryCommand ")
-        if (kind == Kind.PLAN) {
-            // Stay in the composer: "/plan" stays put so the user can append
-            // the instruction and hit send themselves. No auto-send.
-            return Pick.Insert("$entryCommand ")
-        }
-        if (kind == Kind.SNIPPET) {
-            val rest = if (typedQuery.startsWith(entryCommand)) {
-                typedQuery.removePrefix(entryCommand)
-            } else ""
-            return if (rest.isBlank()) Pick.Insert("$entryCommand ")
-            else Pick.Send(typedQuery.trim())
-        }
-        return Pick.Send(entryCommand)
+    }
+
+    /** Where the "/" menu stands in the composer text. */
+    sealed interface MenuQuery {
+        /** A "/word" being typed at [start] until [end], anywhere in the text; [query] is the word so far. */
+        data class Typing(val start: Int, val end: Int, val query: String) : MenuQuery
+        /** The text starts with a whole [command] and goes on with its argument. */
+        data class Arguments(val command: String) : MenuQuery
+    }
+
+    private val TOKEN = Regex("^/[A-Za-z0-9_:.\\-]*$")
+
+    /** What the menu should show for [text] with the cursor at [cursor], or null for no menu. */
+    fun menuQuery(text: String, cursor: Int): MenuQuery? {
+        val at = cursor.coerceIn(0, text.length)
+        var start = at
+        while (start > 0 && !text[start - 1].isWhitespace()) start--
+        var end = at
+        while (end < text.length && !text[end].isWhitespace()) end++
+        val token = text.substring(start, end)
+        // A path such as /sdcard/x is not a command.
+        if (TOKEN.matches(token) && token.length <= 48) return MenuQuery.Typing(start, end, token.drop(1).lowercase())
+        val first = text.trimStart().split(WHITESPACE, limit = 2)
+        if (first.size == 2 && TOKEN.matches(first[0]) && first[0].length > 1) return MenuQuery.Arguments(first[0].lowercase())
+        return null
+    }
+
+    /** The composer text without the "/" word between [start] and [end], joined with one space. */
+    fun textAround(text: String, start: Int, end: Int): String =
+        (text.substring(0, start).trimEnd() + " " + text.substring(end).trimStart()).trim()
+
+    /** Built-in commands that also work typed at the end of a message, as in "make the site faster /goal". */
+    private val TRAILING = setOf("/goal", "/btw", "/plan", "/review")
+
+    /** Moves a trailing command to the front, so "fix the build /goal" sends as "/goal fix the build". */
+    fun moveTrailingCommand(input: String): String {
+        val trimmed = input.trim()
+        if (trimmed.startsWith("/")) return input
+        val at = trimmed.indexOfLast { it.isWhitespace() }
+        if (at < 0) return input
+        val command = trimmed.substring(at + 1)
+        if (command.lowercase() !in TRAILING) return input
+        return command.lowercase() + " " + trimmed.substring(0, at).trim()
     }
 
     /** What the composer actually sends once the user taps send. */

@@ -379,6 +379,10 @@ private fun ChatScreenContent(
     // user last typed. composerText mirrors value.text for the readers.
     var composerValue by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     val composerText = composerValue.text
+    // The "/" menu follows the word under the cursor, so a command works anywhere in the message.
+    val slashMenu = remember(composerValue.text, composerValue.selection) {
+        SlashCommands.menuQuery(composerValue.text, composerValue.selection.end)
+    }
     var draftRestored by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(state.conversationReady) {
         if (state.conversationReady && !draftRestored) {
@@ -2725,10 +2729,13 @@ private fun ChatScreenContent(
                 } else if (!state.conversation.isChat) {
                     SlashSuggestions(
                         state = state,
-                        query = composerText,
+                        menu = slashMenu,
                         expanded = slashExpanded && attachedSkill == null,
-                        onPick = { cmd, kind ->
-                            when (val action = SlashCommands.pickAction(cmd, composerText, kind)) {
+                        onPick = { entry ->
+                            // Words typed before or after the "/" word go with the command.
+                            val rest = (slashMenu as? SlashCommands.MenuQuery.Typing)
+                                ?.let { SlashCommands.textAround(composerText, it.start, it.end) }.orEmpty()
+                            when (val action = SlashCommands.pick(entry.command, rest, entry.kind)) {
                                 is SlashCommands.Pick.AttachSkill -> {
                                     attachedSkill = action.name
                                     setComposerText(action.leftover)
@@ -2740,7 +2747,7 @@ private fun ChatScreenContent(
                                 }
                                 is SlashCommands.Pick.Send -> {
                                     viewModel.send(action.text)
-                                    setComposerText("")
+                                    setComposerText(action.keep)
                                     attachedSkill = null
                                     slashExpanded = false
                                 }
@@ -2806,12 +2813,16 @@ private fun ChatScreenContent(
                     com.androidharness.app.ui.chat.components.FloatingTaskDock(state.sessionId, state.todos)
                 }
 
-                if (!state.conversation.isChat && state.busy) {
+                // While the "/" or "@" menu is open it sits right on the composer; the strip
+                // of run details below the chat steps aside instead of showing between them.
+                val suggestionsOpen = !state.conversation.isChat && attachedSkill == null &&
+                    ((slashExpanded && slashMenu != null) || MentionToken.parse(composerText) != null)
+                if (!state.conversation.isChat && state.busy && !suggestionsOpen) {
                     Box(Modifier.padding(horizontal = 12.dp)) {
                         CacheUsageFooter(state.turnCacheUsage[state.currentTurnId].orEmpty(), running = true)
                     }
                 }
-                RunTipHost(
+                if (!suggestionsOpen) RunTipHost(
                     busy = state.busy,
                     isChat = state.conversation.isChat,
                     settings = globalSettings,
@@ -2822,7 +2833,7 @@ private fun ChatScreenContent(
                     },
                     onTurnOff = { scope.launch { viewModel.container.settings.setRunTipsEnabled(false) } },
                 )
-                MessageQueueCard(
+                if (!suggestionsOpen) MessageQueueCard(
                     queue = state.taskControl.queue,
                     onEdit = viewModel::editQueued, onMove = viewModel::moveQueued,
                     onSendNow = viewModel::sendQueuedNow,
@@ -2918,7 +2929,7 @@ private fun ChatScreenContent(
                     attachedSkill = attachedSkill,
                     onValueChange = { input ->
                         composerValue = input
-                        slashExpanded = !state.conversation.isChat && attachedSkill == null && input.text.startsWith("/")
+                        slashExpanded = !state.conversation.isChat && attachedSkill == null
                     },
                     onClearSkill = { attachedSkill = null },
                     onSend = { sendComposer(null) },

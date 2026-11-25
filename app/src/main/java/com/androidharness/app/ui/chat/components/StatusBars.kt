@@ -66,7 +66,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.TodoItem
 import com.androidharness.app.ui.chat.ChatUiState
-import com.androidharness.app.ui.chat.SlashCommands
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastSpatialSpec
@@ -198,139 +197,9 @@ internal fun QueuedMessageChip(
     }
 }
 
-private data class SlashEntry(
-    val command: String,
-    val title: String,
-    val subtitle: String,
-    val kind: SlashCommands.Kind,
-)
-
-/** "/" menu: a short filtered list over the messages, never covering the composer. */
-@Composable
-internal fun SlashSuggestions(
-    state: ChatUiState,
-    query: String,
-    expanded: Boolean,
-    onPick: (command: String, kind: SlashCommands.Kind) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val scheme = MaterialTheme.colorScheme
-    val typed = remember(query) { query.removePrefix("/").trim().lowercase() }
-    val entries = remember(state.skills, state.snippets) {
-        buildList {
-            add(SlashEntry("/clear", "New chat", "Start a fresh conversation", SlashCommands.Kind.CLEAR))
-            add(SlashEntry("/compact", "Compact", "Summarize older context", SlashCommands.Kind.COMPACT))
-            add(SlashEntry("/autocompact", uiContext.getString(R.string.auto_compact_title), uiContext.getString(R.string.auto_compact_slash_hint), SlashCommands.Kind.AUTO_COMPACT))
-            add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
-            add(SlashEntry("/context", uiContext.getString(R.string.context_command_title), uiContext.getString(R.string.context_command_hint), SlashCommands.Kind.CONTEXT))
-            add(SlashEntry(SlashCommands.SIDE_COMMAND, "By the way", "Ask aside on the live context, kept out of the chat", SlashCommands.Kind.BTW))
-            if (state.skills.none { it.enabled && it.name == "goal" } && state.snippets.none { it.name.equals("goal", ignoreCase = true) }) {
-                add(SlashEntry(SlashCommands.GOAL_COMMAND, uiContext.getString(R.string.goal_command_title), uiContext.getString(R.string.goal_command_hint), SlashCommands.Kind.GOAL))
-            }
-            add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))
-            add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
-            if (state.skills.none { it.enabled && it.name == "review" } && state.snippets.none { it.name.equals("review", ignoreCase = true) }) {
-                add(SlashEntry("/review", "Review changes", "Read-only review of the pending changes, add a focus after it", SlashCommands.Kind.REVIEW))
-            }
-            add(SlashEntry("/plan", "Plan mode", "Load the plan skill and switch to Plan mode", SlashCommands.Kind.PLAN))
-            add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
-            add(SlashEntry("/env", "Linux environment", "Check, update, install or repair the Linux env", SlashCommands.Kind.ENV))
-            // "plan" is excluded: the built-in /plan entry above already covers
-            // it (activates Plan mode + loads the plan skill), showing the
-            // skill too used to list /plan twice.
-            state.skills.filter { it.enabled && it.name != "plan" }.forEach { skill ->
-                add(SlashEntry("/${skill.name}", skill.name, skill.description, SlashCommands.Kind.SKILL))
-            }
-            state.snippets.forEach { snippet ->
-                add(SlashEntry("/${snippet.name}", snippet.name, "Saved prompt snippet", SlashCommands.Kind.SNIPPET))
-            }
-        }
-    }
-    val filtered = remember(entries, typed) {
-        if (typed.isEmpty()) entries
-        else entries.filter { entry ->
-            entry.command.removePrefix("/").contains(typed) ||
-                entry.title.lowercase().contains(typed) ||
-                entry.subtitle.lowercase().contains(typed)
-        }
-    }.take(8)
-
-    AnimatedVisibility(
-        visible = expanded,
-        enter = fadeIn(tween(150)) + expandVertically(animationSpec = tween(200)),
-        exit = fadeOut(tween(120)) + shrinkVertically(animationSpec = tween(150)),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Surface(
-            color = scheme.surfaceContainerLow,
-            shape = MaterialTheme.shapes.large,
-            border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 4.dp),
-        ) {
-            Column(
-                Modifier
-                    .padding(vertical = 4.dp)
-                    .heightIn(max = 280.dp)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                if (filtered.isEmpty()) {
-                    Text(
-                        uiContext.getString(R.string.ui_no_matches_for, (typed).toString()),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                    )
-                } else {
-                    filtered.forEach { entry ->
-                        Surface(
-                            onClick = { onPick(entry.command, entry.kind) },
-                            color = scheme.surfaceContainerLow,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
-                            ) {
-                                Column(Modifier.weight(1f)) {
-                                    Text(
-                                        entry.command,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                    Text(
-                                        entry.subtitle,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = scheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    when (entry.kind) {
-                                        SlashCommands.Kind.SKILL -> "Skill"
-                                        SlashCommands.Kind.SNIPPET -> "Snippet"
-                                        else -> "Command"
-                                    },
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = scheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 /**
  * File suggestions for a trailing @path token in the composer, styled like
- * [SlashSuggestions]. Empty query lists the workspace from the top; picking
+ * the slash menu. Empty query lists the workspace from the top; picking
  * replaces the token with @<path>.
  */
 @Composable

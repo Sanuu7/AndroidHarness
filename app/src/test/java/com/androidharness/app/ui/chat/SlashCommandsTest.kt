@@ -237,11 +237,51 @@ class SlashCommandsTest {
         assertEquals("all tests pass", result.goalArgument)
         assertFalse(result.startsAgent)
         assertEquals("", resolve("/goal").goalArgument)
-        assertEquals(SlashCommands.Pick.Insert("/goal "), SlashCommands.pickAction("/goal", "/go", SlashCommands.Kind.GOAL))
+        assertEquals(SlashCommands.Pick.Send("/goal"), SlashCommands.pickAction("/goal", "/go", SlashCommands.Kind.GOAL))
+        assertEquals(SlashCommands.Pick.Send("/goal ship it"), SlashCommands.pickAction("/goal", "/goal  ship it ", SlashCommands.Kind.GOAL))
     }
 
     @Test fun `a saved goal skill keeps the goal command`() {
         val result = SlashCommands.resolve("/goal x", setOf("goal"), emptyMap(), skillContent = { "# goal\nMine." })
         assertEquals(SlashCommands.Kind.SKILL, result.kind)
+    }
+
+    @Test fun `the menu follows the slash word under the cursor anywhere in the text`() {
+        val text = "keep improving the site /go"
+        assertEquals(SlashCommands.MenuQuery.Typing(24, 27, "go"), SlashCommands.menuQuery(text, text.length))
+        assertEquals(SlashCommands.MenuQuery.Typing(0, 1, ""), SlashCommands.menuQuery("/", 1))
+        // Cursor inside the word still finds all of it.
+        assertEquals(SlashCommands.MenuQuery.Typing(0, 5, "goal"), SlashCommands.menuQuery("/goal", 2))
+        // Plain words and paths open nothing.
+        assertNull(SlashCommands.menuQuery("hello there", 5))
+        assertNull(SlashCommands.menuQuery("look in /sdcard/Download", 24))
+    }
+
+    @Test fun `typing an argument after a command shows its usage instead of no matches`() {
+        assertEquals(SlashCommands.MenuQuery.Arguments("/autocompact"), SlashCommands.menuQuery("/autocompact 350K", 17))
+        assertEquals(SlashCommands.MenuQuery.Arguments("/btw"), SlashCommands.menuQuery("/btw ", 5))
+        assertEquals(SlashCommands.MenuQuery.Arguments("/clear"), SlashCommands.menuQuery("/Clear now", 10))
+    }
+
+    @Test fun `picking a command keeps the words typed around it`() {
+        val text = "keep improving the site /go and ship it"
+        val rest = SlashCommands.textAround(text, 24, 27)
+        assertEquals("keep improving the site and ship it", rest)
+        assertEquals(SlashCommands.Pick.Send("/goal keep improving the site and ship it"), SlashCommands.pick("/goal", rest, SlashCommands.Kind.GOAL))
+        assertEquals(SlashCommands.Pick.Insert("/btw why is it slow"), SlashCommands.pick("/btw", "why is it slow", SlashCommands.Kind.BTW))
+        assertEquals(SlashCommands.Pick.AttachSkill("git", "fix it"), SlashCommands.pick("/git", "fix it", SlashCommands.Kind.SKILL))
+        // A command that takes no text runs and leaves the words in the composer.
+        assertEquals(SlashCommands.Pick.Send("/cost", keep = "draft"), SlashCommands.pick("/cost", "draft", SlashCommands.Kind.COST))
+        assertEquals(SlashCommands.Pick.Send("/review the parser"), SlashCommands.pick("/review", "the parser", SlashCommands.Kind.REVIEW))
+    }
+
+    @Test fun `a command at the end of a message moves to the front`() {
+        assertEquals("/goal keep improving the site", SlashCommands.moveTrailingCommand("keep improving the site /goal"))
+        assertEquals("/btw why", SlashCommands.moveTrailingCommand("why /BTW "))
+        assertEquals("look at /cost", SlashCommands.moveTrailingCommand("look at /cost"))
+        assertEquals("/goal x", SlashCommands.moveTrailingCommand("/goal x"))
+        assertEquals("/goal", SlashCommands.moveTrailingCommand("/goal"))
+        assertEquals("use the /goal command", SlashCommands.moveTrailingCommand("use the /goal command"))
+        assertEquals(SlashCommands.Kind.GOAL, resolve(SlashCommands.moveTrailingCommand("ship it /goal")).kind)
     }
 }
