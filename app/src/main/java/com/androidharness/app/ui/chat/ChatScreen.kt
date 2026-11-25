@@ -164,7 +164,6 @@ import com.androidharness.app.ui.chat.components.SlashSuggestions
 import com.androidharness.app.ui.chat.components.SubagentCard
 import com.androidharness.app.ui.chat.components.SubagentPagerCard
 import com.androidharness.app.ui.chat.components.ThinkingBlock
-import com.androidharness.app.ui.chat.components.TodoCard
 import com.androidharness.app.ui.chat.components.ToolCallCard
 import com.androidharness.app.ui.chat.components.ToolGroupCard
 import com.androidharness.app.ui.chat.components.TurnActivityCard
@@ -2803,8 +2802,8 @@ private fun ChatScreenContent(
                     state.sessionId, viewModel.container.runManager, onOpenSubagent,
                     composerText = composerText)
 
-                if (!state.conversation.isChat && state.showTodoList && state.todos.isNotEmpty()) {
-                    TodoCard(state.todos)
+                if (!state.conversation.isChat && state.showTodoList) {
+                    com.androidharness.app.ui.chat.components.FloatingTaskDock(state.sessionId, state.todos)
                 }
 
                 if (!state.conversation.isChat && state.busy) {
