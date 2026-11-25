@@ -80,6 +80,7 @@ private fun descriptionFor(id: String): Int = when (id) {
     "serpapi" -> R.string.ws_desc_serpapi
     "tavily" -> R.string.ws_desc_tavily
     "linkup" -> R.string.ws_desc_linkup
+    "exa" -> R.string.ws_desc_exa
     "langsearch" -> R.string.ws_desc_langsearch
     "jina" -> R.string.ws_desc_jina
     "firecrawl" -> R.string.ws_desc_firecrawl

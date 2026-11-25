@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">Google results with dates and rich data. Free searches every month.</string>
     <string name="ws_desc_tavily">Made for agents and can return full page text. 1,000 free credits a month.</string>
     <string name="ws_desc_linkup">Agent search with clean page extracts. Free credit every month.</string>
+    <string name="ws_desc_exa">Searches by meaning instead of keywords, and can return full page text. Free starter credits.</string>
     <string name="ws_desc_langsearch">Free web search API made for AI apps.</string>
     <string name="ws_desc_jina">Searches and reads pages in one call. 10M free tokens per new key.</string>
     <string name="ws_desc_firecrawl">Search from the Firecrawl scraping platform. Free starter credits.</string>
