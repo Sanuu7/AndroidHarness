@@ -419,7 +419,7 @@ private fun LimitMeters(record: com.androidharness.app.agent.TaskRecord, tokens:
                     Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                     Text(detail, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                LinearWavyProgressIndicator(progress = { fill.value }, modifier = Modifier.fillMaxWidth(),
+                com.androidharness.app.ui.common.AppLinearProgressIndicator(progress = { fill.value }, modifier = Modifier.fillMaxWidth(),
                     color = if (tight) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
             }

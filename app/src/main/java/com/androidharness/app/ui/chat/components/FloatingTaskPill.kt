@@ -465,14 +465,14 @@ private fun TaskRing(progress: Float, done: Int, total: Int, allDone: Boolean, j
                         Icon(Icons.Filled.Check, null, Modifier.size(15.dp), tint = scheme.surface)
                     }
                     RingFace.JUST_FINISHED -> Box(Modifier.size(RING), contentAlignment = Alignment.Center) {
-                        CircularWavyProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxSize(),
+                        com.androidharness.app.ui.common.AppCircularProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxSize(),
                             color = success, trackColor = scheme.surfaceContainerLow)
                         Box(Modifier.size(20.dp).background(success, CircleShape), contentAlignment = Alignment.Center) {
                             Icon(Icons.Filled.Check, null, Modifier.size(12.dp), tint = scheme.surface)
                         }
                     }
                     RingFace.PROGRESS -> Box(Modifier.size(RING), contentAlignment = Alignment.Center) {
-                        CircularWavyProgressIndicator(progress = { progress },
+                        com.androidharness.app.ui.common.AppCircularProgressIndicator(progress = { progress },
                             modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = twist.value },
                             color = scheme.primary, trackColor = scheme.surfaceContainerLow)
                         AnimatedContent(done, label = "Task ring count", transitionSpec = {

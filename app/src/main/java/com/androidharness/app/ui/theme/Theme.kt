@@ -16,7 +16,7 @@ import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.data.ProgressBarStyle
 import com.androidharness.app.data.ThemePalette
 
-val LocalProgressBarStyle = staticCompositionLocalOf { ProgressBarStyle.FLAT }
+val LocalProgressBarStyle = staticCompositionLocalOf { ProgressBarStyle.SQUIGGLY }
 
 /** Chat density, line spacing and side margin from Appearance settings. */
 val LocalChatLayout = androidx.compose.runtime.compositionLocalOf { com.androidharness.app.data.ChatLayoutStyle() }
@@ -35,7 +35,7 @@ val LocalChatLayout = androidx.compose.runtime.compositionLocalOf { com.androidh
 fun HarnessTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = true,
-    progressBarStyle: ProgressBarStyle = ProgressBarStyle.FLAT,
+    progressBarStyle: ProgressBarStyle = ProgressBarStyle.SQUIGGLY,
     colorPalette: ThemePalette = ThemePalette.BLUE,
     customPalette: com.androidharness.app.data.CustomThemePalette? = null,
     canvasSeed: Long? = null,

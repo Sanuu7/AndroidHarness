@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -163,5 +165,22 @@ private fun StyledLinearProgress(progress: (() -> Float)?, modifier: Modifier, c
                 else -> LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = color, trackColor = trackColor)
             }
         }
+    }
+}
+
+/** Determinate ring that follows the saved flat or squiggly appearance choice. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun AppCircularProgressIndicator(
+    progress: () -> Float,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary,
+    trackColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+) {
+    if (LocalProgressBarStyle.current == ProgressBarStyle.SQUIGGLY) {
+        CircularWavyProgressIndicator(progress = progress, modifier = modifier, color = color, trackColor = trackColor)
+    } else {
+        CircularProgressIndicator(progress = progress, modifier = modifier, color = color, trackColor = trackColor,
+            strokeWidth = 4.dp, gapSize = 4.dp)
     }
 }

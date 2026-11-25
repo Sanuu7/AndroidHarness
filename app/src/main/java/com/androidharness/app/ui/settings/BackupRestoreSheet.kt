@@ -613,7 +613,7 @@ private fun WorkingPanel(progress: BackupProgress, label: String, note: String, 
     Column(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.size(156.dp), contentAlignment = Alignment.Center) {
-            CircularWavyProgressIndicator(
+            com.androidharness.app.ui.common.AppCircularProgressIndicator(
                 progress = { ring }, modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             )

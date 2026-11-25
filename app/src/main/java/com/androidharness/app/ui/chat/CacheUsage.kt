@@ -241,7 +241,7 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
                     val meter = remember { Animatable(0f) }
                     val target = ((summary.rate ?: 0.0) / 100.0).toFloat()
                     LaunchedEffect(target) { meter.animateTo(target, spring(dampingRatio = 0.75f, stiffness = 90f)) }
-                    LinearWavyProgressIndicator(progress = { meter.value }, modifier = Modifier.fillMaxWidth(),
+                    com.androidharness.app.ui.common.AppLinearProgressIndicator(progress = { meter.value }, modifier = Modifier.fillMaxWidth(),
                         color = if (summary.cached > 0) successColor else scheme.error, trackColor = scheme.surfaceContainerHighest)
                     if (running) Text(uiContext.getString(R.string.ui_last_completed_request, (indicator.label).toString()),
                         style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)

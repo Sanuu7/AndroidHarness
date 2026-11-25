@@ -155,7 +155,7 @@ class SettingsBackupPolicyTest {
         assertEquals(ThemeMode.AMOLED, settings.themeMode)
         val reopened = Json.decodeFromString(AppSettings.serializer(), Json.encodeToString(AppSettings.serializer(), settings))
         assertEquals(ProgressBarStyle.SQUIGGLY, reopened.progressBarStyle)
-        assertEquals(ProgressBarStyle.FLAT, Json.decodeFromString(AppSettings.serializer(), "{}").progressBarStyle)
+        assertEquals(ProgressBarStyle.SQUIGGLY, Json.decodeFromString(AppSettings.serializer(), "{}").progressBarStyle)
         assertEquals(262_144, settings.maxContextTokens)
         assertEquals(PermissionMode.CONFIRM_RISKY, settings.permissionMode)
         assertFalse(settings.biometricLockEnabled)

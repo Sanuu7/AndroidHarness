@@ -44,7 +44,7 @@ data class AppSettings(
     /** Motion blur that follows fast vertical scrolling. Only drawn on Android 12+. */
     val motionBlurEnabled: Boolean = false,
     val motionBlurIntensity: Float = 0.5f,
-    val progressBarStyle: ProgressBarStyle = ProgressBarStyle.FLAT,
+    val progressBarStyle: ProgressBarStyle = ProgressBarStyle.SQUIGGLY,
     val chatLayout: ChatLayoutStyle = ChatLayoutStyle(),
     val workspaceLayout: WorkspaceLayoutMode = WorkspaceLayoutMode.AUTO,
     val editorWordWrap: Boolean = false,
@@ -509,7 +509,7 @@ class SettingsRepository(private val context: Context) {
             motionBlurEnabled = prefs[Keys.MOTION_BLUR_ENABLED] ?: false,
             motionBlurIntensity = (prefs[Keys.MOTION_BLUR_INTENSITY] ?: .5f).let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f },
             progressBarStyle = ProgressBarStyle.entries.firstOrNull { it.name == prefs[Keys.PROGRESS_BAR_STYLE] }
-                ?: ProgressBarStyle.FLAT,
+                ?: ProgressBarStyle.SQUIGGLY,
             chatLayout = ChatLayoutStyle(
                 density = ChatDensity.entries.firstOrNull { it.name == prefs[Keys.CHAT_DENSITY] } ?: ChatDensity.DEFAULT,
                 lineSpacing = ChatLayoutStyle.clampLineSpacing(prefs[Keys.CHAT_LINE_SPACING]),

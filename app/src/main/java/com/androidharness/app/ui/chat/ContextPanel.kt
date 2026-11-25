@@ -135,7 +135,7 @@ fun ContextUsageContent(state: ChatUiState) {
         Surface(color = scheme.surfaceContainer, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Box(Modifier.size(104.dp), contentAlignment = Alignment.Center) {
-                    androidx.compose.material3.CircularWavyProgressIndicator(
+                    com.androidharness.app.ui.common.AppCircularProgressIndicator(
                         progress = { dial.value }, modifier = Modifier.fillMaxSize(),
                         color = dialColor, trackColor = scheme.surfaceContainerHighest,
                     )
