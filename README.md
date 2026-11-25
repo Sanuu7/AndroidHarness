@@ -16,7 +16,7 @@ No PC needed. No root needed.
 </p>
 
 [![Debug build](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml/badge.svg)](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml)
-[![Version](https://img.shields.io/badge/version-4.0-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
+[![Version](https://img.shields.io/badge/version-4.1-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
 [![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3ddc84)](https://developer.android.com/about/versions/oreo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -55,31 +55,33 @@ You can start for free with the built-in provider, which needs no account, or ru
 ## Highlights
 
 - **A real coding agent.** File edits, shell, git, tests, browser control and subagents. Every tool call gets a card you can open to see exactly what happened.
+- **An assistant everywhere.** Make AndroidHarness your phone's digital assistant and ask about any screen without leaving the app you are in. Models that cannot see pictures can read the text inside them on the phone.
+- **Goals that finish the job.** `/goal` keeps the agent working turn after turn until a separate check agrees the task is done, with parts, a budget and a Resume that keeps its progress.
 - **A real shell.** Commands run through Shizuku, Wireless ADB pairing, optional root, a Termux-based Linux toolchain, or a toybox fallback. A shell policy and a secret redactor sit on top.
 - **Free to start.** The built-in keyless provider works without sign-up, and local GGUF models run offline. Cloud API keys and ChatGPT accounts are optional.
 - **Free speech.** Edge speech is built in with no key, more than 300 Microsoft voices and a sample for each. Groq, OpenAI, ElevenLabs, Deepgram, Cartesia and AssemblyAI can listen, speak or both.
 - **Many providers.** Anthropic, Google Gemini, ChatGPT accounts, any OpenAI-compatible endpoint, and fallback chains that switch models when one fails.
-- **Research that reads.** Turn on any of ten search providers; the agent picks one, falls through failures, reads the top pages and returns passages. Shaky statements can be flagged, and a question can be re-run deeper.
+- **Research that reads.** Turn on any of eleven search providers; the agent picks one, falls through failures, reads the top pages and returns passages. Shaky statements can be flagged, and a question can be re-run deeper.
 - **Plugins, skills and MCP.** Install plugins from npm, GitHub, Claude marketplaces, archives or a folder on the phone, and the agent can manage them when you ask. Plugin commands, binaries and language servers run like Claude Code, and MCP servers connect over stdio or HTTP.
 - **Built for long runs.** A foreground service, resume cards, a saved message queue and optional auto-continue keep work safe when the screen turns off or the connection drops.
 - **Safe by default.** The agent stays inside the workspace, sensitive actions ask for approval, phone control is approved once per chat while destructive changes ask every time, and every change can be reviewed as a diff and undone.
 - **21 languages.** Switch the app language at any time without a restart.
 
-## What's new in 4.0
+## What's new in 4.1
 
-- **Voice that is free and yours to choose.** Edge speech needs no key and reads Microsoft's live catalogue of more than 300 voices. Groq, OpenAI, ElevenLabs, Deepgram, Cartesia and AssemblyAI can listen, speak or both, every voice has a sample button, and Auto send can be toggled from the + menu.
-- **Phone control you approve.** Agents ask once per chat before using Shizuku, root or Device Owner. Read-only checks run quietly, destructive changes ask every time, and Chat can set reminders, alarms and timers with approval.
-- **Research that reads.** Ten search providers can be switched on together. `web_search` reads the top pages and returns passages, shaky claims get a Check this claim marker, Dig deeper re-runs a question, and past chats can be placed where the answer refers to them.
-- **Photos in chat.** Paste images into the composer, see pending attachments in one tray, send every photo on the newest message, and open sent photos as a swipeable gallery.
-- **A new look.** Expressive settings, the AH monogram that acts out what the agent is doing, a tonal coding feed, a starter grid for new chats, and motion blur on every long list.
-- **More agent control.** The agent can manage plugins and reach more settings and skills, plugin commands, binaries, language servers and hooks work like Claude Code, and you can build your own settings sections.
+- **Your assistant over any app.** Set AndroidHarness as your digital assistant and ask about what is on screen, by voice or typing, without leaving the app you are in. Models that cannot see images can now read the text inside pictures on the phone.
+- **Goals that keep going.** `/goal` turns a task into a loop that keeps taking turns until a separate check agrees it is done, with a turn limit, an optional check command, a budget, named parts, a per-turn change summary and a Resume that keeps its progress. Keep improving can push past done.
+- **Backups and setup rebuilt.** Backup & restore streams one file, lets you pick chats, and now carries images and usage stats. Setup is a page-by-page flow that can restore chats and settings, and file access is optional.
+- **Memory you can shape.** Folders with colors, trigger words, trigger-only memories, multi-select move and delete, and a zoomable map of how memories connect.
+- **Exa joins search.** Exa searches by meaning instead of keywords and can return full page text, alongside the ten existing providers.
+- **A calmer chat.** A floating task pill, a slash menu docked on the composer that follows the cursor, editing a sent message's photos and files, background browser screenshots, and per-item trust for workspace tools.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release notes.
 
 ## Getting started
 
 1. Install the app from [Google Play](https://play.google.com/store/apps/details?id=com.androidharness.app) or [GitHub Releases](https://github.com/Sanuu7/AndroidHarness/releases/latest), or build it from source.
-2. Grant storage access. On Android 11 and newer the app needs All files access so the shell and file tools can use real paths.
+2. Grant file access if you want it. All files access lets the shell and file tools use real paths; without it the app works in its own folder and asks when a task needs your files.
 3. Pick a model. Use the built-in keyless provider, add an API key in Settings, or download a model in Settings → Local models.
 4. Recommended: install [Shizuku](https://github.com/RikkaApps/Shizuku), pair Wireless ADB in Settings → Terminal & device, or install the Linux environment from inside the app. This lets shell commands run with proper permissions. Rooted devices can also turn on direct root there.
 
@@ -93,15 +95,20 @@ A short tour of what the app can do. The complete list, with every detail, is in
 - Streaming chat with thinking blocks, tool cards, diffs and verification cards that list every build or test that ran.
 - A workspace is one folder, and a project groups workspaces for chats that need several, each editable or read only.
 - Plan mode, dual planning (plan on one model, execute on another), subagents and a persistent message queue that can hold send to choose when a queued message is read.
+- Goals that keep working across turns until a separate check agrees the task is done, with parts, a turn limit, a check command, a budget and Keep improving.
 - Approve phone control once per chat, set reminders, alarms and timers, and schedule a message from the chat itself.
 - Scheduled automations that run prompts daily, hourly or on demand.
 
 **Chat**
-- Web research across ten providers, with the top pages read for passages, cited sources, claim checks and adjustable depth.
+- Web research across eleven providers, with the top pages read for passages, cited sources, claim checks and adjustable depth.
 - Reminders, alarms and timers, photo paste, a single attachment tray and a full-screen gallery.
 - Personal Chat agents with their own instructions, model, tools and knowledge files.
 - Rich answers with tables, charts, diagrams, images and interactive previews.
 - Shared memory with Code, saved answers and voice input and output.
+
+**Assistant**
+- Ask about any screen from the phone's assistant gesture, over other apps, by voice or typing, with screen text sent only when the question is about it.
+- Read text in images on the phone for models that cannot see pictures.
 
 **Files, editor and Git**
 - File manager, tabbed code editor with syntax highlighting, search and replace, and offline language tools.
