@@ -946,16 +946,28 @@ private fun ChatScreenContent(
     liveSession?.let { session ->
         LiveModeOverlay(session, onClose = viewModel::closeLive)
     }
+    // An active goal with no turn and no check running has stopped, for example after the app
+    // was closed or crashed or the run was stopped. A short wait skips the gap between a turn and its check.
+    val goalChecks by viewModel.goalCheckSessionIds.collectAsStateWithLifecycle()
+    val goalIdle = state.taskControl.goal?.status == com.androidharness.app.agent.GoalState.Status.ACTIVE &&
+        !state.busy && state.sessionId !in goalChecks
+    var goalStalled by remember { mutableStateOf(false) }
+    LaunchedEffect(goalIdle, state.sessionId) {
+        goalStalled = false
+        if (goalIdle) { kotlinx.coroutines.delay(2_500); goalStalled = true }
+    }
     state.goalSheetDraft?.let { draft ->
         com.androidharness.app.ui.chat.components.GoalSheet(
             goal = state.taskControl.goal,
             draft = draft,
             limits = state.taskControl.limits,
             running = state.busy,
+            stalled = goalStalled,
             onStart = viewModel::startGoal,
             onPause = viewModel::pauseGoal,
             onResume = viewModel::resumeGoal,
             onExtend = viewModel::extendGoal,
+            onImprovements = viewModel::setGoalImprovements,
             onClear = viewModel::clearGoal,
             onDismiss = viewModel::dismissGoalSheet,
         )
@@ -2858,7 +2870,7 @@ private fun ChatScreenContent(
                 )
                 state.taskControl.goal?.takeIf { !suggestionsOpen }?.let { goal ->
                     com.androidharness.app.ui.chat.components.GoalProgressPill(goal, running = state.busy,
-                        onClick = { viewModel.openGoalSheet() })
+                        onClick = { viewModel.openGoalSheet() }, stalled = goalStalled, onResume = { viewModel.resumeGoal() })
                 }
                 if (!suggestionsOpen) MessageQueueCard(
                     queue = state.taskControl.queue,

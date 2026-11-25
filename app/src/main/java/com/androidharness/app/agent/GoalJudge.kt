@@ -37,6 +37,10 @@ data class GoalState(
     val keepImproving: Boolean = false,
     /** The turn the check first found the goal reached; set while a keep-improving goal goes on. */
     val reachedAtTurn: Int? = null,
+    /** Areas the improvement passes should stay within, such as accessibility or speed. */
+    val improveFocus: List<String> = emptyList(),
+    /** Improvements the user wrote, one per pass, in order; each is used once and dropped. */
+    val improveQueue: List<String> = emptyList(),
 ) {
     @Serializable
     enum class Status { ACTIVE, BLOCKED, MET, LIMIT, PAUSED }
@@ -68,6 +72,8 @@ data class GoalCheck(
     val reason: String,
     val next: String = "",
     val at: Long = System.currentTimeMillis(),
+    /** What the turn before this check changed, in one short sentence. */
+    val changed: String = "",
 ) {
     @Serializable
     enum class Outcome { MET, CONTINUE, BLOCKED, FAILED, IMPROVE }
@@ -81,6 +87,8 @@ data class GoalVerdict(
     val reason: String,
     val next: String = "",
     val parts: List<Pair<String, Boolean>> = emptyList(),
+    /** What the latest turn changed, so each check says something new even when the verdict repeats. */
+    val changed: String = "",
 ) {
     /** [IMPROVE]: reached, and "next" names one improvement worth a turn (keep-improving goals only). */
     enum class Outcome { MET, CONTINUE, BLOCKED, IMPROVE }
@@ -105,6 +113,7 @@ object GoalJudge {
             "clearly and stop."
     private const val CONTINUE_MARK = "\n\nKeep working toward the goal: "
     private const val IMPROVE_HEADER = "reached, improving"
+    private const val CHANGED_MARK = "Changed: "
     private const val SELF_REVIEW = "Review the result yourself and improve its weakest part."
     private val CHECK_HEADER = Regex("""^Goal check (\d+) of (\d+): (not done yet|$IMPROVE_HEADER)\.\n""")
 
@@ -126,6 +135,7 @@ object GoalJudge {
     fun continuation(goal: GoalState, verdict: GoalVerdict): String = buildString {
         val improve = verdict.outcome == GoalVerdict.Outcome.IMPROVE
         append("Goal check ${goal.turns} of ${goal.turnLimit}: ${if (improve) IMPROVE_HEADER else "not done yet"}.\n")
+        if (verdict.changed.isNotBlank()) append(CHANGED_MARK).append(verdict.changed).append('\n')
         append(verdict.reason)
         if (verdict.next.isNotBlank()) append("\nNext: ").append(verdict.next)
         if (improve && verdict.next.isBlank()) append("\nNext: ").append(SELF_REVIEW)
@@ -146,26 +156,45 @@ object GoalJudge {
     }
 
     /** Sent when the user resumes or extends a goal from the sheet. */
-    fun resume(goal: String, improving: Boolean = false): String =
-        "Goal resumed." + (if (improving) "\nNext: $SELF_REVIEW" else "") + CONTINUE_MARK + goal
+    fun resume(goal: String, improving: Boolean = false, next: String? = null): String =
+        "Goal resumed." + (if (improving) "\nNext: " + (next?.trim()?.takeIf { it.isNotEmpty() } ?: SELF_REVIEW) else "") + CONTINUE_MARK + goal
+
+    /** Cleans the user's own improvement list: one per line, blank lines dropped, each capped. */
+    fun improvementList(text: String): List<String> =
+        text.lineSequence().map { it.trim().removePrefix("-").removePrefix("*").trim() }.filter { it.isNotEmpty() }
+            .map { it.take(MAX_FIELD_CHARS) }.take(MAX_TURN_LIMIT).toList()
 
     /** A saved continuation, read back so the chat can show it as one slim row. */
-    data class Checkpoint(val turn: Int, val limit: Int, val reason: String, val next: String, val improving: Boolean = false)
+    data class Checkpoint(
+        val turn: Int,
+        val limit: Int,
+        val reason: String,
+        val next: String,
+        val improving: Boolean = false,
+        val changed: String = "",
+    )
 
     fun checkpoint(text: String): Checkpoint? {
         val header = CHECK_HEADER.find(text) ?: return null
         val end = text.indexOf(CONTINUE_MARK).takeIf { it >= header.range.last } ?: return null
         val improving = header.groupValues[3] == IMPROVE_HEADER
-        val body = text.substring(header.range.last + 1, end).substringBefore("\n\nThe goal is reached. Make this one improvement")
+        var body = text.substring(header.range.last + 1, end).substringBefore("\n\nThe goal is reached. Make this one improvement")
+        val changed = if (body.startsWith(CHANGED_MARK)) body.substringBefore('\n').removePrefix(CHANGED_MARK).trim() else ""
+        if (changed.isNotEmpty()) body = body.substringAfter('\n', "")
         val nextAt = body.lastIndexOf("\nNext: ")
         return Checkpoint(header.groupValues[1].toInt(), header.groupValues[2].toInt(),
             (if (nextAt >= 0) body.substring(0, nextAt) else body).trim(),
-            if (nextAt >= 0) body.substring(nextAt + 7).trim() else "", improving)
+            if (nextAt >= 0) body.substring(nextAt + 7).trim() else "", improving, changed)
     }
 
     /** True for the short message the sheet sends to resume a goal. */
-    fun isResume(text: String): Boolean = text.startsWith("Goal resumed.") && CHECK_HEADER.find(text) == null &&
-        text.indexOf(CONTINUE_MARK).let { it in 0..("Goal resumed.\nNext: ".length + SELF_REVIEW.length) }
+    fun isResume(text: String): Boolean {
+        if (!text.startsWith("Goal resumed.") || CHECK_HEADER.find(text) != null) return false
+        val head = text.substring(0, text.indexOf(CONTINUE_MARK).takeIf { it >= 0 } ?: return false)
+        val next = head.removePrefix("Goal resumed.")
+        return next.isEmpty() || (next.startsWith("\nNext: ") && '\n' !in next.substring(1) &&
+            next.length <= "\nNext: ".length + MAX_FIELD_CHARS)
+    }
 
     /** Appended to the chat's own context, so the check reads exactly what the agent saw. */
     internal fun prompt(
@@ -174,6 +203,7 @@ object GoalJudge {
         checkCommand: String? = null,
         parts: List<GoalPart> = emptyList(),
         keepImproving: Boolean = false,
+        focus: List<String> = emptyList(),
     ): String = buildString {
         append("<goal_check>\n")
         append("You are checking whether the goal below has been reached. You are not the agent doing the work: do ")
@@ -198,7 +228,7 @@ object GoalJudge {
         append("\nReply with one JSON object and nothing else:\n")
         append("{\"verdict\": \"met\" | \"continue\" | \"blocked\"")
         if (keepImproving) append(" | \"improve\"")
-        append(", \"reason\": \"...\", \"next\": \"...\", ")
+        append(", \"changed\": \"...\", \"reason\": \"...\", \"next\": \"...\", ")
         append("\"parts\": [{\"name\": \"...\", \"done\": true | false}]}\n\n")
         append("- met: the goal is fully reached and the conversation proves it.\n")
         append("- continue: work remains that the agent can do on its own. \"next\" names the most useful next step.\n")
@@ -208,8 +238,14 @@ object GoalJudge {
             append("- improve: the user asked to keep improving the result after it is reached, for every turn they gave it. ")
             append("Once the goal is reached, do not answer \"met\": answer \"improve\" and put the single most valuable ")
             append("improvement in \"next\", something concrete a user would notice, such as a bug, a rough edge, missing ")
-            append("polish, accessibility, speed or a small screen. Never suggest a change that only reshuffles what works.\n")
+            append("polish, accessibility, speed or a small screen. Never suggest a change that only reshuffles what works. ")
+            append("With \"improve\", \"reason\" says why that improvement matters; do not repeat that the goal is reached.\n")
+            if (focus.isNotEmpty()) append("  The user wants improvements in these areas, so pick \"next\" from them: ")
+                .append(focus.joinToString(", ")).append(".\n")
         }
+        append("- changed: what the agent's latest turn actually changed, in one short sentence a user can scan, ")
+        append("such as \"Added arrow-key navigation to the console tabs\". Take it from the evidence, not from plans. ")
+        append("Empty when the turn changed nothing.\n")
         append("- parts: split the goal into 2 to $MAX_PARTS concrete parts, each a few words, and mark each one done ")
         append("only when the conversation proves it. A goal with a single part gets an empty list.\n")
         append("Keep \"reason\" and \"next\" to one or two sentences each.\n")
@@ -270,7 +306,7 @@ object GoalJudge {
             if (name.isNullOrEmpty()) null
             else name to (runCatching { part["done"]?.jsonPrimitive?.booleanOrNull }.getOrNull() ?: false)
         }.distinctBy { it.first.lowercase() }.take(MAX_PARTS)
-        return GoalVerdict(outcome, reason, field("next").take(MAX_FIELD_CHARS), parts)
+        return GoalVerdict(outcome, reason, field("next").take(MAX_FIELD_CHARS), parts, field("changed").take(MAX_FIELD_CHARS))
     }
 
     /** What /goal and its toggles accept after the command. */

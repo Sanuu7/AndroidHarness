@@ -1062,6 +1062,8 @@ class ChatViewModel(
         val limits: com.androidharness.app.agent.TaskLimits,
         val notifyEachCheck: Boolean,
         val keepImproving: Boolean = false,
+        val improveFocus: List<String> = emptyList(),
+        val improveQueue: List<String> = emptyList(),
     )
 
     /** Saves the goal with its options and budget, then sends the kickoff as the next turn. */
@@ -1078,6 +1080,8 @@ class ChatViewModel(
                     checkCommand = draft.checkCommand.trim().takeIf { it.isNotEmpty() },
                     notifyEachCheck = draft.notifyEachCheck,
                     keepImproving = draft.keepImproving,
+                    improveFocus = draft.improveFocus,
+                    improveQueue = draft.improveQueue,
                 )
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                     c.runManager.controls.update(sid) { it.copy(goal = goal, limits = draft.limits) }
@@ -1113,6 +1117,7 @@ class ChatViewModel(
         val sid = sessionId ?: return
         // The resumed turn counts toward the goal, unless one is already running and gets checked first.
         val starts = !c.runManager.isRunning(sid)
+        var step: String? = null
         updateGoal({ goal ->
             val reached = goal.status == com.androidharness.app.agent.GoalState.Status.MET
             goal.copy(status = com.androidharness.app.agent.GoalState.Status.ACTIVE,
@@ -1121,10 +1126,23 @@ class ChatViewModel(
                 // Going on from a reached goal means improving it.
                 keepImproving = goal.keepImproving || reached,
                 reachedAtTurn = goal.reachedAtTurn ?: if (reached) goal.turnsUsed else null)
+                .let { resumed ->
+                    // An improving goal takes the next item of the user's own list, if any.
+                    step = resumed.improveQueue.firstOrNull()?.takeIf { starts && resumed.improving }
+                    if (step == null) resumed else resumed.copy(improveQueue = resumed.improveQueue.drop(1))
+                }
         }) { goal ->
-            if (goal != null && starts) dispatchAgentText(com.androidharness.app.agent.GoalJudge.resume(goal.text, improving = goal.improving))
+            if (goal != null && starts) dispatchAgentText(com.androidharness.app.agent.GoalJudge.resume(goal.text, improving = goal.improving, next = step))
         }
     }
+
+    /** Chats whose goal check is running; an active goal outside these and outside a run has stopped. */
+    val goalCheckSessionIds: kotlinx.coroutines.flow.StateFlow<Set<String>> get() = c.runManager.goalCheckSessionIds
+
+    /** Changes what the improvement passes focus on and the user's own list, without starting anything. */
+    fun setGoalImprovements(focus: List<String>, queue: List<String>) = updateGoal({
+        it.copy(improveFocus = focus, improveQueue = queue)
+    })
 
     /** Raises the turn limit of a goal that is still running, without starting anything. */
     fun extendGoal(extraTurns: Int) = updateGoal({

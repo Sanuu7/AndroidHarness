@@ -305,6 +305,8 @@ class RunManager(
     )
     private val mainRunningSessionIds = MutableStateFlow<Set<String>>(emptySet())
     val runningSessionIds = MutableStateFlow<Set<String>>(emptySet())
+    /** Chats whose goal check is running between two goal turns, so the UI does not call the goal stopped. */
+    val goalCheckSessionIds = MutableStateFlow<Set<String>>(emptySet())
     init {
         // Turning subagents off also stops any that are running, so the switch means what it says.
         appScope.launch {
@@ -1765,6 +1767,21 @@ class RunManager(
         notify: Boolean,
         start: suspend (String) -> Unit,
     ) {
+        goalCheckSessionIds.update { it + sid }
+        try { checkAndContinueGoal(sid, runId, turnId, config, apiKey, maxContextTokens, notify, start) }
+        finally { goalCheckSessionIds.update { it - sid } }
+    }
+
+    private suspend fun checkAndContinueGoal(
+        sid: String,
+        runId: String,
+        turnId: String,
+        config: ProviderConfig,
+        apiKey: String,
+        maxContextTokens: Int,
+        notify: Boolean,
+        start: suspend (String) -> Unit,
+    ) {
         val goal = controls.flow(sid).value.goal?.takeIf { it.checking } ?: return followUps.stop(sid)
         acquireKeepalive()
         val verdict = try {
@@ -1782,7 +1799,7 @@ class RunManager(
             val outcome = verdict.getOrNull()?.outcome?.let { GoalJudge.effectiveOutcome(it, latest.keepImproving) }
             val reached = outcome == GoalVerdict.Outcome.MET || outcome == GoalVerdict.Outcome.IMPROVE
             val current = verdict.fold(
-                { latest.withCheck(GoalCheck(latest.turnsUsed, GoalCheck.Outcome.valueOf(outcome!!.name), it.reason, it.next), it.parts) },
+                { latest.withCheck(GoalCheck(latest.turnsUsed, GoalCheck.Outcome.valueOf(outcome!!.name), it.reason, it.next, changed = it.changed), it.parts) },
                 { latest.withCheck(GoalCheck(latest.turnsUsed, GoalCheck.Outcome.FAILED, it.message ?: "no verdict"), emptyList()) },
             ).let { if (reached && it.reachedAtTurn == null) it.copy(reachedAtTurn = latest.turnsUsed) else it }
             if (!current.checking) {
@@ -1815,12 +1832,17 @@ class RunManager(
                     val saved = controls.flow(sid).value
                     try {
                         TaskBudget(saved.limits, saved.usedTokens, saved.usedCost, saved.elapsedMs).check()
-                        val next = current.copy(status = GoalState.Status.ACTIVE, turns = current.turns + 1, lastReason = judged.reason)
+                        // The user's own improvement list comes before the check's suggestion, one per pass.
+                        val queued = current.improveQueue.firstOrNull().takeIf { judged.outcome == GoalVerdict.Outcome.IMPROVE }
+                        val step = if (queued == null) judged else judged.copy(next = queued)
+                        val next = current.copy(status = GoalState.Status.ACTIVE, turns = current.turns + 1, lastReason = judged.reason,
+                            improveQueue = if (queued == null) current.improveQueue else current.improveQueue.drop(1),
+                            history = if (queued == null) current.history else current.history.dropLast(1) + current.history.last().copy(next = queued))
                         controls.update(sid) { it.copy(goal = next) }
                         if (notify && current.notifyEachCheck) appScope.launch {
                             notifyGoal(sid, true, "Goal check ${current.turnsUsed} of ${current.turnLimit}: ${judged.reason}")
                         }
-                        start(GoalJudge.continuation(next, judged))
+                        start(GoalJudge.continuation(next, step))
                     } catch (ce: CancellationException) { throw ce }
                     catch (e: Exception) {
                         if (current.reachedAtTurn != null) return@withLock finishImproved("Budget used up: ${e.message}")
@@ -1849,7 +1871,7 @@ class RunManager(
     ): GoalVerdict = kotlinx.coroutines.withContext(Dispatchers.IO) {
         val history = sessions.messages(sid)
         val prompt = GoalJudge.prompt(goal.text, VerificationEvidence.collect(history), goal.checkCommand, goal.parts,
-            keepImproving = goal.keepImproving && goal.turnsUsed < goal.turnLimit)
+            keepImproving = goal.keepImproving && goal.turnsUsed < goal.turnLimit, focus = goal.improveFocus)
         val warm = engine.sideContexts[sid]?.takeIf { it.warm && it.turnId == turnId }
         val (side, request) = if (warm != null) {
             warm to (GoalJudge.warmMessages(warm.messages, history.filter { it.turnId == turnId }) +

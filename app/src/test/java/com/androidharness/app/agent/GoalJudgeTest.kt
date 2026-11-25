@@ -183,4 +183,30 @@ class GoalJudgeTest {
             GoalVerdict(GoalVerdict.Outcome.IMPROVE, "Reached."))
         assertEquals("Review the result yourself and improve its weakest part.", GoalJudge.checkpoint(text)?.next)
     }
+
+    @Test fun `what a turn changed is parsed, sent on and read back from the checkpoint`() {
+        val verdict = GoalJudge.parse("""{"verdict":"improve","changed":"Added tab roles","reason":"Arrow keys help keyboard users.","next":"Add arrow keys"}""")!!
+        assertEquals("Added tab roles", verdict.changed)
+        val text = GoalJudge.continuation(GoalState("Build the site", turns = 7, turnLimit = 12), verdict)
+        val checkpoint = GoalJudge.checkpoint(text)!!
+        assertEquals("Added tab roles", checkpoint.changed)
+        assertEquals("Arrow keys help keyboard users.", checkpoint.reason)
+        assertEquals("Add arrow keys", checkpoint.next)
+        assertTrue(GoalJudge.prompt("Build the site", emptyList(), keepImproving = true, focus = listOf("Speed")).contains("Speed"))
+    }
+
+    @Test fun `old checkpoints without a changed line still read back`() {
+        val checkpoint = GoalJudge.checkpoint("Goal check 2 of 5: not done yet.\nTests fail.\nNext: Fix them\n\nKeep working toward the goal: Build")!!
+        assertEquals("", checkpoint.changed)
+        assertEquals("Tests fail.", checkpoint.reason)
+    }
+
+    @Test fun `the improvement list keeps one item per line and a resume with one is still a resume`() {
+        assertEquals(listOf("Add dark mode", "Speed up load"), GoalJudge.improvementList("- Add dark mode\n\n  Speed up load  \n"))
+        val text = GoalJudge.resume("Build the site", improving = true, next = "Add dark mode")
+        assertTrue(GoalJudge.isResume(text))
+        assertTrue(text.contains("Next: Add dark mode"))
+        assertTrue(GoalJudge.isResume(GoalJudge.resume("Build the site")))
+        assertFalse(GoalJudge.isResume("Goal resumed.\nI did a thing\nand more\n\nKeep working toward the goal: x"))
+    }
 }
