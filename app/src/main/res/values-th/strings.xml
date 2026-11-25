@@ -1161,6 +1161,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"ย้ายไปยัง"</string>
     <string name="memory_folder_empty">"ยังไม่มีความจำในโฟลเดอร์นี้"</string>
+    <string name="memory_select">"เลือก"</string>
+    <string name="memory_group_expand">"แสดงความจำ"</string>
+    <string name="memory_group_collapse">"ซ่อนความจำ"</string>
+    <string name="memory_selection_clear">"หยุดเลือก"</string>
+    <string name="memory_select_all">"เลือกทั้งหมด"</string>
+    <string name="memory_select_none">"ไม่เลือกเลย"</string>
+    <string name="memory_move">"ย้าย"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"ย้ายความจำ %1$d รายการไปยัง"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"ลบความจำ %1$d รายการหรือไม่"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"ไม่สามารถย้อนกลับได้ ความจำที่รวมไว้จะนำรายการต้นฉบับไปด้วย"</string>
+    <string name="memory_map">"แผนที่ความจำ"</string>
+    <string name="memory_map_desc">"ดูว่าความจำของคุณเชื่อมโยงกันอย่างไร"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"ความจำ %1$d รายการ"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"ลิงก์ %1$d รายการ"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"เชื่อมกับความจำ %1$d รายการ"</item>
+    </plurals>
+    <string name="memory_map_fit">"แสดงแผนที่ทั้งหมด"</string>
+    <string name="memory_map_hint">"หุบนิ้วเพื่อซูม แตะความจำเพื่ออ่าน"</string>
     <string name="memory_folder_delete_with_memories">"ลบความจำด้วย"</string>
     <string name="memory_folder_deleted_moved">"ลบ \"%1$s\" และย้ายความจำแล้ว"</string>
     <string name="memory_folder_deleted_all">"ลบ \"%1$s\" และความจำแล้ว"</string>

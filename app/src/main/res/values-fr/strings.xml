@@ -1173,6 +1173,43 @@
     </plurals>
     <string name="memory_folder_delete_move">"Déplacer vers"</string>
     <string name="memory_folder_empty">"Aucun souvenir dans ce dossier pour l\'instant."</string>
+    <string name="memory_select">"Sélectionner"</string>
+    <string name="memory_group_expand">"Afficher les souvenirs"</string>
+    <string name="memory_group_collapse">"Masquer les souvenirs"</string>
+    <string name="memory_selection_clear">"Arrêter la sélection"</string>
+    <string name="memory_select_all">"Tout sélectionner"</string>
+    <string name="memory_select_none">"Ne rien sélectionner"</string>
+    <string name="memory_move">"Déplacer"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"Déplacer %1$d souvenir vers"</item>
+        <item quantity="many">"Déplacer %1$d souvenirs vers"</item>
+        <item quantity="other">"Déplacer %1$d souvenirs vers"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"Supprimer %1$d souvenir ?"</item>
+        <item quantity="many">"Supprimer %1$d souvenirs ?"</item>
+        <item quantity="other">"Supprimer %1$d souvenirs ?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Cette action est irréversible. Les souvenirs consolidés emportent leurs entrées d\'origine."</string>
+    <string name="memory_map">"Carte des souvenirs"</string>
+    <string name="memory_map_desc">"Voyez comment vos souvenirs sont reliés"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d souvenir"</item>
+        <item quantity="many">"%1$d souvenirs"</item>
+        <item quantity="other">"%1$d souvenirs"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d lien"</item>
+        <item quantity="many">"%1$d liens"</item>
+        <item quantity="other">"%1$d liens"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"Relié à %1$d souvenir"</item>
+        <item quantity="many">"Relié à %1$d souvenirs"</item>
+        <item quantity="other">"Relié à %1$d souvenirs"</item>
+    </plurals>
+    <string name="memory_map_fit">"Afficher toute la carte"</string>
+    <string name="memory_map_hint">"Pincez pour zoomer. Touchez un souvenir pour le lire."</string>
     <string name="memory_folder_delete_with_memories">"Supprimer aussi les souvenirs"</string>
     <string name="memory_folder_deleted_moved">"« %1$s » supprimé et ses souvenirs déplacés."</string>
     <string name="memory_folder_deleted_all">"« %1$s » et ses souvenirs supprimés."</string>

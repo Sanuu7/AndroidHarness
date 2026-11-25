@@ -1161,6 +1161,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"移動先"</string>
     <string name="memory_folder_empty">"このフォルダーにはまだ記憶がありません。"</string>
+    <string name="memory_select">"選択"</string>
+    <string name="memory_group_expand">"メモリを表示"</string>
+    <string name="memory_group_collapse">"メモリを隠す"</string>
+    <string name="memory_selection_clear">"選択を終了"</string>
+    <string name="memory_select_all">"すべて選択"</string>
+    <string name="memory_select_none">"選択を解除"</string>
+    <string name="memory_move">"移動"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"%1$d 件のメモリを移動"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"%1$d 件のメモリを削除しますか？"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"この操作は元に戻せません。統合されたメモリは元のエントリも削除されます。"</string>
+    <string name="memory_map">"メモリマップ"</string>
+    <string name="memory_map_desc">"メモリのつながりを表示"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"%1$d 件のメモリ"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"%1$d 件のリンク"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"%1$d 件のメモリにリンク"</item>
+    </plurals>
+    <string name="memory_map_fit">"マップ全体を表示"</string>
+    <string name="memory_map_hint">"ピンチでズーム。メモリをタップして表示します。"</string>
     <string name="memory_folder_delete_with_memories">"記憶も削除する"</string>
     <string name="memory_folder_deleted_moved">"「%1$s」を削除し、記憶を移動しました。"</string>
     <string name="memory_folder_deleted_all">"「%1$s」とその記憶を削除しました。"</string>

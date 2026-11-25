@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"Mover a"</string>
     <string name="memory_folder_empty">"Aún no hay memorias en esta carpeta."</string>
+    <string name="memory_select">"Seleccionar"</string>
+    <string name="memory_group_expand">"Mostrar recuerdos"</string>
+    <string name="memory_group_collapse">"Ocultar recuerdos"</string>
+    <string name="memory_selection_clear">"Dejar de seleccionar"</string>
+    <string name="memory_select_all">"Seleccionar todo"</string>
+    <string name="memory_select_none">"No seleccionar nada"</string>
+    <string name="memory_move">"Mover"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"Mover %1$d recuerdo a"</item>
+        <item quantity="other">"Mover %1$d recuerdos a"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"¿Eliminar %1$d recuerdo?"</item>
+        <item quantity="other">"¿Eliminar %1$d recuerdos?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Esto no se puede deshacer. Los recuerdos consolidados se llevan sus entradas originales."</string>
+    <string name="memory_map">"Mapa de recuerdos"</string>
+    <string name="memory_map_desc">"Mira cómo se conectan tus recuerdos"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d recuerdo"</item>
+        <item quantity="other">"%1$d recuerdos"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d enlace"</item>
+        <item quantity="other">"%1$d enlaces"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"Vinculado a %1$d recuerdo"</item>
+        <item quantity="other">"Vinculado a %1$d recuerdos"</item>
+    </plurals>
+    <string name="memory_map_fit">"Mostrar todo el mapa"</string>
+    <string name="memory_map_hint">"Pellizca para hacer zoom. Toca un recuerdo para leerlo."</string>
     <string name="memory_folder_delete_with_memories">"Eliminar también las memorias"</string>
     <string name="memory_folder_deleted_moved">"Se eliminó «%1$s» y se movieron sus memorias."</string>
     <string name="memory_folder_deleted_all">"Se eliminó «%1$s» y sus memorias."</string>

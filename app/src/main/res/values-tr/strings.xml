@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"Şuraya taşı"</string>
     <string name="memory_folder_empty">"Bu klasörde henüz anı yok."</string>
+    <string name="memory_select">"Seç"</string>
+    <string name="memory_group_expand">"Anıları göster"</string>
+    <string name="memory_group_collapse">"Anıları gizle"</string>
+    <string name="memory_selection_clear">"Seçimi bitir"</string>
+    <string name="memory_select_all">"Tümünü seç"</string>
+    <string name="memory_select_none">"Hiçbirini seçme"</string>
+    <string name="memory_move">"Taşı"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"%1$d anıyı şuraya taşı"</item>
+        <item quantity="other">"%1$d anıyı şuraya taşı"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"%1$d anı silinsin mi?"</item>
+        <item quantity="other">"%1$d anı silinsin mi?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Bu geri alınamaz. Birleştirilmiş anılar orijinal girdilerini de götürür."</string>
+    <string name="memory_map">"Anı haritası"</string>
+    <string name="memory_map_desc">"Anılarınızın nasıl bağlandığını görün"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d anı"</item>
+        <item quantity="other">"%1$d anı"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d bağlantı"</item>
+        <item quantity="other">"%1$d bağlantı"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"%1$d anıya bağlı"</item>
+        <item quantity="other">"%1$d anıya bağlı"</item>
+    </plurals>
+    <string name="memory_map_fit">"Tüm haritayı göster"</string>
+    <string name="memory_map_hint">"Yakınlaştırmak için iki parmağınızı kullanın. Okumak için bir anıya dokunun."</string>
     <string name="memory_folder_delete_with_memories">"Anıları da sil"</string>
     <string name="memory_folder_deleted_moved">"\"%1$s\" silindi ve anıları taşındı."</string>
     <string name="memory_folder_deleted_all">"\"%1$s\" ve anıları silindi."</string>

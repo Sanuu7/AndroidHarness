@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"Mover para"</string>
     <string name="memory_folder_empty">"Ainda não há memórias nesta pasta."</string>
+    <string name="memory_select">"Selecionar"</string>
+    <string name="memory_group_expand">"Mostrar memórias"</string>
+    <string name="memory_group_collapse">"Ocultar memórias"</string>
+    <string name="memory_selection_clear">"Parar de selecionar"</string>
+    <string name="memory_select_all">"Selecionar tudo"</string>
+    <string name="memory_select_none">"Não selecionar nada"</string>
+    <string name="memory_move">"Mover"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"Mover %1$d memória para"</item>
+        <item quantity="other">"Mover %1$d memórias para"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"Excluir %1$d memória?"</item>
+        <item quantity="other">"Excluir %1$d memórias?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Isso não pode ser desfeito. Memórias consolidadas levam suas entradas originais."</string>
+    <string name="memory_map">"Mapa de memórias"</string>
+    <string name="memory_map_desc">"Veja como suas memórias se conectam"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d memória"</item>
+        <item quantity="other">"%1$d memórias"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d link"</item>
+        <item quantity="other">"%1$d links"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"Vinculada a %1$d memória"</item>
+        <item quantity="other">"Vinculada a %1$d memórias"</item>
+    </plurals>
+    <string name="memory_map_fit">"Mostrar o mapa inteiro"</string>
+    <string name="memory_map_hint">"Belisque para ampliar. Toque em uma memória para ler."</string>
     <string name="memory_folder_delete_with_memories">"Excluir as memórias também"</string>
     <string name="memory_folder_deleted_moved">"Excluída \"%1$s\" e movidas suas memórias."</string>
     <string name="memory_folder_deleted_all">"Excluída \"%1$s\" e suas memórias."</string>

@@ -1191,6 +1191,58 @@
     </plurals>
     <string name="memory_folder_delete_move">"نقل إلى"</string>
     <string name="memory_folder_empty">"لا توجد ذكريات في هذا المجلد بعد."</string>
+    <string name="memory_select">"اختيار"</string>
+    <string name="memory_group_expand">"إظهار الذكريات"</string>
+    <string name="memory_group_collapse">"إخفاء الذكريات"</string>
+    <string name="memory_selection_clear">"إنهاء التحديد"</string>
+    <string name="memory_select_all">"تحديد الكل"</string>
+    <string name="memory_select_none">"إلغاء تحديد الكل"</string>
+    <string name="memory_move">"نقل"</string>
+    <plurals name="memory_move_title">
+        <item quantity="zero">"نقل %1$d ذكرى إلى"</item>
+        <item quantity="one">"نقل %1$d ذكرى إلى"</item>
+        <item quantity="two">"نقل %1$d ذكرى إلى"</item>
+        <item quantity="few">"نقل %1$d ذكريات إلى"</item>
+        <item quantity="many">"نقل %1$d ذكرى إلى"</item>
+        <item quantity="other">"نقل %1$d ذكرى إلى"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="zero">"حذف %1$d ذكرى؟"</item>
+        <item quantity="one">"حذف %1$d ذكرى؟"</item>
+        <item quantity="two">"حذف %1$d ذكرى؟"</item>
+        <item quantity="few">"حذف %1$d ذكريات؟"</item>
+        <item quantity="many">"حذف %1$d ذكرى؟"</item>
+        <item quantity="other">"حذف %1$d ذكرى؟"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"لا يمكن التراجع عن هذا. الذكريات المدموجة تأخذ معها مدخلاتها الأصلية."</string>
+    <string name="memory_map">"خريطة الذاكرة"</string>
+    <string name="memory_map_desc">"انظر كيف تتصل ذكرياتك"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="zero">"%1$d ذكرى"</item>
+        <item quantity="one">"%1$d ذكرى"</item>
+        <item quantity="two">"%1$d ذكرى"</item>
+        <item quantity="few">"%1$d ذكريات"</item>
+        <item quantity="many">"%1$d ذكرى"</item>
+        <item quantity="other">"%1$d ذكرى"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="zero">"%1$d رابط"</item>
+        <item quantity="one">"%1$d رابط"</item>
+        <item quantity="two">"%1$d رابط"</item>
+        <item quantity="few">"%1$d روابط"</item>
+        <item quantity="many">"%1$d رابط"</item>
+        <item quantity="other">"%1$d رابط"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="zero">"مرتبطة بـ %1$d ذكرى"</item>
+        <item quantity="one">"مرتبطة بـ %1$d ذكرى"</item>
+        <item quantity="two">"مرتبطة بـ %1$d ذكرى"</item>
+        <item quantity="few">"مرتبطة بـ %1$d ذكريات"</item>
+        <item quantity="many">"مرتبطة بـ %1$d ذكرى"</item>
+        <item quantity="other">"مرتبطة بـ %1$d ذكرى"</item>
+    </plurals>
+    <string name="memory_map_fit">"عرض الخريطة كاملة"</string>
+    <string name="memory_map_hint">"قرّب بإصبعيك للتكبير. اضغط على ذكرى لقراءتها."</string>
     <string name="memory_folder_delete_with_memories">"حذف الذكريات أيضاً"</string>
     <string name="memory_folder_deleted_moved">"تم حذف \"%1$s\" ونقل ذكرياته."</string>
     <string name="memory_folder_deleted_all">"تم حذف \"%1$s\" وذكرياته."</string>

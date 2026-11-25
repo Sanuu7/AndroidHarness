@@ -1161,6 +1161,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"Chuyển đến"</string>
     <string name="memory_folder_empty">"Chưa có ký ức trong thư mục này."</string>
+    <string name="memory_select">"Chọn"</string>
+    <string name="memory_group_expand">"Hiển thị ký ức"</string>
+    <string name="memory_group_collapse">"Ẩn ký ức"</string>
+    <string name="memory_selection_clear">"Ngừng chọn"</string>
+    <string name="memory_select_all">"Chọn tất cả"</string>
+    <string name="memory_select_none">"Bỏ chọn tất cả"</string>
+    <string name="memory_move">"Di chuyển"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"Di chuyển %1$d ký ức đến"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"Xóa %1$d ký ức?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Không thể hoàn tác. Ký ức đã hợp nhất sẽ mang theo các mục gốc của nó."</string>
+    <string name="memory_map">"Bản đồ ký ức"</string>
+    <string name="memory_map_desc">"Xem các ký ức của bạn kết nối thế nào"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"%1$d ký ức"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"%1$d liên kết"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"Liên kết với %1$d ký ức"</item>
+    </plurals>
+    <string name="memory_map_fit">"Hiện toàn bộ bản đồ"</string>
+    <string name="memory_map_hint">"Chụm để thu phóng. Chạm vào ký ức để đọc."</string>
     <string name="memory_folder_delete_with_memories">"Xóa cả các ký ức"</string>
     <string name="memory_folder_deleted_moved">"Đã xóa \"%1$s\" và chuyển các ký ức của nó."</string>
     <string name="memory_folder_deleted_all">"Đã xóa \"%1$s\" và các ký ức của nó."</string>

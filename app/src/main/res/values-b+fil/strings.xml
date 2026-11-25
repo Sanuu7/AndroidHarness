@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"Ilipat sa"</string>
     <string name="memory_folder_empty">"Wala pang memorya sa folder na ito."</string>
+    <string name="memory_select">"Pumili"</string>
+    <string name="memory_group_expand">"Ipakita ang mga memorya"</string>
+    <string name="memory_group_collapse">"Itago ang mga memorya"</string>
+    <string name="memory_selection_clear">"Itigil ang pagpili"</string>
+    <string name="memory_select_all">"Piliin lahat"</string>
+    <string name="memory_select_none">"Alisin ang lahat ng napili"</string>
+    <string name="memory_move">"Ilipat"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"Ilipat ang %1$d memorya sa"</item>
+        <item quantity="other">"Ilipat ang %1$d memorya sa"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"Tanggalin ang %1$d memorya?"</item>
+        <item quantity="other">"Tanggalin ang %1$d memorya?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Hindi na ito mababawi. Ang mga pinagsamang memorya ay kasama ang orihinal na entry nito."</string>
+    <string name="memory_map">"Mapa ng memorya"</string>
+    <string name="memory_map_desc">"Tingnan kung paano konektado ang iyong mga memorya"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d memorya"</item>
+        <item quantity="other">"%1$d memorya"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d link"</item>
+        <item quantity="other">"%1$d link"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"Naka-link sa %1$d memorya"</item>
+        <item quantity="other">"Naka-link sa %1$d memorya"</item>
+    </plurals>
+    <string name="memory_map_fit">"Ipakita ang buong mapa"</string>
+    <string name="memory_map_hint">"I-pinch para mag-zoom. I-tap ang memorya para basahin."</string>
     <string name="memory_folder_delete_with_memories">"I-delete din ang mga memorya"</string>
     <string name="memory_folder_deleted_moved">"Na-delete ang \"%1$s\" at nailipat ang mga memorya."</string>
     <string name="memory_folder_deleted_all">"Na-delete ang \"%1$s\" at ang mga memorya nito."</string>

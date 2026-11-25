@@ -928,6 +928,38 @@
     </plurals>
     <string name="memory_folder_delete_move">Move to</string>
     <string name="memory_folder_empty">No memories in this folder yet.</string>
+    <string name="memory_select">Select</string>
+    <string name="memory_group_expand">Show memories</string>
+    <string name="memory_group_collapse">Hide memories</string>
+    <string name="memory_selection_clear">Stop selecting</string>
+    <string name="memory_select_all">Select all</string>
+    <string name="memory_select_none">Select none</string>
+    <string name="memory_move">Move</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">Move %1$d memory to</item>
+        <item quantity="other">Move %1$d memories to</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">Delete %1$d memory?</item>
+        <item quantity="other">Delete %1$d memories?</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">This can\'t be undone. Consolidated memories take their original entries with them.</string>
+    <string name="memory_map">Memory map</string>
+    <string name="memory_map_desc">See how your memories connect</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">%1$d memory</item>
+        <item quantity="other">%1$d memories</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">%1$d link</item>
+        <item quantity="other">%1$d links</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">Linked to %1$d memory</item>
+        <item quantity="other">Linked to %1$d memories</item>
+    </plurals>
+    <string name="memory_map_fit">Show the whole map</string>
+    <string name="memory_map_hint">Pinch to zoom. Tap a memory to read it.</string>
     <string name="memory_folder_delete_with_memories">Delete the memories too</string>
     <string name="memory_folder_deleted_moved">Deleted \"%1$s\" and moved its memories.</string>
     <string name="memory_folder_deleted_all">Deleted \"%1$s\" and its memories.</string>

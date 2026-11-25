@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"මෙතැනට ගෙනයන්න"</string>
     <string name="memory_folder_empty">"මෙම ෆෝල්ඩරයේ තවම මතක නැත."</string>
+    <string name="memory_select">"තෝරන්න"</string>
+    <string name="memory_group_expand">"මතක පෙන්වන්න"</string>
+    <string name="memory_group_collapse">"මතක සඟවන්න"</string>
+    <string name="memory_selection_clear">"තේරීම නවත්වන්න"</string>
+    <string name="memory_select_all">"සියල්ල තෝරන්න"</string>
+    <string name="memory_select_none">"කිසිවක් තෝරන්න එපා"</string>
+    <string name="memory_move">"ගෙනයන්න"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"%1$d මතකය ගෙනයන්න"</item>
+        <item quantity="other">"%1$d මතකය ගෙනයන්න"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"%1$d මතකය මකන්නද?"</item>
+        <item quantity="other">"%1$d මතකය මකන්නද?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"මෙය ආපසු හැරවිය නොහැක. ඒකාබද්ධ මතක එහි මුල් සටහන් ද සමඟ ගෙනයයි."</string>
+    <string name="memory_map">"මතක සිතියම"</string>
+    <string name="memory_map_desc">"ඔබේ මතක සම්බන්ධ වන ආකාරය බලන්න"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d මතකය"</item>
+        <item quantity="other">"%1$d මතකය"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d සබැඳිය"</item>
+        <item quantity="other">"%1$d සබැඳිය"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"%1$d මතකයට සම්බන්ධයි"</item>
+        <item quantity="other">"%1$d මතකයට සම්බන්ධයි"</item>
+    </plurals>
+    <string name="memory_map_fit">"සම්පූර්ණ සිතියම පෙන්වන්න"</string>
+    <string name="memory_map_hint">"විශාල කිරීමට පින්ච් කරන්න. කියවීමට මතකයක් තට්ටු කරන්න."</string>
     <string name="memory_folder_delete_with_memories">"මතක ද මකන්න"</string>
     <string name="memory_folder_deleted_moved">"\"%1$s\" මකා එහි මතක ගෙනගියා."</string>
     <string name="memory_folder_deleted_all">"\"%1$s\" සහ එහි මතක මකන ලදී."</string>

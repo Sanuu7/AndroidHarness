@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"এখানে সরান"</string>
     <string name="memory_folder_empty">"এই ফোল্ডারে এখনো কোনো মেমরি নেই।"</string>
+    <string name="memory_select">"নির্বাচন করুন"</string>
+    <string name="memory_group_expand">"মেমরি দেখান"</string>
+    <string name="memory_group_collapse">"মেমরি লুকান"</string>
+    <string name="memory_selection_clear">"নির্বাচন বন্ধ করুন"</string>
+    <string name="memory_select_all">"সব নির্বাচন করুন"</string>
+    <string name="memory_select_none">"কিছুই নির্বাচন করবেন না"</string>
+    <string name="memory_move">"সরান"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"%1$dটি মেমরি সরান এখানে"</item>
+        <item quantity="other">"%1$dটি মেমরি সরান এখানে"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"%1$dটি মেমরি মুছবেন?"</item>
+        <item quantity="other">"%1$dটি মেমরি মুছবেন?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"এটি ফিরিয়ে আনা যাবে না। একীভূত মেমরিগুলো তাদের মূল এন্ট্রিও নিয়ে যায়।"</string>
+    <string name="memory_map">"মেমরি ম্যাপ"</string>
+    <string name="memory_map_desc">"আপনার মেমরিগুলো কীভাবে যুক্ত দেখুন"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$dটি মেমরি"</item>
+        <item quantity="other">"%1$dটি মেমরি"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$dটি লিঙ্ক"</item>
+        <item quantity="other">"%1$dটি লিঙ্ক"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"%1$dটি মেমরির সাথে যুক্ত"</item>
+        <item quantity="other">"%1$dটি মেমরির সাথে যুক্ত"</item>
+    </plurals>
+    <string name="memory_map_fit">"পুরো ম্যাপ দেখান"</string>
+    <string name="memory_map_hint">"জুম করতে পিঞ্চ করুন। পড়তে মেমরিতে ট্যাপ করুন।"</string>
     <string name="memory_folder_delete_with_memories">"মেমরিগুলোও মুছুন"</string>
     <string name="memory_folder_deleted_moved">"\"%1$s\" মুছে এর মেমরিগুলো সরানো হয়েছে।"</string>
     <string name="memory_folder_deleted_all">"\"%1$s\" ও এর মেমরিগুলো মোছা হয়েছে।"</string>

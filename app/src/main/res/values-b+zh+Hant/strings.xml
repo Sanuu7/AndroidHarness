@@ -1161,6 +1161,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"移至"</string>
     <string name="memory_folder_empty">"此資料夾尚無記憶。"</string>
+    <string name="memory_select">"選取"</string>
+    <string name="memory_group_expand">"顯示記憶"</string>
+    <string name="memory_group_collapse">"隱藏記憶"</string>
+    <string name="memory_selection_clear">"停止選取"</string>
+    <string name="memory_select_all">"全選"</string>
+    <string name="memory_select_none">"取消全選"</string>
+    <string name="memory_move">"移動"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"將 %1$d 則記憶移至"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"要刪除 %1$d 則記憶嗎？"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"此操作無法復原。合併的記憶會一併帶走其原始項目。"</string>
+    <string name="memory_map">"記憶地圖"</string>
+    <string name="memory_map_desc">"查看你的記憶如何連結"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"%1$d 則記憶"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"%1$d 條連結"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"連結到 %1$d 則記憶"</item>
+    </plurals>
+    <string name="memory_map_fit">"顯示整張地圖"</string>
+    <string name="memory_map_hint">"雙指縮放。輕觸記憶即可閱讀。"</string>
     <string name="memory_folder_delete_with_memories">"同時刪除記憶"</string>
     <string name="memory_folder_deleted_moved">"已刪除「%1$s」並移動其記憶。"</string>
     <string name="memory_folder_deleted_all">"已刪除「%1$s」及其記憶。"</string>

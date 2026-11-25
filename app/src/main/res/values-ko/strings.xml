@@ -1161,6 +1161,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"이동 대상"</string>
     <string name="memory_folder_empty">"이 폴더에는 아직 기억이 없습니다."</string>
+    <string name="memory_select">"선택"</string>
+    <string name="memory_group_expand">"기억 보이기"</string>
+    <string name="memory_group_collapse">"기억 숨기기"</string>
+    <string name="memory_selection_clear">"선택 종료"</string>
+    <string name="memory_select_all">"모두 선택"</string>
+    <string name="memory_select_none">"선택 해제"</string>
+    <string name="memory_move">"이동"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"기억 %1$d개 이동"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"기억 %1$d개를 삭제할까요?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"되돌릴 수 없습니다. 통합된 기억은 원본 항목도 함께 삭제됩니다."</string>
+    <string name="memory_map">"기억 지도"</string>
+    <string name="memory_map_desc">"기억이 어떻게 연결되어 있는지 확인"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"기억 %1$d개"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"링크 %1$d개"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"기억 %1$d개와 연결됨"</item>
+    </plurals>
+    <string name="memory_map_fit">"전체 지도 보기"</string>
+    <string name="memory_map_hint">"두 손가락으로 확대하세요. 기억을 탭하면 읽을 수 있습니다."</string>
     <string name="memory_folder_delete_with_memories">"기억도 삭제"</string>
     <string name="memory_folder_deleted_moved">"\'%1$s\'을(를) 삭제하고 기억을 옮겼습니다."</string>
     <string name="memory_folder_deleted_all">"\'%1$s\'과(와) 그 기억을 삭제했습니다."</string>

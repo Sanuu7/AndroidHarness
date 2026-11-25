@@ -434,6 +434,31 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         dao.deleteMemory(id)
     }
 
+    /**
+     * Moves [ids] into [target], creating a custom folder when it is new.
+     * A memory moved into a custom folder keeps its category, so moving it
+     * back out later lands it where it came from. Returns how many moved.
+     */
+    suspend fun moveMemories(ids: Collection<String>, target: MemoryFolderTarget): Int = db.withTransaction {
+        val place = ensure(target).first
+        val now = System.currentTimeMillis()
+        var moved = 0
+        ids.distinct().forEach { id ->
+            val current = dao.memory(id) ?: return@forEach
+            if (current.consolidatedInto != null) return@forEach
+            val category = if (place.folder != null) current.category else place.category.name
+            if (current.folder == place.folder && current.category == category) return@forEach
+            dao.upsertMemory(current.copy(folder = place.folder, category = category, updatedAt = now))
+            moved++
+        }
+        moved
+    }
+
+    /** Deletes several memories at once. A digest takes its originals with it, as [remove] does. */
+    suspend fun removeMany(ids: Collection<String>) = db.withTransaction {
+        ids.distinct().forEach { id -> if (dao.memory(id)?.consolidatedInto == null) remove(id) }
+    }
+
     suspend fun clearAll() = dao.deleteAllMemories()
 
     suspend fun setEnabled(id: String, enabled: Boolean) {

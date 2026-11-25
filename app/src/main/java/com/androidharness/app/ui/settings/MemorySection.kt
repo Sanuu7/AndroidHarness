@@ -2,7 +2,9 @@ package com.androidharness.app.ui.settings
 
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -204,6 +206,16 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 (it.folder ?: builtInLabels[MemoryCategory.fromStored(it.category)].orEmpty()).contains(query.trim(), ignoreCase = true))
     }.sortedWith(compareByDescending<MemoryEntity> { it.pinned }.thenByDescending { it.updatedAt })
     val plans = remember(memories, section) { MemoryConsolidation.plans(entries.filter { section == null || it.section == section }) }
+    // Long-press a memory to start selecting; the selection empties itself when its memories go away.
+    var selected by remember { mutableStateOf(emptySet<String>()) }
+    val selecting = selected.isNotEmpty()
+    fun toggleSelected(id: String) { selected = if (id in selected) selected - id else selected + id }
+    LaunchedEffect(entries) { val ids = entries.mapTo(HashSet()) { it.id }; if (!selected.all { it in ids }) selected = selected.filter { it in ids }.toSet() }
+    androidx.activity.compose.BackHandler(enabled = selecting) { selected = emptySet() }
+    var moving by remember { mutableStateOf(false) }
+    var deletingSelected by remember { mutableStateOf(false) }
+    var mapOpen by rememberSaveable { mutableStateOf(false) }
+    val collapsed = remember { mutableStateListOf<String>() }
     fun mutate(action: suspend () -> Unit, finished: () -> Unit = {}) {
         if (saving) return
         saving = true; error = null
@@ -228,6 +240,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 }
                 OutlinedButton(onClick = { adding = true }) { Text(stringResource(R.string.settings_memory_add)) }
             }
+            if (entries.isNotEmpty()) MemoryMapEntry(onClick = { mapOpen = true })
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = section == null, onClick = { section = null }, label = { Text(stringResource(R.string.memory_all_sections)) })
                 MemorySection.entries.forEach { option ->
@@ -310,6 +323,30 @@ internal fun MemoryManagerSection(container: AppContainer) {
         }
     }
 
+    @Composable
+    fun rows(list: List<MemoryEntity>) {
+        list.forEachIndexed { index, memory ->
+            MemoryRow(
+                memory = memory,
+                folderLabel = memory.folder ?: builtInLabels.getValue(MemoryCategory.fromStored(memory.category)),
+                projectName = memory.projectId?.let { projectNames[it] },
+                agentName = agentSettings.chatAgents.firstOrNull { it.id == memory.agentId }?.name,
+                onEdit = { if (!saving) { editing = memory; error = null } },
+                onPinned = { pinned -> mutate({ container.memory.setPinned(memory.id, pinned) }) },
+                onEnabled = { enabled -> mutate({ container.memory.setEnabled(memory.id, enabled) }) },
+                onRestore = if (memory.isSummary && memories.any { it.consolidatedInto == memory.id }) ({ mutate({ container.memory.restoreOriginals(memory.id) }) }) else null,
+                enabled = !saving,
+                selecting = selecting,
+                checked = memory.id in selected,
+                onToggleSelected = { toggleSelected(memory.id) },
+            )
+            if (index < list.lastIndex) HorizontalDivider(
+                Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f),
+            )
+        }
+    }
+
     if (visible.isEmpty()) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Text(
@@ -323,29 +360,47 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 modifier = Modifier.padding(16.dp),
             )
         }
-    } else {
-        SettingsPanel(Modifier.fillMaxWidth()) {
-            visible.forEachIndexed { index, memory ->
-                MemoryRow(
-                    memory = memory,
-                    folderLabel = memory.folder ?: builtInLabels.getValue(MemoryCategory.fromStored(memory.category)),
-                    projectName = memory.projectId?.let { projectNames[it] },
-                    agentName = agentSettings.chatAgents.firstOrNull { it.id == memory.agentId }?.name,
-                    onEdit = { if (!saving) { editing = memory; error = null } },
-                    onPinned = { pinned -> mutate({ container.memory.setPinned(memory.id, pinned) }) },
-                    onEnabled = { enabled -> mutate({ container.memory.setEnabled(memory.id, enabled) }) },
-                    onRestore = if (memory.isSummary && memories.any { it.consolidatedInto == memory.id }) ({ mutate({ container.memory.restoreOriginals(memory.id) }) }) else null,
-                    enabled = !saving,
+    } else if (folderFilter == null) {
+        // "All folders" shows each folder as its own collapsible group instead of one long mixed list.
+        val groups = (MemoryCategory.entries.map { "c:${it.name}" } + folderNames.map { "f:$it" })
+            .map { key -> key to visible.filter { inFolder(it, key) } }
+            .filter { it.second.isNotEmpty() }
+        groups.forEach { (key, list) ->
+            val name = if (key.startsWith("c:")) builtInLabels.getValue(MemoryCategory.fromStored(key.removePrefix("c:"))) else key.removePrefix("f:")
+            val open = key !in collapsed
+            val chosen = list.count { it.id in selected }
+            SettingsPanel(Modifier.fillMaxWidth()) {
+                MemoryGroupHeader(
+                    name = name,
+                    count = list.size,
+                    color = memoryFolderColor(key, folderNames),
+                    open = open,
+                    selecting = selecting,
+                    selection = when (chosen) { 0 -> androidx.compose.ui.state.ToggleableState.Off; list.size -> androidx.compose.ui.state.ToggleableState.On
+                        else -> androidx.compose.ui.state.ToggleableState.Indeterminate },
+                    onToggleOpen = { if (open) collapsed.add(key) else collapsed.remove(key) },
+                    onToggleSelection = {
+                        val ids = list.map { it.id }.toSet()
+                        selected = if (chosen == list.size) selected - ids else selected + ids
+                    },
                 )
-                if (index < visible.lastIndex) HorizontalDivider(
-                    Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f),
-                )
+                androidx.compose.animation.AnimatedVisibility(open,
+                    enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()) {
+                    Column {
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f))
+                        rows(list)
+                    }
+                }
             }
         }
+    } else {
+        SettingsPanel(Modifier.fillMaxWidth()) { rows(visible) }
     }
+    // Room for the floating selection toolbar so it never hides the last memory.
+    if (selecting) Spacer(Modifier.height(88.dp))
 
-    if (memories.isNotEmpty()) {
+    if (memories.isNotEmpty() && !selecting) {
         TextButton(onClick = { clearing = true }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.settings_memory_clear_all), color = MaterialTheme.colorScheme.error)
         }
@@ -381,6 +436,46 @@ internal fun MemoryManagerSection(container: AppContainer) {
             },
         )
     }
+
+    if (selecting && !moving && !deletingSelected) MemorySelectionToolbar(
+        count = selected.size,
+        allSelected = visible.isNotEmpty() && visible.all { it.id in selected },
+        enabled = !saving,
+        onClose = { selected = emptySet() },
+        onSelectAll = { selected = if (visible.all { it.id in selected }) emptySet() else selected + visible.map { it.id } },
+        onMove = { moving = true; error = null },
+        onDelete = { deletingSelected = true; error = null },
+    )
+
+    if (moving) MemoryMoveDialog(selected.size, folderNames, builtInLabels, saving, error,
+        onDismiss = { if (!saving) { moving = false; error = null } }) { target ->
+        mutate({ container.memory.moveMemories(selected, target) }) { moving = false; selected = emptySet() }
+    }
+
+    if (deletingSelected) AlertDialog(
+        onDismissRequest = { if (!saving) deletingSelected = false },
+        title = { Text(pluralStringResource(R.plurals.memory_bulk_delete_title, selected.size, selected.size)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.memory_bulk_delete_body))
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !saving, onClick = { mutate({ container.memory.removeMany(selected) }) { deletingSelected = false; selected = emptySet() } }) {
+                Text(stringResource(R.string.settings_memory_delete), color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = { TextButton(enabled = !saving, onClick = { deletingSelected = false }) { Text(stringResource(R.string.settings_action_cancel)) } },
+    )
+
+    if (mapOpen) MemoryMapDialog(
+        memories = entries,
+        folderNames = folderNames,
+        builtInLabels = builtInLabels,
+        onDismiss = { mapOpen = false },
+        onEdit = { memory -> mapOpen = false; editing = memory; error = null },
+    )
 
     naming?.let { current ->
         MemoryFolderNameDialog(current, saving, error, onDismiss = { if (!saving) { naming = null; error = null } }) { name ->
@@ -450,6 +545,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun MemoryRow(
     memory: MemoryEntity,
@@ -461,14 +557,31 @@ private fun MemoryRow(
     onEnabled: (Boolean) -> Unit,
     onRestore: (() -> Unit)? = null,
     enabled: Boolean = true,
+    selecting: Boolean = false,
+    checked: Boolean = false,
+    onToggleSelected: () -> Unit = {},
 ) {
-    Column {
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val highlight by androidx.compose.animation.animateColorAsState(
+        if (checked) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent, label = "memorySelected")
+    Column(Modifier.background(highlight)) {
     Row(
-        Modifier.fillMaxWidth().clickable(enabled = enabled, onClick = onEdit).heightIn(min = 64.dp)
-            .padding(start = 16.dp, end = 6.dp, top = 10.dp, bottom = 10.dp),
+        Modifier.fillMaxWidth()
+            .combinedClickable(
+                enabled = enabled,
+                onClick = { if (selecting) onToggleSelected() else onEdit() },
+                onLongClick = {
+                    haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                    onToggleSelected()
+                },
+                onLongClickLabel = stringResource(R.string.memory_select),
+            )
+            .heightIn(min = 64.dp)
+            .padding(start = if (selecting) 8.dp else 16.dp, end = 6.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        if (selecting) Checkbox(checked = checked, onCheckedChange = null, enabled = enabled)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 memory.text,
@@ -496,16 +609,20 @@ private fun MemoryRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        IconButton(enabled = enabled, onClick = { onPinned(!memory.pinned) }) {
-            Icon(
-                if (memory.pinned) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                contentDescription = stringResource(R.string.settings_memory_pin),
-                tint = if (memory.pinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = memory.enabled, enabled = enabled, onCheckedChange = onEnabled)
+        // While selecting, a tap anywhere on the row selects it, so the per-row controls step aside.
+        if (!selecting) {
+            IconButton(enabled = enabled, onClick = { onPinned(!memory.pinned) }) {
+                Icon(
+                    if (memory.pinned) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                    contentDescription = stringResource(R.string.settings_memory_pin),
+                    tint = if (memory.pinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = memory.enabled, enabled = enabled, onCheckedChange = onEnabled)
+        } else if (memory.pinned) Icon(Icons.Rounded.Star, contentDescription = stringResource(R.string.settings_memory_pin),
+            tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(end = 10.dp).size(20.dp))
     }
-    if (onRestore != null) TextButton(enabled = enabled, onClick = onRestore, modifier = Modifier.padding(start = 8.dp)) {
+    if (onRestore != null && !selecting) TextButton(enabled = enabled, onClick = onRestore, modifier = Modifier.padding(start = 8.dp)) {
         Text(stringResource(R.string.memory_restore_originals))
     }
     }

@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"انتقال به"</string>
     <string name="memory_folder_empty">"هنوز حافظه‌ای در این پوشه نیست."</string>
+    <string name="memory_select">"انتخاب"</string>
+    <string name="memory_group_expand">"نمایش حافظه‌ها"</string>
+    <string name="memory_group_collapse">"پنهان کردن حافظه‌ها"</string>
+    <string name="memory_selection_clear">"پایان انتخاب"</string>
+    <string name="memory_select_all">"انتخاب همه"</string>
+    <string name="memory_select_none">"انتخاب هیچ‌کدام"</string>
+    <string name="memory_move">"انتقال"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"انتقال %1$d حافظه به"</item>
+        <item quantity="other">"انتقال %1$d حافظه به"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"حذف %1$d حافظه؟"</item>
+        <item quantity="other">"حذف %1$d حافظه؟"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"این کار قابل بازگشت نیست. حافظه‌های ادغام‌شده ورودی‌های اصلی خود را با خود می‌برند."</string>
+    <string name="memory_map">"نقشه حافظه"</string>
+    <string name="memory_map_desc">"ببینید حافظه‌هایتان چگونه به هم متصل‌اند"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d حافظه"</item>
+        <item quantity="other">"%1$d حافظه"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d پیوند"</item>
+        <item quantity="other">"%1$d پیوند"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"متصل به %1$d حافظه"</item>
+        <item quantity="other">"متصل به %1$d حافظه"</item>
+    </plurals>
+    <string name="memory_map_fit">"نمایش کل نقشه"</string>
+    <string name="memory_map_hint">"برای بزرگ‌نمایی دو انگشت را جمع کنید. برای خواندن روی یک حافظه بزنید."</string>
     <string name="memory_folder_delete_with_memories">"حافظه‌ها هم حذف شوند"</string>
     <string name="memory_folder_deleted_moved">"«%1$s» حذف و حافظه‌هایش منتقل شد."</string>
     <string name="memory_folder_deleted_all">"«%1$s» و حافظه‌هایش حذف شد."</string>

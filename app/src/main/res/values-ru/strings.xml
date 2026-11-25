@@ -1179,6 +1179,48 @@
     </plurals>
     <string name="memory_folder_delete_move">"Переместить в"</string>
     <string name="memory_folder_empty">"В этой папке пока нет воспоминаний."</string>
+    <string name="memory_select">"Выбрать"</string>
+    <string name="memory_group_expand">"Показать записи"</string>
+    <string name="memory_group_collapse">"Скрыть записи"</string>
+    <string name="memory_selection_clear">"Завершить выбор"</string>
+    <string name="memory_select_all">"Выбрать все"</string>
+    <string name="memory_select_none">"Снять выбор"</string>
+    <string name="memory_move">"Переместить"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"Переместить %1$d запись в"</item>
+        <item quantity="few">"Переместить %1$d записи в"</item>
+        <item quantity="many">"Переместить %1$d записей в"</item>
+        <item quantity="other">"Переместить %1$d записи в"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"Удалить %1$d запись?"</item>
+        <item quantity="few">"Удалить %1$d записи?"</item>
+        <item quantity="many">"Удалить %1$d записей?"</item>
+        <item quantity="other">"Удалить %1$d записи?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Это нельзя отменить. Объединённые записи удаляются вместе с исходными."</string>
+    <string name="memory_map">"Карта памяти"</string>
+    <string name="memory_map_desc">"Посмотрите, как связаны ваши записи"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d запись"</item>
+        <item quantity="few">"%1$d записи"</item>
+        <item quantity="many">"%1$d записей"</item>
+        <item quantity="other">"%1$d записи"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d связь"</item>
+        <item quantity="few">"%1$d связи"</item>
+        <item quantity="many">"%1$d связей"</item>
+        <item quantity="other">"%1$d связи"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"Связано с %1$d записью"</item>
+        <item quantity="few">"Связано с %1$d записями"</item>
+        <item quantity="many">"Связано с %1$d записями"</item>
+        <item quantity="other">"Связано с %1$d записями"</item>
+    </plurals>
+    <string name="memory_map_fit">"Показать всю карту"</string>
+    <string name="memory_map_hint">"Сведите два пальца для масштаба. Нажмите на запись, чтобы прочитать."</string>
     <string name="memory_folder_delete_with_memories">"Удалить и воспоминания"</string>
     <string name="memory_folder_deleted_moved">"«%1$s» удалена, воспоминания перемещены."</string>
     <string name="memory_folder_deleted_all">"«%1$s» и её воспоминания удалены."</string>

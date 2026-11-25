@@ -1192,6 +1192,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"移动到"</string>
     <string name="memory_folder_empty">"此文件夹中还没有记忆。"</string>
+    <string name="memory_select">"选择"</string>
+    <string name="memory_group_expand">"显示记忆"</string>
+    <string name="memory_group_collapse">"隐藏记忆"</string>
+    <string name="memory_selection_clear">"停止选择"</string>
+    <string name="memory_select_all">"全选"</string>
+    <string name="memory_select_none">"取消全选"</string>
+    <string name="memory_move">"移动"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"将 %1$d 条记忆移至"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"删除 %1$d 条记忆？"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"此操作无法撤销。合并的记忆会一并删除其原始条目。"</string>
+    <string name="memory_map">"记忆图谱"</string>
+    <string name="memory_map_desc">"查看记忆之间的关联"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"%1$d 条记忆"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"%1$d 条连线"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"关联 %1$d 条记忆"</item>
+    </plurals>
+    <string name="memory_map_fit">"显示完整图谱"</string>
+    <string name="memory_map_hint">"双指缩放。点按记忆即可阅读。"</string>
     <string name="memory_folder_delete_with_memories">"同时删除记忆"</string>
     <string name="memory_folder_deleted_moved">"已删除“%1$s”并移动其记忆。"</string>
     <string name="memory_folder_deleted_all">"已删除“%1$s”及其记忆。"</string>

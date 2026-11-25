@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"यहाँ ले जाएं"</string>
     <string name="memory_folder_empty">"इस फ़ोल्डर में अभी कोई मेमोरी नहीं है।"</string>
+    <string name="memory_select">"चुनें"</string>
+    <string name="memory_group_expand">"मेमोरी दिखाएँ"</string>
+    <string name="memory_group_collapse">"मेमोरी छिपाएँ"</string>
+    <string name="memory_selection_clear">"चयन बंद करें"</string>
+    <string name="memory_select_all">"सभी चुनें"</string>
+    <string name="memory_select_none">"कुछ भी न चुनें"</string>
+    <string name="memory_move">"ले जाएँ"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"%1$d मेमोरी को यहाँ ले जाएँ"</item>
+        <item quantity="other">"%1$d मेमोरी को यहाँ ले जाएँ"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"%1$d मेमोरी हटाएँ?"</item>
+        <item quantity="other">"%1$d मेमोरी हटाएँ?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"इसे पूर्ववत नहीं किया जा सकता। समेकित मेमोरी अपनी मूल प्रविष्टियाँ साथ ले जाती हैं।"</string>
+    <string name="memory_map">"मेमोरी मैप"</string>
+    <string name="memory_map_desc">"देखें कि आपकी मेमोरी कैसे जुड़ी है"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d मेमोरी"</item>
+        <item quantity="other">"%1$d मेमोरी"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d लिंक"</item>
+        <item quantity="other">"%1$d लिंक"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"%1$d मेमोरी से जुड़ा"</item>
+        <item quantity="other">"%1$d मेमोरी से जुड़ा"</item>
+    </plurals>
+    <string name="memory_map_fit">"पूरा मैप दिखाएँ"</string>
+    <string name="memory_map_hint">"ज़ूम करने के लिए पिंच करें। पढ़ने के लिए मेमोरी पर टैप करें।"</string>
     <string name="memory_folder_delete_with_memories">"मेमोरियाँ भी हटाएं"</string>
     <string name="memory_folder_deleted_moved">"\"%1$s\" हटाया और उसकी मेमोरियाँ ले जाई गईं।"</string>
     <string name="memory_folder_deleted_all">"\"%1$s\" और उसकी मेमोरियाँ हटाई गईं।"</string>

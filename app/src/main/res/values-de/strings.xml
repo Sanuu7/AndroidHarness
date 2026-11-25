@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"Verschieben nach"</string>
     <string name="memory_folder_empty">"Noch keine Erinnerungen in diesem Ordner."</string>
+    <string name="memory_select">"Auswählen"</string>
+    <string name="memory_group_expand">"Erinnerungen anzeigen"</string>
+    <string name="memory_group_collapse">"Erinnerungen ausblenden"</string>
+    <string name="memory_selection_clear">"Auswahl beenden"</string>
+    <string name="memory_select_all">"Alle auswählen"</string>
+    <string name="memory_select_none">"Nichts auswählen"</string>
+    <string name="memory_move">"Verschieben"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"%1$d Erinnerung verschieben nach"</item>
+        <item quantity="other">"%1$d Erinnerungen verschieben nach"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"%1$d Erinnerung löschen?"</item>
+        <item quantity="other">"%1$d Erinnerungen löschen?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Das lässt sich nicht rückgängig machen. Zusammengefasste Erinnerungen nehmen ihre ursprünglichen Einträge mit."</string>
+    <string name="memory_map">"Erinnerungskarte"</string>
+    <string name="memory_map_desc">"Sieh, wie deine Erinnerungen verbunden sind"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d Erinnerung"</item>
+        <item quantity="other">"%1$d Erinnerungen"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d Verbindung"</item>
+        <item quantity="other">"%1$d Verbindungen"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"Mit %1$d Erinnerung verknüpft"</item>
+        <item quantity="other">"Mit %1$d Erinnerungen verknüpft"</item>
+    </plurals>
+    <string name="memory_map_fit">"Ganze Karte anzeigen"</string>
+    <string name="memory_map_hint">"Zum Zoomen zusammenziehen. Tippe auf eine Erinnerung, um sie zu lesen."</string>
     <string name="memory_folder_delete_with_memories">"Die Erinnerungen ebenfalls löschen"</string>
     <string name="memory_folder_deleted_moved">"„%1$s“ gelöscht und die Erinnerungen verschoben."</string>
     <string name="memory_folder_deleted_all">"„%1$s“ und seine Erinnerungen gelöscht."</string>

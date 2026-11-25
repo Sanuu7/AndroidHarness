@@ -1161,6 +1161,33 @@
     </plurals>
     <string name="memory_folder_delete_move">"Pindahkan ke"</string>
     <string name="memory_folder_empty">"Belum ada memori di folder ini."</string>
+    <string name="memory_select">"Pilih"</string>
+    <string name="memory_group_expand">"Tampilkan memori"</string>
+    <string name="memory_group_collapse">"Sembunyikan memori"</string>
+    <string name="memory_selection_clear">"Berhenti memilih"</string>
+    <string name="memory_select_all">"Pilih semua"</string>
+    <string name="memory_select_none">"Jangan pilih apa pun"</string>
+    <string name="memory_move">"Pindahkan"</string>
+    <plurals name="memory_move_title">
+        <item quantity="other">"Pindahkan %1$d memori ke"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="other">"Hapus %1$d memori?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"Ini tidak bisa dibatalkan. Memori gabungan membawa entri aslinya."</string>
+    <string name="memory_map">"Peta memori"</string>
+    <string name="memory_map_desc">"Lihat bagaimana memori Anda terhubung"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="other">"%1$d memori"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="other">"%1$d tautan"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="other">"Tertaut ke %1$d memori"</item>
+    </plurals>
+    <string name="memory_map_fit">"Tampilkan seluruh peta"</string>
+    <string name="memory_map_hint">"Cubit untuk memperbesar. Ketuk memori untuk membacanya."</string>
     <string name="memory_folder_delete_with_memories">"Hapus memorinya juga"</string>
     <string name="memory_folder_deleted_moved">"\"%1$s\" dihapus dan memorinya dipindahkan."</string>
     <string name="memory_folder_deleted_all">"\"%1$s\" dan memorinya dihapus."</string>

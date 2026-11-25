@@ -1167,6 +1167,38 @@
     </plurals>
     <string name="memory_folder_delete_move">"இங்கே நகர்த்து"</string>
     <string name="memory_folder_empty">"இந்த கோப்புறையில் இன்னும் நினைவுகள் இல்லை."</string>
+    <string name="memory_select">"தேர்ந்தெடு"</string>
+    <string name="memory_group_expand">"நினைவுகளைக் காட்டு"</string>
+    <string name="memory_group_collapse">"நினைவுகளை மறை"</string>
+    <string name="memory_selection_clear">"தேர்ந்தெடுப்பதை நிறுத்து"</string>
+    <string name="memory_select_all">"அனைத்தையும் தேர்ந்தெடு"</string>
+    <string name="memory_select_none">"எதையும் தேர்ந்தெடுக்காதே"</string>
+    <string name="memory_move">"நகர்த்து"</string>
+    <plurals name="memory_move_title">
+        <item quantity="one">"%1$d நினைவை இங்கே நகர்த்து"</item>
+        <item quantity="other">"%1$d நினைவை இங்கே நகர்த்து"</item>
+    </plurals>
+    <plurals name="memory_bulk_delete_title">
+        <item quantity="one">"%1$d நினைவை நீக்கவா?"</item>
+        <item quantity="other">"%1$d நினைவை நீக்கவா?"</item>
+    </plurals>
+    <string name="memory_bulk_delete_body">"இதை மீளச் செய்ய முடியாது. ஒருங்கிணைந்த நினைவுகள் அவற்றின் அசல் உள்ளீடுகளையும் கொண்டு செல்லும்."</string>
+    <string name="memory_map">"நினைவு வரைபடம்"</string>
+    <string name="memory_map_desc">"உங்கள் நினைவுகள் எவ்வாறு இணைகின்றன என்பதைப் பார்"</string>
+    <plurals name="memory_map_memories">
+        <item quantity="one">"%1$d நினைவு"</item>
+        <item quantity="other">"%1$d நினைவு"</item>
+    </plurals>
+    <plurals name="memory_map_links">
+        <item quantity="one">"%1$d இணைப்பு"</item>
+        <item quantity="other">"%1$d இணைப்பு"</item>
+    </plurals>
+    <plurals name="memory_map_connected">
+        <item quantity="one">"%1$d நினைவுடன் இணைக்கப்பட்டது"</item>
+        <item quantity="other">"%1$d நினைவுடன் இணைக்கப்பட்டது"</item>
+    </plurals>
+    <string name="memory_map_fit">"முழு வரைபடத்தையும் காட்டு"</string>
+    <string name="memory_map_hint">"பெரிதாக்க இரு விரல்களால் இழுக்கவும். படிக்க ஒரு நினைவைத் தட்டவும்."</string>
     <string name="memory_folder_delete_with_memories">"நினைவுகளையும் நீக்கு"</string>
     <string name="memory_folder_deleted_moved">"\"%1$s\" நீக்கப்பட்டு அதன் நினைவுகள் நகர்த்தப்பட்டன."</string>
     <string name="memory_folder_deleted_all">"\"%1$s\" மற்றும் அதன் நினைவுகள் நீக்கப்பட்டன."</string>
