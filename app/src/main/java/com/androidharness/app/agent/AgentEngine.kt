@@ -435,6 +435,7 @@ class AgentEngine(
         val chatHistory = if (agentContextEnabled) history else com.androidharness.app.local.LocalChatCodec.plainChatMessages(history)
         // Resolve first; delivery status is reconciled with the actual request bytes below.
         val resolvedHistory = chatHistory.map { it.withImagesResolved() }
+            .let { if (conversation.isChat) it else ImageWorkspaceNotes.annotate(it) }
         val working = (if (conversation.isChat && imageCapable)
             ChatImageContext.attach(resolvedHistory, resolve = imageStore::resolve, load = imageStore::remoteImage) else resolvedHistory).toMutableList()
         // If active model is known to be text-only, strip image data upfront

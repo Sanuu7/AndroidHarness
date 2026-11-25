@@ -38,6 +38,8 @@ data class ImageRef(
     val originalHeight: Int? = null,
     val originalMime: String? = null,
     val originalBytes: Long? = null,
+    /** Workspace-relative path of the full-size copy made for Code mode, so shell tools can open it. */
+    val workspacePath: String? = null,
 )
 
 /** Resolved image bytes for provider requests (transient, never persisted). */

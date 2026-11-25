@@ -1538,7 +1538,10 @@ class ChatViewModel(
     fun removeEditImage(index: Int) {
         val removed = _state.value.editDraft?.images?.getOrNull(index) ?: return
         updateEditDraft { it.copy(images = it.images.filterIndexed { i, _ -> i != index }) }
-        if (editAddedImages.remove(removed.name)) c.images.delete(removed.name)
+        if (editAddedImages.remove(removed.name)) {
+            c.images.delete(removed.name)
+            removed.workspacePath?.let(::deleteWorkspaceCopy)
+        }
     }
 
     /** [index] counts kept files first, then added ones, matching [MessageEditDraft.trayFiles]. */
@@ -1586,6 +1589,7 @@ class ChatViewModel(
     fun cancelEdit() {
         val draft = _state.value.editDraft ?: return
         _state.update { it.copy(editDraft = null) }
+        draft.images.filter { it.name in editAddedImages }.mapNotNull { it.workspacePath }.forEach(::deleteWorkspaceCopy)
         editAddedImages.forEach { c.images.delete(it) }
         editAddedImages.clear()
         draft.addedFiles.mapNotNull { it.workspacePath }.forEach(::deleteWorkspaceCopy)
@@ -1627,9 +1631,19 @@ class ChatViewModel(
                             com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).isChat
                         } ?: snapshot.conversation.isChat
                     val stored = c.images.import(uri, keepOriginal = keepOriginal) ?: throw IllegalStateException(c.appContext.getString(R.string.ui_could_not_load_that_image))
-                    val image = c.images.metadata(ImageRef(stored.file.name, stored.mime, caption = name.take(200), origin = "user_upload"))
+                    // Code mode also keeps the untouched original in the workspace, so shell tools
+                    // (tesseract, python) can open it without the user saving it by hand.
+                    val workspacePath = if (keepOriginal) null else try {
+                        writeAttachmentToWorkspace(resolver, uri, imageFileName(name, mime), id, target).first
+                    } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+                    catch (_: Exception) { null }
+                    val image = c.images.metadata(ImageRef(stored.file.name, stored.mime, caption = name.take(200), origin = "user_upload",
+                        workspacePath = workspacePath))
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
-                        if (!active()) c.images.delete(stored.file.name)
+                        if (!active()) {
+                            c.images.delete(stored.file.name)
+                            workspacePath?.let(::deleteWorkspaceCopy)
+                        }
                         else if (target == AttachTarget.EDIT) {
                             editAddedImages += stored.file.name
                             updateEditDraft { it.copy(images = it.images + image) }
@@ -1676,6 +1690,7 @@ class ChatViewModel(
         if (removed != null) {
             pendingAttachments.removeAt(index)
             c.images.delete(removed.name)
+            removed.workspacePath?.let(::deleteWorkspaceCopy)
         }
         _state.update { it.copy(attachments = it.attachments.toMutableList().apply { removeAt(index) }) }
     }
@@ -1737,6 +1752,29 @@ class ChatViewModel(
         importId: String,
         target: AttachTarget,
     ) {
+        val (path, copied) = writeAttachmentToWorkspace(resolver, uri, name, importId, target)
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
+            if (importsOf(target).any { it.id == importId }) {
+                addFileAttachment(FileAttachment(name, mime, FileAttachments.humanBytes(size ?: copied), null, path), target)
+            } else deleteWorkspaceCopy(path)
+        }
+    }
+
+    /** A file name for an image copy that keeps a usable extension even when the picker gave none. */
+    private fun imageFileName(name: String, mime: String): String {
+        if (name.substringAfterLast('.', "").isNotEmpty()) return name
+        val ext = android.webkit.MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "jpg"
+        return "$name.$ext"
+    }
+
+    /** Streams [uri] into .harness/attachments and returns its workspace-relative path and size. */
+    private suspend fun writeAttachmentToWorkspace(
+        resolver: android.content.ContentResolver,
+        uri: Uri,
+        name: String,
+        importId: String,
+        target: AttachTarget,
+    ): Pair<String, Long> {
         val fs = chatWorkspace()
         val dir = fs.resolve(".harness/attachments")
         dir.mkdirs()
@@ -1757,11 +1795,7 @@ class ChatViewModel(
                     override fun read(): Int = super.read().also { if (it >= 0) copied++ }
                 })
             }
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
-                if (importsOf(target).any { it.id == importId }) {
-                    addFileAttachment(FileAttachment(name, mime, FileAttachments.humanBytes(size ?: copied), null, ".harness/attachments/$unique"), target)
-                } else node.delete()
-            }
+            return ".harness/attachments/$unique" to copied
         } catch (e: Exception) { runCatching { node.delete() }; throw e }
     }
 
