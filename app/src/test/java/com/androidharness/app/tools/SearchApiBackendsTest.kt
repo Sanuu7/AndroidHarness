@@ -28,6 +28,7 @@ class SearchApiBackendsTest {
         assertTrue(searchBackendFor(SearchApiConfig("serper", "k")) is SerperApiBackend)
         assertTrue(searchBackendFor(SearchApiConfig(" SerpApi ", "k")) is SerpApiBackend)
         assertTrue(searchBackendFor(SearchApiConfig("linkup", "k")) is LinkupApiBackend)
+        assertTrue(searchBackendFor(SearchApiConfig("exa", "k")) is ExaApiBackend)
         assertTrue(searchBackendFor(SearchApiConfig("langsearch", "k")) is LangSearchApiBackend)
         assertTrue(searchBackendFor(SearchApiConfig("jina", "k")) is JinaApiBackend)
         assertTrue(searchBackendFor(SearchApiConfig("firecrawl", "k")) is FirecrawlApiBackend)
@@ -110,6 +111,29 @@ class SearchApiBackendsTest {
         assertTrue("long extracts are shortened to a snippet", results[0].snippet.length < 430)
     }
 
+    @Test fun `exa sends filters, asks for page text only when pages will be read, and parses highlights`() {
+        val backend = ExaApiBackend(listOf("k"), today = { LocalDate.of(2026, 11, 19) })
+        val request = backend.request("k", "q", 150, SearchOptions(freshness = "week", country = "gb"))
+        assertEquals("api.exa.ai", request.url.host)
+        assertEquals("k", request.header("x-api-key"))
+        val body = bodyOf(request)
+        assertEquals("100", body["numResults"]!!.jsonPrimitive.content)
+        assertEquals("2026-11-12T00:00:00.000Z", body["startPublishedDate"]!!.jsonPrimitive.content)
+        assertEquals("GB", body["userLocation"]!!.jsonPrimitive.content)
+        assertNull(body["contents"]!!.jsonObject["text"])
+        assertNotNull(bodyOf(backend.request("k", "q", 5, SearchOptions(readPages = true)))["contents"]!!.jsonObject["text"])
+        val page = "Paragraph of real article text. ".repeat(40)
+        val response = """{"requestId":"r","results":[
+            {"id":"a","title":"A","url":"https://a.example","publishedDate":"2025-02-03T00:00:00.000Z","highlights":["First point.","Second point."],"text":"$page"},
+            {"id":"b","title":null,"url":"https://b.example","highlights":[],"summary":"Sum"},
+            {"id":"c","title":"No url"}]}"""
+        val results = ExaSearchParser.parse(response)
+        assertEquals(WebSearchResult("A", "https://a.example", "First point. Second point.", "2025-02-03"), results[0])
+        assertEquals(WebSearchResult("https://b.example", "https://b.example", "Sum"), results[1])
+        assertEquals(2, results.size)
+        assertEquals(setOf("https://a.example"), ExaSearchParser.pages(response).keys)
+    }
+
     @Test fun `langsearch maps freshness, parses pages and reports an error code in the body`() {
         val body = bodyOf(LangSearchApiBackend(listOf("k")).request("k", "q", 80, SearchOptions(freshness = "year")))
         assertEquals("oneYear", body["freshness"]!!.jsonPrimitive.content)
@@ -157,7 +181,7 @@ class SearchApiBackendsTest {
 
     @Test fun `parsers return nothing for broken bodies`() {
         listOf<(String) -> List<WebSearchResult>>(
-            SerperSearchParser::parse, SerpApiSearchParser::parse, LinkupSearchParser::parse, LangSearchParser::parse,
+            SerperSearchParser::parse, SerpApiSearchParser::parse, LinkupSearchParser::parse, ExaSearchParser::parse, LangSearchParser::parse,
             JinaSearchParser::parse, FirecrawlSearchParser::parse, MarginaliaSearchParser::parse,
         ).forEach { parse ->
             assertEquals(emptyList<WebSearchResult>(), parse("not json"))

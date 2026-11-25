@@ -112,6 +112,7 @@ internal fun searchBackendFor(config: SearchApiConfig?): SearchBackend? =
                 "serper" -> SerperApiBackend(keys)
                 "serpapi" -> SerpApiBackend(keys)
                 "linkup" -> LinkupApiBackend(keys)
+                "exa" -> ExaApiBackend(keys)
                 "langsearch" -> LangSearchApiBackend(keys)
                 "jina" -> JinaApiBackend(keys)
                 "firecrawl" -> FirecrawlApiBackend(keys)

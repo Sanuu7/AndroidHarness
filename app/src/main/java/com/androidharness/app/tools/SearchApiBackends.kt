@@ -178,6 +178,56 @@ internal object LinkupSearchParser {
         }.orEmpty()
 }
 
+/**
+ * Exa (api.exa.ai): searches by meaning rather than keywords, key in x-api-key.
+ * Highlights become the snippet. When the caller will read pages, each result
+ * also brings its page text, so those reads need no extra requests.
+ */
+internal class ExaApiBackend(keys: List<String>, private val today: () -> LocalDate = LocalDate::now) : KeyedSearchBackend(keys) {
+    override val label = "Exa"
+
+    override fun request(key: String, query: String, count: Int, options: SearchOptions): Request =
+        Request.Builder()
+            .url("https://api.exa.ai/search")
+            .header("x-api-key", key)
+            .post(buildJsonObject {
+                put("query", query)
+                put("type", "auto")
+                put("numResults", count.coerceIn(1, 100))
+                put("contents", buildJsonObject {
+                    put("highlights", buildJsonObject { put("numSentences", 3); put("highlightsPerUrl", 1) })
+                    if (options.readPages || options.deep) put("text", buildJsonObject { put("maxCharacters", 60_000) })
+                })
+                sinceDate(options.freshness, today())?.let { put("startPublishedDate", "${it}T00:00:00.000Z") }
+                options.country?.trim()?.uppercase()?.takeIf { it.length == 2 }?.let { put("userLocation", it) }
+            }.toBody())
+            .build()
+
+    override fun parse(body: String) = ExaSearchParser.parse(body)
+    override fun pages(body: String) = ExaSearchParser.pages(body)
+}
+
+internal object ExaSearchParser {
+    private fun entries(body: String): List<JsonObject> =
+        parseObject(body)?.get("results").arr()?.mapNotNull { it.obj() }.orEmpty()
+
+    fun parse(body: String): List<WebSearchResult> = entries(body).mapNotNull { o ->
+        val url = o.text("url") ?: return@mapNotNull null
+        // Exa leaves the title empty for some pages; the address still says what the result is.
+        val title = o.text("title") ?: url
+        val highlight = o["highlights"].arr()?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.trim()?.takeIf(String::isNotEmpty) }
+            ?.joinToString(" ")?.takeIf { it.isNotEmpty() }
+        val snippet = highlight ?: o.text("summary", "text")
+        WebSearchResult(title, url, snippet?.let(::shortSnippet).orEmpty(), o.text("publishedDate")?.take(10))
+    }
+
+    fun pages(body: String): Map<String, String> = entries(body).mapNotNull { o ->
+        val url = o.text("url") ?: return@mapNotNull null
+        val content = o.text("text")?.takeIf { it.length > 400 } ?: return@mapNotNull null
+        url to content
+    }.toMap()
+}
+
 /** LangSearch (api.langsearch.com): free web search, bearer key. */
 internal class LangSearchApiBackend(keys: List<String>) : KeyedSearchBackend(keys) {
     override val label = "LangSearch"

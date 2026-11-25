@@ -38,6 +38,8 @@ object SearchProviders {
             "Google results; best for exact names, products, local and very popular queries"),
         Info("linkup", "Linkup", Kind.AI, "https://app.linkup.so/api-keys",
             "agent search with page extracts; good for factual questions that need context"),
+        Info("exa", "Exa", Kind.AI, "https://dashboard.exa.ai/api-keys",
+            "searches by meaning, not keywords; best for descriptive queries, similar sites, papers, companies and people"),
         Info("jina", "Jina", Kind.AI, "https://jina.ai/api-dashboard/key-manager",
             "returns full page text with results when pages will be read; good for deep reading"),
         Info("langsearch", "LangSearch", Kind.AI, "https://langsearch.com/api-keys",
