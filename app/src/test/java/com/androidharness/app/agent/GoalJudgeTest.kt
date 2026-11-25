@@ -44,6 +44,7 @@ class GoalJudgeTest {
         assertTrue(GoalState("g", status = GoalState.Status.BLOCKED).checking)
         assertFalse(GoalState("g", status = GoalState.Status.MET).checking)
         assertFalse(GoalState("g", status = GoalState.Status.LIMIT).checking)
+        assertFalse(GoalState("g", status = GoalState.Status.PAUSED).checking)
     }
 
     @Test fun `prompt carries the goal and recorded check results`() {
@@ -87,5 +88,99 @@ class GoalJudgeTest {
         val record = TaskRecord(goal = GoalState("all tests pass", status = GoalState.Status.BLOCKED, turns = 4, lastReason = "Needs a key"))
         assertEquals(record.goal, json.decodeFromString<TaskRecord>(json.encodeToString(TaskRecord.serializer(), record)).goal)
         assertNull(json.decodeFromString<TaskRecord>("""{"status":"idle"}""").goal)
+    }
+
+    @Test fun `parts parse, skip nameless entries and stay distinct`() {
+        val verdict = GoalJudge.parse("""{"verdict":"continue","reason":"r","parts":[
+            {"name":"Build compiles","done":true},{"name":"Tests pass"},{"done":true},{"name":"build compiles","done":false}]}""")
+        assertEquals(listOf("Build compiles" to true, "Tests pass" to false), verdict?.parts)
+        assertEquals(emptyList<Pair<String, Boolean>>(), GoalJudge.parse("""{"verdict":"met","parts":"none"}""")?.parts)
+    }
+
+    @Test fun `checks build history and parts keep the turn they were first done`() {
+        var goal = GoalState("g", turns = 1)
+        goal = goal.withCheck(GoalCheck(1, GoalCheck.Outcome.CONTINUE, "a"), listOf("Build" to true, "Tests" to false))
+        goal = goal.copy(turns = 2).withCheck(GoalCheck(2, GoalCheck.Outcome.CONTINUE, "b"), listOf("build" to true, "Tests" to true))
+        assertEquals(listOf(1, 2), goal.history.map { it.turn })
+        assertEquals(listOf(1, 2), goal.parts.map { it.doneAtTurn })
+        // A check without parts keeps the last known ones.
+        goal = goal.withCheck(GoalCheck(3, GoalCheck.Outcome.FAILED, "x"), emptyList())
+        assertEquals(2, goal.parts.size)
+        var long = GoalState("g")
+        repeat(GoalJudge.MAX_HISTORY + 5) { long = long.withCheck(GoalCheck(it, GoalCheck.Outcome.CONTINUE, "r"), emptyList()) }
+        assertEquals(GoalJudge.MAX_HISTORY, long.history.size)
+        assertEquals(5, long.history.first().turn)
+    }
+
+    @Test fun `continuations read back as checkpoints and other text does not`() {
+        val text = GoalJudge.continuation(GoalState("ship it", turns = 3, turnLimit = 10),
+            GoalVerdict(GoalVerdict.Outcome.CONTINUE, "Lint fails.\nTwo warnings.", "Fix the import."))
+        assertEquals(GoalJudge.Checkpoint(3, 10, "Lint fails.\nTwo warnings.", "Fix the import."), GoalJudge.checkpoint(text))
+        val bare = GoalJudge.continuation(GoalState("g", turns = 1), GoalVerdict(GoalVerdict.Outcome.CONTINUE, "r"))
+        assertEquals("", GoalJudge.checkpoint(bare)?.next)
+        assertNull(GoalJudge.checkpoint("Goal check 3 of 10: not done yet.\nno marker"))
+        assertNull(GoalJudge.checkpoint("hello"))
+        assertTrue(GoalJudge.isResume(GoalJudge.resume("g")))
+        assertTrue(GoalJudge.isResume(GoalJudge.resume("g", improving = true)))
+        assertTrue(GoalJudge.resume("g", improving = true).contains("improve its weakest part"))
+        assertFalse(GoalJudge.isResume("Goal resumed."))
+    }
+
+    @Test fun `kickoff carries the check command and reads back to the goal text`() {
+        val kickoff = GoalJudge.kickoff(" all tests pass ", "./gradlew test")
+        assertEquals("all tests pass", GoalJudge.kickoffGoal(kickoff))
+        assertTrue(kickoff.contains("`./gradlew test` passes"))
+        assertFalse(GoalJudge.kickoff("g", " ").contains("passes after"))
+        assertNull(GoalJudge.kickoffGoal("all tests pass"))
+    }
+
+    @Test fun `prompt names the user's check and earlier parts`() {
+        val prompt = GoalJudge.prompt("g", emptyList(), "npm test", listOf(GoalPart("Build", true, 1)))
+        assertTrue(prompt.contains("The user's own check for this goal is `npm test`"))
+        assertTrue(prompt.contains("Keep these names and order"))
+        assertTrue(prompt.contains("- Build\n"))
+        assertFalse(GoalJudge.prompt("g", emptyList()).contains("user's own check"))
+    }
+
+    @Test fun `goals saved before history and parts still load`() {
+        val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+        val old = """{"goal":{"text":"g","status":"ACTIVE","turns":2,"turnLimit":20,"setAt":1}}"""
+        val goal = json.decodeFromString<TaskRecord>(old).goal
+        assertEquals(emptyList<GoalCheck>(), goal?.history)
+        assertNull(goal?.checkCommand)
+        val full = TaskRecord(goal = GoalState("g", checkCommand = "make", notifyEachCheck = true)
+            .withCheck(GoalCheck(0, GoalCheck.Outcome.BLOCKED, "key", at = 5), listOf("A" to true)))
+        assertEquals(full.goal, json.decodeFromString<TaskRecord>(json.encodeToString(TaskRecord.serializer(), full)).goal)
+    }
+
+    @Test fun `keep improving adds the improve verdict and its continuation reads back as a pass`() {
+        assertEquals(GoalVerdict.Outcome.IMPROVE, GoalJudge.parse("""{"verdict":"improve","reason":"Works.","next":"Tighten the mobile nav."}""")?.outcome)
+        val prompt = GoalJudge.prompt("g", emptyList(), keepImproving = true)
+        assertTrue(prompt.contains("\"continue\" | \"blocked\" | \"improve\""))
+        assertTrue(prompt.contains("do not answer \"met\""))
+        assertFalse(GoalJudge.prompt("g", emptyList()).contains("\"improve\""))
+        val text = GoalJudge.continuation(GoalState("site", turns = 2, turnLimit = 5, keepImproving = true),
+            GoalVerdict(GoalVerdict.Outcome.IMPROVE, "Works.", "Tighten the mobile nav."))
+        assertTrue(text.startsWith("Goal check 2 of 5: reached, improving."))
+        assertEquals(GoalJudge.Checkpoint(2, 5, "Works.", "Tighten the mobile nav.", improving = true), GoalJudge.checkpoint(text))
+    }
+
+    @Test fun `the turn that sends the goal counts as turn one`() {
+        assertEquals(1, GoalState("g").turnsUsed)
+        assertEquals(4, GoalState("g", turns = 3).turnsUsed)
+        assertTrue(GoalState("g", reachedAtTurn = 1, keepImproving = true).improving)
+        assertFalse(GoalState("g", status = GoalState.Status.MET, reachedAtTurn = 1).improving)
+        assertFalse(GoalState("g").improving)
+    }
+
+    @Test fun `keep improving turns a reached verdict into another pass`() {
+        assertEquals(GoalVerdict.Outcome.IMPROVE, GoalJudge.effectiveOutcome(GoalVerdict.Outcome.MET, keepImproving = true))
+        assertEquals(GoalVerdict.Outcome.MET, GoalJudge.effectiveOutcome(GoalVerdict.Outcome.IMPROVE, keepImproving = false))
+        assertEquals(GoalVerdict.Outcome.MET, GoalJudge.effectiveOutcome(GoalVerdict.Outcome.MET, keepImproving = false))
+        assertEquals(GoalVerdict.Outcome.BLOCKED, GoalJudge.effectiveOutcome(GoalVerdict.Outcome.BLOCKED, keepImproving = true))
+        // A pass with no suggestion still tells the agent what to do.
+        val text = GoalJudge.continuation(GoalState("g", turns = 1, turnLimit = 5, keepImproving = true),
+            GoalVerdict(GoalVerdict.Outcome.IMPROVE, "Reached."))
+        assertEquals("Review the result yourself and improve its weakest part.", GoalJudge.checkpoint(text)?.next)
     }
 }

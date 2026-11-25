@@ -946,6 +946,20 @@ private fun ChatScreenContent(
     liveSession?.let { session ->
         LiveModeOverlay(session, onClose = viewModel::closeLive)
     }
+    state.goalSheetDraft?.let { draft ->
+        com.androidharness.app.ui.chat.components.GoalSheet(
+            goal = state.taskControl.goal,
+            draft = draft,
+            limits = state.taskControl.limits,
+            running = state.busy,
+            onStart = viewModel::startGoal,
+            onPause = viewModel::pauseGoal,
+            onResume = viewModel::resumeGoal,
+            onExtend = viewModel::extendGoal,
+            onClear = viewModel::clearGoal,
+            onDismiss = viewModel::dismissGoalSheet,
+        )
+    }
     val sideThread by viewModel.sideThread.collectAsStateWithLifecycle()
     sideThread?.takeIf { it.visible && it.sessionId == state.sessionId }?.let { thread ->
         com.androidharness.app.ui.chat.components.SideQuestionSheet(
@@ -2059,6 +2073,13 @@ private fun ChatScreenContent(
                                 indexedItem(key = "message-$messageKey-live", contentType = ChatListContentType.User) {
                                     LiveTranscriptCard(messageKey, message.text)
                                 }
+                            } else if (com.androidharness.app.agent.GoalJudge.checkpoint(message.text) != null ||
+                                com.androidharness.app.agent.GoalJudge.isResume(message.text)) {
+                                // Goal-loop turns read as one slim row, so a long goal does not flood the chat.
+                                if (message.turnId != null && message.turnId == latestUserTurnId) latestTurnStarted = true
+                                indexedItem(key = "message-$messageKey-goal", contentType = ChatListContentType.User) {
+                                    com.androidharness.app.ui.chat.components.GoalCheckpointRow(message.text)
+                                }
                             } else {
                                 if (message.turnId != null && message.turnId == latestUserTurnId) latestTurnStarted = true
                                 val userIndex = nextItemIndex
@@ -2077,11 +2098,13 @@ private fun ChatScreenContent(
                                         alpha = (0.3f + 0.7f * p).coerceIn(0f, 1f)
                                     }) {
                                         Column(horizontalAlignment = Alignment.End) {
+                                            val goalText = remember(message.text) { com.androidharness.app.agent.GoalJudge.kickoffGoal(message.text) }
                                             val (visibleText, fileChips) = FileAttachments.splitForDisplay(
-                                                slashSkillInstruction(UserMessageContent.visibleText(message.text))
+                                                goalText ?: slashSkillInstruction(UserMessageContent.visibleText(message.text))
                                                     ?.ifBlank { "/${slashInvokedSkillName(UserMessageContent.visibleText(message.text))}" }
                                                     ?: UserMessageContent.visibleText(message.text),
                                             )
+                                            if (goalText != null) com.androidharness.app.ui.chat.components.GoalBadge()
                                             slashInvokedSkillName(UserMessageContent.visibleText(message.text))?.let { skillName ->
                                                 SkillUsedBadge(skillName)
                                             }
@@ -2833,6 +2856,10 @@ private fun ChatScreenContent(
                     },
                     onTurnOff = { scope.launch { viewModel.container.settings.setRunTipsEnabled(false) } },
                 )
+                state.taskControl.goal?.takeIf { !suggestionsOpen }?.let { goal ->
+                    com.androidharness.app.ui.chat.components.GoalProgressPill(goal, running = state.busy,
+                        onClick = { viewModel.openGoalSheet() })
+                }
                 if (!suggestionsOpen) MessageQueueCard(
                     queue = state.taskControl.queue,
                     onEdit = viewModel::editQueued, onMove = viewModel::moveQueued,

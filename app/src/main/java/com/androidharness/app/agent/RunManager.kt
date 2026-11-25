@@ -1768,14 +1768,28 @@ class RunManager(
         val goal = controls.flow(sid).value.goal?.takeIf { it.checking } ?: return followUps.stop(sid)
         acquireKeepalive()
         val verdict = try {
-            Result.success(judgeGoal(sid, turnId, goal.text, config, apiKey, maxContextTokens))
+            Result.success(judgeGoal(sid, turnId, goal, config, apiKey, maxContextTokens))
         } catch (ce: CancellationException) { throw ce }
         catch (e: Exception) { Result.failure(e) }
         finally { releaseKeepalive() }
         kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
             if (!followUps.isCurrent(sid, runId)) return@withLock
-            val current = controls.flow(sid).value.goal
-            if (current == null || current.setAt != goal.setAt || !current.checking) return@withLock followUps.stop(sid)
+            val latest = controls.flow(sid).value.goal
+            if (latest == null || latest.setAt != goal.setAt) return@withLock followUps.stop(sid)
+            // Every check lands in the goal's history, even one that finishes after a pause.
+            // Keep improving spends every turn it was given: "reached" becomes another improvement
+            // pass, and the turn limit or budget ends it. Without it, "improve" counts as reached.
+            val outcome = verdict.getOrNull()?.outcome?.let { GoalJudge.effectiveOutcome(it, latest.keepImproving) }
+            val reached = outcome == GoalVerdict.Outcome.MET || outcome == GoalVerdict.Outcome.IMPROVE
+            val current = verdict.fold(
+                { latest.withCheck(GoalCheck(latest.turnsUsed, GoalCheck.Outcome.valueOf(outcome!!.name), it.reason, it.next), it.parts) },
+                { latest.withCheck(GoalCheck(latest.turnsUsed, GoalCheck.Outcome.FAILED, it.message ?: "no verdict"), emptyList()) },
+            ).let { if (reached && it.reachedAtTurn == null) it.copy(reachedAtTurn = latest.turnsUsed) else it }
+            if (!current.checking) {
+                controls.update(sid) { it.copy(goal = if (outcome == GoalVerdict.Outcome.MET)
+                    current.copy(status = GoalState.Status.MET, lastReason = verdict.getOrNull()?.reason) else current) }
+                return@withLock followUps.stop(sid)
+            }
             fun finish(status: GoalState.Status, reason: String, summary: String, ok: Boolean) {
                 controls.update(sid) { it.copy(goal = current.copy(status = status, lastReason = reason)) }
                 followUps.stop(sid)
@@ -1785,21 +1799,31 @@ class RunManager(
                 val reason = "Goal check failed: ${e.message ?: "no verdict"}. Send a message to try again."
                 stateOf(sid).update { it.copy(error = reason) }
                 return@withLock finish(GoalState.Status.ACTIVE, reason, reason, ok = false)
+            }.copy(outcome = outcome!!)
+            // A reached goal that was improving ends as reached, whatever stops it.
+            fun finishImproved(reason: String) {
+                val passes = current.turnsUsed - (current.reachedAtTurn ?: current.turnsUsed)
+                finish(GoalState.Status.MET, reason, if (passes > 0) "Goal reached, then improved over $passes more turns: $reason"
+                    else "Goal reached: $reason", ok = true)
             }
             when (judged.outcome) {
                 GoalVerdict.Outcome.MET -> finish(GoalState.Status.MET, judged.reason, "Goal reached: ${judged.reason}", ok = true)
                 GoalVerdict.Outcome.BLOCKED -> finish(GoalState.Status.BLOCKED, judged.reason, "Goal needs you: ${judged.reason}", ok = false)
-                GoalVerdict.Outcome.CONTINUE -> {
-                    if (current.turns >= current.turnLimit) return@withLock finish(GoalState.Status.LIMIT, judged.reason,
-                        "Goal stopped after ${current.turnLimit} turns: ${judged.reason}", ok = false)
+                GoalVerdict.Outcome.CONTINUE, GoalVerdict.Outcome.IMPROVE -> {
+                    if (current.turnsUsed >= current.turnLimit) return@withLock if (current.reachedAtTurn != null) finishImproved(judged.reason)
+                        else finish(GoalState.Status.LIMIT, judged.reason, "Goal stopped after ${current.turnLimit} turns: ${judged.reason}", ok = false)
                     val saved = controls.flow(sid).value
                     try {
                         TaskBudget(saved.limits, saved.usedTokens, saved.usedCost, saved.elapsedMs).check()
                         val next = current.copy(status = GoalState.Status.ACTIVE, turns = current.turns + 1, lastReason = judged.reason)
                         controls.update(sid) { it.copy(goal = next) }
+                        if (notify && current.notifyEachCheck) appScope.launch {
+                            notifyGoal(sid, true, "Goal check ${current.turnsUsed} of ${current.turnLimit}: ${judged.reason}")
+                        }
                         start(GoalJudge.continuation(next, judged))
                     } catch (ce: CancellationException) { throw ce }
                     catch (e: Exception) {
+                        if (current.reachedAtTurn != null) return@withLock finishImproved("Budget used up: ${e.message}")
                         val reason = "Goal paused: ${e.message}"
                         controls.update(sid) { it.copy(status = "paused", reason = reason) }
                         stateOf(sid).update { it.copy(error = reason) }
@@ -1818,13 +1842,14 @@ class RunManager(
     private suspend fun judgeGoal(
         sid: String,
         turnId: String,
-        goal: String,
+        goal: GoalState,
         config: ProviderConfig,
         apiKey: String,
         maxContextTokens: Int,
     ): GoalVerdict = kotlinx.coroutines.withContext(Dispatchers.IO) {
         val history = sessions.messages(sid)
-        val prompt = GoalJudge.prompt(goal, VerificationEvidence.collect(history))
+        val prompt = GoalJudge.prompt(goal.text, VerificationEvidence.collect(history), goal.checkCommand, goal.parts,
+            keepImproving = goal.keepImproving && goal.turnsUsed < goal.turnLimit)
         val warm = engine.sideContexts[sid]?.takeIf { it.warm && it.turnId == turnId }
         val (side, request) = if (warm != null) {
             warm to (GoalJudge.warmMessages(warm.messages, history.filter { it.turnId == turnId }) +
