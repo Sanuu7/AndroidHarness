@@ -24,12 +24,12 @@ class CustomModelRegistry(private val root: File) {
     }
         private set
 
-    fun add(model: LocalModelSpec) {
+    @Synchronized fun add(model: LocalModelSpec) {
         validate(model)
         save(models.filterNot { it.id == model.id } + model)
     }
 
-    fun remove(id: String) { save(models.filterNot { it.id == id }) }
+    @Synchronized fun remove(id: String) { save(models.filterNot { it.id == id }) }
 
     private fun save(next: List<LocalModelSpec>) {
         check(root.isDirectory || root.mkdirs()) { "Cannot create model storage." }

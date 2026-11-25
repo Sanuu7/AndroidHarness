@@ -22,14 +22,25 @@ interface GpuDelivery {
     fun cancel()
     fun confirm(activity: Activity)
     fun prepareForLoad() = Unit
+    /** Reads the install state again, for screens that come back to the foreground. */
+    fun refresh() = Unit
 }
 class GpuSupport(context: Context) {
     private val delivery = GpuDeliveryFactory.create(context.applicationContext)
     val state get() = delivery.state
-    private var loaded: String? = null
+    @Volatile private var loaded: String? = null
+    @Volatile private var loadedDevice: String? = null
     fun install() = delivery.install()
     fun cancel() = delivery.cancel()
+    fun refresh() = delivery.refresh()
     fun confirm(activity: Activity) = delivery.confirm(activity)
+
+    /** The GPU name from an earlier [device] call, while the same runtime is still installed. Needs no lock. */
+    internal fun cachedDevice(): String? {
+        val installed = state.value
+        if (installed.phase != GpuInstallPhase.READY) return ""
+        return loadedDevice?.takeIf { loaded != null && loaded == installed.libraryPath }
+    }
 
     // Called only while LocalModelManager owns its inference mutex. Never unload
     // a registered backend: its worker threads and function pointers can outlive a request.
@@ -42,6 +53,6 @@ class GpuSupport(context: Context) {
             check(LocalNative.loadBackend(path)) { "GPU backend could not load." }
             loaded = path
         }
-        return LocalNative.gpuDevice()
+        return LocalNative.gpuDevice().also { loadedDevice = it }
     }
 }

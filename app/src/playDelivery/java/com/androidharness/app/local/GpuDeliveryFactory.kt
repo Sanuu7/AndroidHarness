@@ -67,8 +67,19 @@ internal class PlayGpuDelivery(private val context: Context) : GpuDelivery {
         mutable.value = GpuInstallState(GpuInstallPhase.WAITING)
         cancelRequested = false
         manager.startInstall(SplitInstallRequest.newBuilder().addModule(MODULE).build())
-            .addOnSuccessListener { id -> sessionId = id; if (cancelRequested) manager.cancelInstall(id) }
+            // Play answers with session 0 and sends no updates when the module is already on the device.
+            .addOnSuccessListener { id -> sessionId = id; if (cancelRequested) manager.cancelInstall(id); if (id == 0) refresh() }
             .addOnFailureListener { fail(it.message) }
+    }
+    override fun refresh() {
+        if (!supported) return
+        if (MODULE in manager.installedModules) { if (state.value.phase != GpuInstallPhase.READY) installed(); return }
+        if (!state.value.busy) return
+        manager.sessionStates.addOnSuccessListener { sessions ->
+            val current = sessions.lastOrNull { MODULE in it.moduleNames() }
+            if (current != null) update(current)
+            else if (MODULE in manager.installedModules) installed()
+        }
     }
     override fun cancel() {
         cancelRequested = true

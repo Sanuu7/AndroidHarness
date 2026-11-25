@@ -15,7 +15,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import com.androidharness.app.BuildConfig
 import com.androidharness.app.R
 import com.androidharness.app.local.*
@@ -29,6 +31,10 @@ internal fun LocalGpuSupportCard(manager: LocalModelManager) {
     val uri = LocalUriHandler.current
     var device by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(state.phase) { device = if (state.phase == GpuInstallPhase.READY) manager.gpuDevice() else null }
+    // The install finishes in the background. Read it again when the screen returns and while it is busy,
+    // so the card never waits on an update it missed.
+    LifecycleResumeEffect(Unit) { manager.gpuSupport.refresh(); onPauseOrDispose { } }
+    LaunchedEffect(state.busy) { while (state.busy) { delay(2_000); manager.gpuSupport.refresh() } }
     val progress by animateFloatAsState(state.progress, label = "GPU download")
     Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
         Column(Modifier.fillMaxWidth().animateContentSize().padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

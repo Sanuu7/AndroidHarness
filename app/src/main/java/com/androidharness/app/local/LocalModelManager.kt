@@ -48,8 +48,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class LocalModelManager(private val context: Context) {
     val gpuSupport = GpuSupport(context)
+    // Screens ask for the GPU name often. Once the backend is loaded the answer is cached, so they never
+    // wait behind a running generation and never hold up an unload or a removal.
     suspend fun gpuDevice(): String = withContext(Dispatchers.IO) {
-        inference.withLock { runCatching { gpuSupport.device() }.getOrDefault("") }
+        gpuSupport.cachedDevice() ?: inference.withLock { runCatching { gpuSupport.device() }.getOrDefault("") }
     }
     suspend fun releaseCachedModel() = withContext(Dispatchers.IO) {
         inference.withLock {
@@ -62,6 +64,8 @@ class LocalModelManager(private val context: Context) {
     val loaded = _loaded.asStateFlow()
     suspend fun stopAndUnload(id: String) = withContext(Dispatchers.IO + NonCancellable) {
         stop(id)
+        // Nothing of this model is in memory, so there is no reason to wait for another model's work.
+        if (_loaded.value != id && running.value != id) { _status.update { it - id }; return@withContext }
         inference.withLock {
             if (Process.is64Bit() && LocalNative.isModelCached(store.file(id).absolutePath.toByteArray(Charsets.UTF_8))) {
                 LocalNative.releaseCachedModel()
@@ -94,7 +98,7 @@ class LocalModelManager(private val context: Context) {
     suspend fun resolveLink(link: String, format: LocalModelFormat = LocalModelFormat.GGUF) = withContext(Dispatchers.IO) { resolver.resolve(link, format) }
     suspend fun inspectCustom(model: LocalModelSpec) = withContext(Dispatchers.IO) { resolver.inspect(model) }
     suspend fun downloadCustom(model: LocalModelSpec) = withContext(Dispatchers.IO) {
-        lifecycle.withLock {
+        lockFor(model.id).withLock {
             // Once installed, never replace its spec with metadata from a later URL probe.
             if (find(model.id)?.let(store::installed) != true) {
                 custom.add(model)
@@ -104,7 +108,11 @@ class LocalModelManager(private val context: Context) {
         }
     }
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
-    private val lifecycle = Mutex()
+    // One network transfer or file import at a time, because they share the cancellation state below.
+    private val transfers = Mutex()
+    // Guards the files and settings of one model. Removing a model only waits for work on that model.
+    private val modelLocks = java.util.concurrent.ConcurrentHashMap<String, Mutex>()
+    private fun lockFor(id: String) = modelLocks.getOrPut(id) { Mutex() }
     private val inference = Mutex()
     private val gate = Any()
     private val cancelled = AtomicBoolean(false)
@@ -123,7 +131,7 @@ class LocalModelManager(private val context: Context) {
 
     init {
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO).launch {
-            lifecycle.withLock {
+            transfers.withLock {
                 models.value.forEach { model ->
                     runCatching {
                         store.discardStale(model)
@@ -159,11 +167,11 @@ class LocalModelManager(private val context: Context) {
     }
 
     suspend fun saveLimits(id: String, limits: LocalModelLimits) = withContext(Dispatchers.IO) {
-        lifecycle.withLock {
+        limits.validate()
+        confirmResources(requireNotNull(find(id)), limits)
+        lockFor(id).withLock {
             val model = requireNotNull(find(id))
             check(store.installed(model)) { "Model was removed." }
-            limits.validate()
-            confirmResources(model, limits)
             val target = android.util.AtomicFile(File(root, "$id.json"))
             val output = target.startWrite()
             try {
@@ -187,7 +195,7 @@ class LocalModelManager(private val context: Context) {
 
     internal suspend fun install(id: String, stopped: () -> Boolean, progress: suspend (Long, Long) -> Unit) =
         withContext(Dispatchers.IO) {
-            lifecycle.withLock {
+            transfers.withLock { lockFor(id).withLock {
                 val model = requireNotNull(find(id))
                 if (store.installed(model)) { publishInstalled(); return@withLock }
                 if (model.format == LocalModelFormat.SAFETENSORS) {
@@ -221,7 +229,7 @@ class LocalModelManager(private val context: Context) {
                 } finally {
                     synchronized(gate) { if (activeId == id) { downloadCall = null; activeId = null } }
                 }
-            }
+            } }
         }
 
     /**
@@ -346,26 +354,27 @@ class LocalModelManager(private val context: Context) {
         val model = requireNotNull(find(id))
         require(model.custom) { "Add a custom vision model first." }
         confirmResources(model.copy(projector = asset), limits(id), downloading = true)
-        lifecycle.withLock {
-            inference.withLock {
-                check(store.installed(model)) { "Install the model before adding a projector." }
-                synchronized(gate) { blocked.remove(id); cancelled.set(false) }
-                val temporary = File(root, "${store.projectorFile(id).name}.part")
-                try {
-                    setStatus(id, "Downloading vision projector")
-                    transferAsset(id, asset, temporary, { false }) {}
-                    temporary.inputStream().use { GgufMetadata.inspect(readPrefix(it, GgufMetadata.PROBE_BYTES)) }
+        transfers.withLock { lockFor(id).withLock {
+            check(store.installed(model)) { "Install the model before adding a projector." }
+            synchronized(gate) { blocked.remove(id); cancelled.set(false) }
+            val temporary = File(root, "${store.projectorFile(id).name}.part")
+            try {
+                setStatus(id, "Downloading vision projector")
+                transferAsset(id, asset, temporary, { false }) {}
+                temporary.inputStream().use { GgufMetadata.inspect(readPrefix(it, GgufMetadata.PROBE_BYTES)) }
+                // Only swapping the file in needs the model to be idle; the download above does not.
+                inference.withLock {
                     check(temporary.renameTo(store.projectorFile(id))) { "Could not finalize projector download." }
                     custom.add(model.copy(projector = asset)); _models.value = catalogModels()
-                    publishInstalled(); setStatus(id, "Vision projector installed")
-                } finally { temporary.delete(); synchronized(gate) { activeId = null; downloadCall = null } }
-            }
-        }
+                }
+                publishInstalled(); setStatus(id, "Vision projector installed")
+            } finally { temporary.delete(); synchronized(gate) { activeId = null; downloadCall = null } }
+        } }
     }
 
     /** Copy a file/folder into app storage; the source and its permissions are not retained. */
     suspend fun importFromFiles(uri: Uri, format: LocalModelFormat, progress: (String) -> Unit): LocalModelSpec = withContext(Dispatchers.IO) {
-        lifecycle.withLock {
+        transfers.withLock {
             val documents = LocalModelDocuments(context.contentResolver)
             val files = if (format == LocalModelFormat.GGUF) listOf(documents.file(uri)) else documents.folder(uri)
             if (format == LocalModelFormat.GGUF) require(files.single().name.endsWith(".gguf", true) &&
@@ -463,24 +472,33 @@ class LocalModelManager(private val context: Context) {
         cancelDownload(id)
         stop(id)
         setStatus(id, "Stopping and removing")
-        lifecycle.withLock {
-            inference.withLock {
-                try {
+        lockFor(id).withLock {
+            // cancelDownload blocked this model, so a chat queued for it fails its install check instead of
+            // loading it. When it is not in memory there is no reason to wait for another model's work.
+            if (_loaded.value != id && running.value != id) deleteModel(id)
+            else inference.withLock {
+                if (Process.is64Bit() && LocalNative.isModelCached(store.file(id).absolutePath.toByteArray(Charsets.UTF_8))) {
                     LocalNative.releaseCachedModel()
                     _loaded.value = null
-                    store.remove(id)
-                    if (find(id)?.custom == true) {
-                        custom.remove(id)
-                        _models.value = catalogModels()
-                    }
-                    publishInstalled()
-                    setStatus(id, "Removed")
-                } catch (e: Exception) {
-                    publishInstalled()
-                    setStatus(id, e.message ?: "Removal failed")
-                    throw e
                 }
+                deleteModel(id)
             }
+        }
+    }
+
+    private fun deleteModel(id: String) {
+        try {
+            store.remove(id)
+            if (find(id)?.custom == true) {
+                custom.remove(id)
+                _models.value = catalogModels()
+            }
+            publishInstalled()
+            setStatus(id, "Removed")
+        } catch (e: Exception) {
+            publishInstalled()
+            setStatus(id, e.message ?: "Removal failed")
+            throw e
         }
     }
 
@@ -491,11 +509,12 @@ class LocalModelManager(private val context: Context) {
     }
 
     suspend fun load(id: String) = withContext(Dispatchers.IO) {
+        val model = requireNotNull(find(id)) { "Unknown local model." }
+        val limits = limits(id)
+        limits.validate()
+        // Ask before taking the lock, so an open warning never blocks an unload or another chat.
+        confirmResources(model, limits)
         inference.withLock {
-            val model = requireNotNull(find(id)) { "Unknown local model." }
-            val limits = limits(id)
-            limits.validate()
-            confirmResources(model, limits)
             val experimental = com.androidharness.app.data.SettingsRepository(context).settings.first().localModelExperimental
             val useGpu = LocalAccelerationPolicy.useGpu(experimental, limits.backend,
                 experimental && limits.backend != LocalBackend.CPU && runCatching { gpuSupport.device().isNotBlank() }.getOrDefault(false))
@@ -532,11 +551,11 @@ class LocalModelManager(private val context: Context) {
     }
 
     suspend fun benchmark(id: String, mode: LocalBenchmarkMode, onUpdate: (LocalBenchmarkProgress) -> Unit) = withContext(Dispatchers.IO) {
+        val model = requireNotNull(find(id)) { "Unknown local model." }
+        val limits = limits(id)
+        limits.validate()
+        confirmResources(model, limits)
         inference.withLock {
-            val model = requireNotNull(find(id)) { "Unknown local model." }
-            val limits = limits(id)
-            limits.validate()
-            confirmResources(model, limits)
             val counts = localBenchmarkThreadCounts(device().cores, limits.threads, limits.promptThreads ?: limits.threads)
             val backends = when (mode) {
                 LocalBenchmarkMode.CPU -> listOf(LocalBackend.CPU)
@@ -634,17 +653,24 @@ class LocalModelManager(private val context: Context) {
     suspend fun generate(
         id: String, roles: Array<String>, contents: Array<ByteArray>, outputCap: Int,
         emitBytes: suspend (ByteArray) -> Unit,
-    ): IntArray = inference.withLock {
+    ): IntArray {
         val model = requireNotNull(find(id)) { "Unknown local model." }
         val limits = withContext(Dispatchers.IO) { limits(id) }
         limits.validate()
         confirmResources(model, limits)
+        return inference.withLock { generateLocked(id, model, limits, roles, contents, outputCap, emitBytes) }
+    }
+
+    private suspend fun generateLocked(
+        id: String, model: LocalModelSpec, limits: LocalModelLimits, roles: Array<String>, contents: Array<ByteArray>, outputCap: Int,
+        emitBytes: suspend (ByteArray) -> Unit,
+    ): IntArray {
         synchronized(gate) {
             check(id !in blocked && store.installed(model)) { "Local model is not installed. Download it in Settings > Local models." }
             handle = LocalNative.create()
             _running.value = id
         }
-        try {
+        return try {
             coroutineScope {
                 val bytes = Channel<ByteArray>(32)
                 var result: IntArray? = null
@@ -681,11 +707,18 @@ class LocalModelManager(private val context: Context) {
     suspend fun generateChat(
         id: String, request: ByteArray, images: Array<ByteArray>, outputCap: Int, cacheKey: String? = null,
         emitBytes: suspend (ByteArray) -> Unit,
-    ): kotlinx.serialization.json.JsonObject = inference.withLock {
+    ): kotlinx.serialization.json.JsonObject {
         val model = requireNotNull(find(id)) { "Unknown local model." }
         val limits = withContext(Dispatchers.IO) { limits(id) }
         limits.validate()
         confirmResources(model, limits)
+        return inference.withLock { generateChatLocked(id, model, limits, request, images, outputCap, cacheKey, emitBytes) }
+    }
+
+    private suspend fun generateChatLocked(
+        id: String, model: LocalModelSpec, limits: LocalModelLimits, request: ByteArray, images: Array<ByteArray>, outputCap: Int,
+        cacheKey: String?, emitBytes: suspend (ByteArray) -> Unit,
+    ): kotlinx.serialization.json.JsonObject {
         val experimental = com.androidharness.app.data.SettingsRepository(context).settings.first().localModelExperimental
         val gpu = withContext(Dispatchers.IO) {
             LocalAccelerationPolicy.useGpu(experimental, limits.backend,
@@ -696,7 +729,7 @@ class LocalModelManager(private val context: Context) {
             handle = LocalNative.create()
             _running.value = id
         }
-        try {
+        return try {
             coroutineScope {
                 val bytes = Channel<ByteArray>(32)
                 var result: ByteArray? = null
