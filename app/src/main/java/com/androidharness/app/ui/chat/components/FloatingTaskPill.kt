@@ -235,7 +235,7 @@ internal fun FloatingTaskDock(sessionKey: String?, todos: List<TodoItem>) {
                     }
                 }
             }
-            FloatingPanelPopup(expanded && popupVisibility.targetState, placement, deckPanelWidth(), panelHeight,
+            FloatingPanelPopup(expanded && popupVisibility.targetState, placement, taskPanelWidth(), panelHeight,
                 dismissOnClickOutside = pinned, onDismiss = { dismissedAt = now(); pinned = false; peeking = false }) { open ->
                 CompositionLocalProvider(LocalDensity provides density) {
                     FloatingTaskPill(
@@ -260,14 +260,20 @@ internal fun FloatingTaskDock(sessionKey: String?, todos: List<TodoItem>) {
 private fun taskPillSize(labels: List<String>): IntSize {
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
-    val style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+    val style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium)
     val widest = labels.maxOf { measurer.measure(AnnotatedString(it), style = style, maxLines = 1).size.width }
-    val maxWidth = (LocalConfiguration.current.screenWidthDp.dp - 32.dp - 74.dp).coerceIn(120.dp, 200.dp)
+    val maxWidth = (LocalConfiguration.current.screenWidthDp.dp - 32.dp - 57.dp).coerceIn(100.dp, 160.dp)
     return with(density) {
         val textWidth = widest.coerceAtMost(maxWidth.roundToPx())
-        IntSize(6.dp.roundToPx() + 40.dp.roundToPx() + 10.dp.roundToPx() + textWidth + 18.dp.roundToPx(), 52.dp.roundToPx())
+        IntSize(5.dp.roundToPx() + RING.roundToPx() + 8.dp.roundToPx() + textWidth + 14.dp.roundToPx(), 40.dp.roundToPx())
     }
 }
+
+/** The open task list is a little narrower than the subagent panel, so it covers less of the chat. */
+@Composable
+private fun taskPanelWidth(): Dp = (LocalConfiguration.current.screenWidthDp.dp - 32.dp).coerceIn(0.dp, 280.dp)
+
+private val RING = 30.dp
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -298,12 +304,13 @@ internal fun FloatingTaskPill(
     val done = todos.count { it.status == TodoItem.Status.COMPLETED }
     val allDone = done == todos.size
     val summary = stringResource(R.string.ui_of_completed, done.toString(), todos.size.toString())
+    val headerSummary = stringResource(R.string.task_list_header_count, done, todos.size)
     val progress by animateFloatAsState(done.toFloat() / todos.size, expressiveSpatialSpec(), label = "Task ring progress")
     val dragStart by rememberUpdatedState(onDragStart)
     val dragMove by rememberUpdatedState(onDrag)
     val dragEnd by rememberUpdatedState(onDragEnd)
     val touchList by rememberUpdatedState(onTouchList)
-    val width = deckPanelWidth()
+    val width = taskPanelWidth()
     val sizeSpec = spring<IntSize>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
 
     val panel: @Composable () -> Unit = {
@@ -315,25 +322,24 @@ internal fun FloatingTaskPill(
             exit = shrinkVertically(tween(160, easing = FastOutLinearInEasing), shrinkTowards = anchor) + fadeOut(tween(140)) +
                 scaleOut(tween(160, easing = FastOutLinearInEasing), targetScale = .92f, transformOrigin = origin)) {
             Column(horizontalAlignment = AbsoluteAlignment.Right) {
-                if (!panelAbove) Spacer(Modifier.height(12.dp))
+                if (!panelAbove) Spacer(Modifier.height(8.dp))
                 Surface(Modifier.width(width).heightIn(max = maxPanelHeight)
                     // Any touch on the open list keeps it open; the pill closes it.
                     .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false); touchList() } },
-                    shape = RoundedCornerShape(24.dp), color = scheme.surfaceContainerHigh, shadowElevation = 9.dp) {
-                    Column(Modifier.verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, top = 6.dp, bottom = 10.dp)) {
-                        Row(Modifier.fillMaxWidth().heightIn(min = 46.dp).padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) {
-                                Text(stringResource(R.string.ui_task_list), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-                                AnimatedContent(summary, label = "Task summary", transitionSpec = {
-                                    (slideInVertically(expressiveDefaultSpatialSpec()) { it / 2 } + fadeIn(expressiveEffectsSpec())) togetherWith
-                                        (slideOutVertically(expressiveEffectsSpec()) { -it / 2 } + fadeOut(tween(90)))
-                                }) { text -> Text(text, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant) }
-                            }
-                            IconButton(onClick = onToggle, modifier = Modifier.size(44.dp)) {
-                                Icon(Icons.Default.Remove, stringResource(R.string.ui_collapse_task_list), Modifier.size(19.dp), tint = scheme.onSurfaceVariant)
+                    shape = RoundedCornerShape(20.dp), color = scheme.surfaceContainerHigh, shadowElevation = 9.dp) {
+                    Column(Modifier.verticalScroll(rememberScrollState()).padding(start = 6.dp, end = 6.dp, top = 2.dp, bottom = 6.dp)) {
+                        // One line of header: the title and the count, then the collapse button.
+                        Row(Modifier.fillMaxWidth().heightIn(min = 36.dp).padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            AnimatedContent(headerSummary, Modifier.weight(1f), label = "Task summary", transitionSpec = {
+                                (slideInVertically(expressiveDefaultSpatialSpec()) { it / 2 } + fadeIn(expressiveEffectsSpec())) togetherWith
+                                    (slideOutVertically(expressiveEffectsSpec()) { -it / 2 } + fadeOut(tween(90)))
+                            }) { text -> Text(text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium,
+                                color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                            IconButton(onClick = onToggle, modifier = Modifier.size(32.dp)) {
+                                Icon(Icons.Default.Remove, stringResource(R.string.ui_collapse_task_list), Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                             }
                         }
-                        Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Column(Modifier.padding(top = 2.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             todos.forEachIndexed { index, todo ->
                                 key(index, todo.content) {
                                     TaskRow(todo, index, first = index == 0, last = index == todos.lastIndex,
@@ -343,7 +349,7 @@ internal fun FloatingTaskPill(
                         }
                     }
                 }
-                if (panelAbove) Spacer(Modifier.height(12.dp))
+                if (panelAbove) Spacer(Modifier.height(8.dp))
             }
         }
     }
@@ -357,7 +363,7 @@ internal fun FloatingTaskPill(
         // Squish on press, rise while dragged, square off a little while open.
         val scale = animateFloatAsState(when { lifted -> 1.08f; pressed -> .93f; else -> 1f }, expressiveSpatialSpec(), label = "Task pill scale")
         // The curve settles without overshoot; a bouncy corner reads as the pill wobbling.
-        val corner by animateDpAsState(if (expanded) 18.dp else 26.dp,
+        val corner by animateDpAsState(if (expanded) 14.dp else 20.dp,
             spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow), label = "Task pill corner")
         val elevation by animateDpAsState(if (lifted) 10.dp else 3.dp, expressiveEffectsSpec(), label = "Task pill elevation")
         val edge by animateColorAsState(if (expanded) scheme.primary.copy(alpha = .8f) else scheme.outline.copy(alpha = .45f),
@@ -377,15 +383,15 @@ internal fun FloatingTaskPill(
             Surface(Modifier.fillMaxSize().graphicsLayer { scaleX = scale.value; scaleY = scale.value }
                 .border(1.dp, edge, shape),
                 shape = shape, color = scheme.surfaceContainerHighest, shadowElevation = elevation) {
-                Row(Modifier.padding(start = 6.dp, end = 18.dp), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.padding(start = 5.dp, end = 14.dp), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TaskRing(progress, done, todos.size, allDone, finishedTask, bump)
                     AnimatedContent(label, Modifier.weight(1f), label = "Task pill label", transitionSpec = {
                         (slideInVertically(expressiveDefaultSpatialSpec()) { it } + fadeIn(expressiveEffectsSpec())) togetherWith
                             (slideOutVertically(expressiveEffectsSpec()) { -it } + fadeOut(tween(90))) using
                             SizeTransform(clip = true) { _, _ -> sizeSpec }
                     }) { text ->
-                        Text(text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium,
+                        Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium,
                             color = if (allDone || finishedTask) success else scheme.onSurface,
                             maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
@@ -440,32 +446,32 @@ private fun TaskRing(progress: Float, done: Int, total: Int, allDone: Boolean, j
     }
     val face = when { allDone && !justFinished -> RingFace.ALL_DONE; justFinished -> RingFace.JUST_FINISHED; else -> RingFace.PROGRESS }
     val accent = if (justFinished || allDone) success else scheme.primary
-    Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(RING), contentAlignment = Alignment.Center) {
         // A ring of color that rises out of the dial and fades on every update.
-        Box(Modifier.size(40.dp).graphicsLayer {
+        Box(Modifier.size(RING).graphicsLayer {
             val p = burst.value
             val grow = 1f + .55f * p
             scaleX = grow; scaleY = grow
             alpha = if (p >= 1f) 0f else (1f - p) * .6f
         }.border(2.dp, accent, CircleShape))
-        Box(Modifier.size(40.dp).graphicsLayer { scaleX = bounce.value; scaleY = bounce.value }, contentAlignment = Alignment.Center) {
+        Box(Modifier.size(RING).graphicsLayer { scaleX = bounce.value; scaleY = bounce.value }, contentAlignment = Alignment.Center) {
             AnimatedContent(face, label = "Task ring", transitionSpec = {
                 (scaleIn(expressiveSpatialSpec(), initialScale = .3f) + fadeIn(expressiveEffectsSpec())) togetherWith
                     (scaleOut(tween(140), targetScale = .6f) + fadeOut(tween(120)))
             }) { state ->
                 when (state) {
-                    RingFace.ALL_DONE -> Box(Modifier.size(40.dp).background(success, MaterialShapes.Cookie9Sided.toShape()),
+                    RingFace.ALL_DONE -> Box(Modifier.size(RING).background(success, MaterialShapes.Cookie9Sided.toShape()),
                         contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.Check, null, Modifier.size(20.dp), tint = scheme.surface)
+                        Icon(Icons.Filled.Check, null, Modifier.size(15.dp), tint = scheme.surface)
                     }
-                    RingFace.JUST_FINISHED -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                    RingFace.JUST_FINISHED -> Box(Modifier.size(RING), contentAlignment = Alignment.Center) {
                         CircularWavyProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxSize(),
                             color = success, trackColor = scheme.surfaceContainerLow)
-                        Box(Modifier.size(26.dp).background(success, CircleShape), contentAlignment = Alignment.Center) {
-                            Icon(Icons.Filled.Check, null, Modifier.size(16.dp), tint = scheme.surface)
+                        Box(Modifier.size(20.dp).background(success, CircleShape), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Filled.Check, null, Modifier.size(12.dp), tint = scheme.surface)
                         }
                     }
-                    RingFace.PROGRESS -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                    RingFace.PROGRESS -> Box(Modifier.size(RING), contentAlignment = Alignment.Center) {
                         CircularWavyProgressIndicator(progress = { progress },
                             modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = twist.value },
                             color = scheme.primary, trackColor = scheme.surfaceContainerLow)
@@ -473,7 +479,7 @@ private fun TaskRing(progress: Float, done: Int, total: Int, allDone: Boolean, j
                             (slideInVertically(expressiveDefaultSpatialSpec()) { it } + fadeIn(expressiveEffectsSpec())) togetherWith
                                 (slideOutVertically(expressiveEffectsSpec()) { -it } + fadeOut(tween(90)))
                         }) { count ->
-                            Text("$count/$total", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold,
+                            Text("$count/$total", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, lineHeight = 10.sp), fontWeight = FontWeight.SemiBold,
                                 color = scheme.onSurface, maxLines = 1)
                         }
                     }
@@ -514,7 +520,7 @@ private fun TaskRow(todo: TodoItem, index: Int, first: Boolean, last: Boolean, c
     val lift = with(LocalDensity.current) { 14.dp.toPx() }
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxWidth()
             .graphicsLayer {
                 val p = rise.value
@@ -523,27 +529,27 @@ private fun TaskRow(todo: TodoItem, index: Int, first: Boolean, last: Boolean, c
                 scaleX = pop.value * (.94f + .06f * p)
                 scaleY = pop.value * (.94f + .06f * p)
             }
-            .clip(RoundedCornerShape(topStart = if (first) 18.dp else 6.dp, topEnd = if (first) 18.dp else 6.dp,
-                bottomStart = if (last) 18.dp else 6.dp, bottomEnd = if (last) 18.dp else 6.dp))
+            .clip(RoundedCornerShape(topStart = if (first) 14.dp else 5.dp, topEnd = if (first) 14.dp else 5.dp,
+                bottomStart = if (last) 14.dp else 5.dp, bottomEnd = if (last) 14.dp else 5.dp))
             .background(glow.value)
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
             .semantics(mergeDescendants = true) { stateDescription = status },
     ) {
-        Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(18.dp), contentAlignment = Alignment.Center) {
             AnimatedContent(todo.status, label = "Task status", transitionSpec = {
                 (scaleIn(expressiveSpatialSpec(), initialScale = .3f) + fadeIn(expressiveEffectsSpec())) togetherWith
                     (scaleOut(tween(120), targetScale = .5f) + fadeOut(tween(100)))
             }) { state ->
                 when (state) {
-                    TodoItem.Status.COMPLETED -> Box(Modifier.size(22.dp).background(success, CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.Check, null, Modifier.size(14.dp), tint = scheme.surface)
+                    TodoItem.Status.COMPLETED -> Box(Modifier.size(18.dp).background(success, CircleShape), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Filled.Check, null, Modifier.size(12.dp), tint = scheme.surface)
                     }
-                    TodoItem.Status.IN_PROGRESS -> MorphingStatusBadge(WorkState.Running, Icons.Outlined.PlayArrow, size = 22.dp, showOutcome = false)
-                    TodoItem.Status.PENDING -> Box(Modifier.size(22.dp).border(2.dp, scheme.outlineVariant, CircleShape))
+                    TodoItem.Status.IN_PROGRESS -> MorphingStatusBadge(WorkState.Running, Icons.Outlined.PlayArrow, size = 18.dp, showOutcome = false)
+                    TodoItem.Status.PENDING -> Box(Modifier.size(18.dp).border(1.5.dp, scheme.outlineVariant, CircleShape))
                 }
             }
         }
-        Text(todo.content, style = MaterialTheme.typography.bodyMedium,
+        Text(todo.content, style = MaterialTheme.typography.bodySmall,
             fontWeight = if (todo.status == TodoItem.Status.IN_PROGRESS) FontWeight.Medium else FontWeight.Normal,
             textDecoration = if (todo.status == TodoItem.Status.COMPLETED) TextDecoration.LineThrough else null,
             color = when (todo.status) {
