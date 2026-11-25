@@ -45,6 +45,7 @@
     <string name="ws_desc_serpapi">"Hasil Google dengan tanggal dan data kaya. Pencarian gratis setiap bulan."</string>
     <string name="ws_desc_tavily">"Dibuat untuk agen dan dapat mengembalikan teks halaman penuh. 1.000 kredit gratis per bulan."</string>
     <string name="ws_desc_linkup">"Pencarian agen dengan kutipan halaman yang bersih. Kredit gratis setiap bulan."</string>
+    <string name="ws_desc_exa">"Mencari berdasarkan makna, bukan kata kunci, dan bisa mengembalikan teks halaman penuh. Kredit awal gratis."</string>
     <string name="ws_desc_langsearch">"API pencarian web gratis untuk aplikasi AI."</string>
     <string name="ws_desc_jina">"Mencari dan membaca halaman dalam satu panggilan. 10 juta token gratis per kunci baru."</string>
     <string name="ws_desc_firecrawl">"Pencarian dari platform pengikisan Firecrawl. Kredit awal gratis."</string>

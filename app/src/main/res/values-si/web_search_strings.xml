@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">"දින සහ සමෘද්ධ දත්ත සහිත Google ප්‍රතිඵල. සෑම මාසයකම නොමිලේ සෙවුම්."</string>
     <string name="ws_desc_tavily">"නියෝජිතයන් සඳහා නිර්මිතයි, සම්පූර්ණ පිටු පෙළ ලබා දිය හැක. මාසිකව නොමිලේ ක්‍රෙඩිට් 1,000."</string>
     <string name="ws_desc_linkup">"පිරිසිදු පිටු උපුටා දැක්වීම් සහිත නියෝජිත සෙවුම. සෑම මාසයකම නොමිලේ ක්‍රෙඩිට්."</string>
+    <string name="ws_desc_exa">"මූලපද වෙනුවට අර්ථය අනුව සොයයි, සහ සම්පූර්ණ පිටු පෙළ ලබා දිය හැක. නොමිලේ ආරම්භක ක්‍රෙඩිට්."</string>
     <string name="ws_desc_langsearch">"AI යෙදුම් සඳහා නොමිලේ වෙබ් සෙවුම් API."</string>
     <string name="ws_desc_jina">"එක් ඇමතුමකින් සොයයි සහ පිටු කියවයි. සෑම නව යතුරකටම නොමිලේ ටෝකන් මිලියන 10."</string>
     <string name="ws_desc_firecrawl">"Firecrawl ස්ක්‍රැපින් වේදිකාවෙන් සෙවුම. නොමිලේ ආරම්භක ක්‍රෙඩිට්."</string>

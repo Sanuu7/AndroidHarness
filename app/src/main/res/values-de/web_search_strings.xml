@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">"Google-Ergebnisse mit Datum und vielen Daten. Jeden Monat kostenlose Suchen."</string>
     <string name="ws_desc_tavily">"Für Agenten gemacht und liefert vollständigen Seitentext. 1.000 Gratisguthaben pro Monat."</string>
     <string name="ws_desc_linkup">"Agentensuche mit sauberen Seitenauszügen. Jeden Monat Gratisguthaben."</string>
+    <string name="ws_desc_exa">"Sucht nach Bedeutung statt nach Stichwörtern und kann den vollen Seitentext liefern. Kostenlose Startguthaben."</string>
     <string name="ws_desc_langsearch">"Kostenlose Websuche-API für KI-Apps."</string>
     <string name="ws_desc_jina">"Sucht und liest Seiten in einem Aufruf. 10 Mio. Gratis-Token pro neuem Schlüssel."</string>
     <string name="ws_desc_firecrawl">"Suche von der Firecrawl-Scraping-Plattform. Kostenloses Startguthaben."</string>

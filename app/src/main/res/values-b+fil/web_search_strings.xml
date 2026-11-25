@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">"Resulta ng Google na may petsa at mayamang data. May libreng paghahanap bawat buwan."</string>
     <string name="ws_desc_tavily">"Ginawa para sa mga agent at kayang ibalik ang buong teksto ng pahina. 1,000 libreng credit bawat buwan."</string>
     <string name="ws_desc_linkup">"Paghahanap para sa agent na may malinis na sipi ng pahina. May libreng credit bawat buwan."</string>
+    <string name="ws_desc_exa">"Naghahanap ayon sa kahulugan sa halip na keyword, at maaaring ibalik ang buong teksto ng pahina. Libreng starter credits."</string>
     <string name="ws_desc_langsearch">"Libreng web search API para sa mga AI app."</string>
     <string name="ws_desc_jina">"Naghahanap at nagbabasa ng pahina sa isang tawag. 10 milyong libreng token sa bawat bagong key."</string>
     <string name="ws_desc_firecrawl">"Paghahanap mula sa Firecrawl scraping platform. May libreng starter credit."</string>

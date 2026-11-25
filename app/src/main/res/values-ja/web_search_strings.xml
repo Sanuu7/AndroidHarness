@@ -45,6 +45,7 @@
     <string name="ws_desc_serpapi">"日付や豊富なデータ付きの Google 検索結果。毎月無料検索あり。"</string>
     <string name="ws_desc_tavily">"エージェント向けで、ページ全文を返せます。毎月1,000クレジット無料。"</string>
     <string name="ws_desc_linkup">"きれいなページ抜粋付きのエージェント検索。毎月無料クレジットあり。"</string>
+    <string name="ws_desc_exa">"キーワードではなく意味で検索し、ページ全文も返せます。無料のスタータークレジット付き。"</string>
     <string name="ws_desc_langsearch">"AIアプリ向けの無料ウェブ検索API。"</string>
     <string name="ws_desc_jina">"1回の呼び出しで検索とページ読み取りを行います。新しいキーごとに1,000万トークン無料。"</string>
     <string name="ws_desc_firecrawl">"Firecrawl スクレイピングプラットフォームの検索。無料のスタータークレジット付き。"</string>

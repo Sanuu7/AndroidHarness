@@ -45,6 +45,7 @@
     <string name="ws_desc_serpapi">"带日期和丰富数据的 Google 结果。每月有免费搜索次数。"</string>
     <string name="ws_desc_tavily">"为智能体打造，可返回完整网页文本。每月 1,000 免费积分。"</string>
     <string name="ws_desc_linkup">"带干净网页摘录的智能体搜索。每月有免费额度。"</string>
+    <string name="ws_desc_exa">"按语义而非关键词搜索，并可返回整页文本。赠送免费试用额度。"</string>
     <string name="ws_desc_langsearch">"为 AI 应用打造的免费网络搜索 API。"</string>
     <string name="ws_desc_jina">"一次调用即可搜索并阅读网页。每个新密钥赠送 1000 万免费 token。"</string>
     <string name="ws_desc_firecrawl">"来自 Firecrawl 抓取平台的搜索。赠送免费入门额度。"</string>

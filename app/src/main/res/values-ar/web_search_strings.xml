@@ -65,6 +65,7 @@
     <string name="ws_desc_serpapi">"نتائج Google مع التواريخ وبيانات غنية. عمليات بحث مجانية كل شهر."</string>
     <string name="ws_desc_tavily">"مصمّم للوكلاء ويعيد نص الصفحات كاملًا. 1,000 رصيد مجاني شهريًا."</string>
     <string name="ws_desc_linkup">"بحث للوكلاء مع مقتطفات صفحات نظيفة. رصيد مجاني كل شهر."</string>
+    <string name="ws_desc_exa">"يبحث بالمعنى بدلًا من الكلمات المفتاحية، ويمكنه إرجاع نص الصفحة كاملًا. أرصدة بداية مجانية."</string>
     <string name="ws_desc_langsearch">"واجهة بحث ويب مجانية مصمّمة لتطبيقات الذكاء الاصطناعي."</string>
     <string name="ws_desc_jina">"يبحث ويقرأ الصفحات في استدعاء واحد. 10 ملايين رمز مجاني لكل مفتاح جديد."</string>
     <string name="ws_desc_firecrawl">"بحث من منصة الاستخراج Firecrawl. رصيد بداية مجاني."</string>

@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">"Tarih ve zengin verilerle Google sonuçları. Her ay ücretsiz aramalar."</string>
     <string name="ws_desc_tavily">"Ajanlar için tasarlandı ve tam sayfa metni döndürebilir. Ayda 1.000 ücretsiz kredi."</string>
     <string name="ws_desc_linkup">"Temiz sayfa alıntılarıyla ajan araması. Her ay ücretsiz kredi."</string>
+    <string name="ws_desc_exa">"Anahtar kelime yerine anlama göre arar ve sayfanın tam metnini döndürebilir. Ücretsiz başlangıç kredisi."</string>
     <string name="ws_desc_langsearch">"Yapay zekâ uygulamaları için ücretsiz web arama API'si."</string>
     <string name="ws_desc_jina">"Tek çağrıda arar ve sayfaları okur. Her yeni anahtar için 10 milyon ücretsiz token."</string>
     <string name="ws_desc_firecrawl">"Firecrawl kazıma platformundan arama. Ücretsiz başlangıç kredisi."</string>

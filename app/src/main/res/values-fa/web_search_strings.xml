@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">"نتایج Google با تاریخ و داده غنی. هر ماه جستجوهای رایگان."</string>
     <string name="ws_desc_tavily">"برای عامل‌ها ساخته شده و متن کامل صفحه را برمی‌گرداند. ماهانه 1,000 اعتبار رایگان."</string>
     <string name="ws_desc_linkup">"جستجوی عامل با عصاره‌های تمیز صفحه. هر ماه اعتبار رایگان."</string>
+    <string name="ws_desc_exa">"به‌جای کلیدواژه بر اساس معنا جستجو می‌کند و می‌تواند متن کامل صفحه را برگرداند. اعتبار شروع رایگان."</string>
     <string name="ws_desc_langsearch">"API جستجوی وب رایگان برای برنامه‌های هوش مصنوعی."</string>
     <string name="ws_desc_jina">"در یک فراخوان جستجو می‌کند و صفحه‌ها را می‌خواند. 10 میلیون توکن رایگان برای هر کلید جدید."</string>
     <string name="ws_desc_firecrawl">"جستجو از پلتفرم استخراج Firecrawl. اعتبار شروع رایگان."</string>

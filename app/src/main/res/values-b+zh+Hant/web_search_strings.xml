@@ -45,6 +45,7 @@
     <string name="ws_desc_serpapi">"附日期與豐富資料的 Google 結果。每月有免費搜尋額度。"</string>
     <string name="ws_desc_tavily">"為代理打造，可回傳完整網頁文字。每月 1,000 免費額度。"</string>
     <string name="ws_desc_linkup">"附乾淨網頁摘要的代理搜尋。每月有免費額度。"</string>
+    <string name="ws_desc_exa">"依語意而非關鍵字搜尋，並可傳回整頁文字。贈送免費起始額度。"</string>
     <string name="ws_desc_langsearch">"為 AI 應用打造的免費網路搜尋 API。"</string>
     <string name="ws_desc_jina">"一次呼叫完成搜尋與閱讀網頁。每個新金鑰贈送 1,000 萬免費 token。"</string>
     <string name="ws_desc_firecrawl">"來自 Firecrawl 擷取平台的搜尋。贈送免費入門額度。"</string>

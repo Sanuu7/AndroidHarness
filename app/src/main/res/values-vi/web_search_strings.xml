@@ -45,6 +45,7 @@
     <string name="ws_desc_serpapi">"Kết quả Google kèm ngày và dữ liệu phong phú. Có lượt tìm kiếm miễn phí hằng tháng."</string>
     <string name="ws_desc_tavily">"Dành cho tác nhân và có thể trả về toàn văn trang. 1.000 tín dụng miễn phí mỗi tháng."</string>
     <string name="ws_desc_linkup">"Tìm kiếm cho tác nhân với trích đoạn trang gọn gàng. Có tín dụng miễn phí hằng tháng."</string>
+    <string name="ws_desc_exa">"Tìm theo ý nghĩa thay vì từ khóa và có thể trả về toàn bộ văn bản trang. Tín dụng khởi đầu miễn phí."</string>
     <string name="ws_desc_langsearch">"API tìm kiếm web miễn phí dành cho ứng dụng AI."</string>
     <string name="ws_desc_jina">"Tìm kiếm và đọc trang trong một lần gọi. 10 triệu token miễn phí cho mỗi khóa mới."</string>
     <string name="ws_desc_firecrawl">"Tìm kiếm từ nền tảng thu thập dữ liệu Firecrawl. Có tín dụng khởi đầu miễn phí."</string>

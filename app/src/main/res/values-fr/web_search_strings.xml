@@ -53,6 +53,7 @@
     <string name="ws_desc_serpapi">"Résultats Google avec dates et données riches. Recherches gratuites chaque mois."</string>
     <string name="ws_desc_tavily">"Conçu pour les agents et peut renvoyer le texte complet des pages. 1 000 crédits gratuits par mois."</string>
     <string name="ws_desc_linkup">"Recherche pour agents avec des extraits de page propres. Crédit gratuit chaque mois."</string>
+    <string name="ws_desc_exa">"Cherche par sens plutôt que par mots-clés et peut renvoyer tout le texte de la page. Crédits de démarrage gratuits."</string>
     <string name="ws_desc_langsearch">"API de recherche web gratuite pour les applications IA."</string>
     <string name="ws_desc_jina">"Recherche et lit les pages en un seul appel. 10 M de tokens gratuits par nouvelle clé."</string>
     <string name="ws_desc_firecrawl">"Recherche depuis la plateforme de scraping Firecrawl. Crédit de départ gratuit."</string>

@@ -45,6 +45,7 @@
     <string name="ws_desc_serpapi">"ผลลัพธ์ Google พร้อมวันที่และข้อมูลมากมาย มีสิทธิ์ค้นหาฟรีทุกเดือน"</string>
     <string name="ws_desc_tavily">"สร้างมาเพื่อเอเจนต์และคืนข้อความเต็มของหน้าได้ เครดิตฟรี 1,000 ต่อเดือน"</string>
     <string name="ws_desc_linkup">"การค้นหาสำหรับเอเจนต์พร้อมข้อความตัดตอนจากหน้าที่สะอาด มีเครดิตฟรีทุกเดือน"</string>
+    <string name="ws_desc_exa">"ค้นหาตามความหมายแทนคำค้น และส่งคืนข้อความเต็มของหน้าได้ เครดิตเริ่มต้นฟรี"</string>
     <string name="ws_desc_langsearch">"API ค้นหาเว็บฟรีสำหรับแอป AI"</string>
     <string name="ws_desc_jina">"ค้นหาและอ่านหน้าในครั้งเดียว ให้โทเค็นฟรี 10 ล้านต่อคีย์ใหม่"</string>
     <string name="ws_desc_firecrawl">"การค้นหาจากแพลตฟอร์มดึงข้อมูล Firecrawl มีเครดิตเริ่มต้นฟรี"</string>

@@ -49,6 +49,7 @@
     <string name="ws_desc_serpapi">"तारीखों और समृद्ध डेटा के साथ Google परिणाम। हर महीने मुफ़्त खोजें।"</string>
     <string name="ws_desc_tavily">"एजेंट के लिए बनाया गया और पूरा पेज टेक्स्ट लौटा सकता है। हर महीने 1,000 मुफ़्त क्रेडिट।"</string>
     <string name="ws_desc_linkup">"साफ़ पेज अंशों वाली एजेंट खोज। हर महीने मुफ़्त क्रेडिट।"</string>
+    <string name="ws_desc_exa">"कीवर्ड की जगह अर्थ से खोजता है, और पूरा पेज टेक्स्ट लौटा सकता है। मुफ़्त शुरुआती क्रेडिट।"</string>
     <string name="ws_desc_langsearch">"AI ऐप के लिए मुफ़्त वेब खोज API।"</string>
     <string name="ws_desc_jina">"एक कॉल में खोजता और पेज पढ़ता है। हर नई कुंजी के लिए 1 करोड़ मुफ़्त टोकन।"</string>
     <string name="ws_desc_firecrawl">"Firecrawl स्क्रेपिंग प्लेटफ़ॉर्म से खोज। मुफ़्त शुरुआती क्रेडिट।"</string>
